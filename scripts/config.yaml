@@ -1,0 +1,24 @@
+
+---
+
+# computing platform, e.g., comet, expanse
+platform: comet
+
+comet:
+
+    # platform wide specs
+    base_dir:       /cw3e/mead/projects/cnt107/nrt_hydro
+    cores_per_node: 24
+    
+    forcing:
+        # regions to process
+        regions:    ['cnrfc', 'cbrfc']
+        
+    wrf_hydro:
+        # regions to process
+        regions:    ['cnrfc', 'cbrfc']
+        
+    obs:
+        # products to process
+        products:   ['modis']
+
