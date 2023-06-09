@@ -1,14 +1,7 @@
 import sys, os, math, pytz, yaml
 from datetime import datetime, timedelta
 from mpi4py import MPI
-from utilities import find_last_time
-
-
-fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
-with open(fconfig, 'r') as f:
-    config_all = yaml.safe_load(f)
-    config     = config_all[config_all['platform']]['forcing']
-    base_dir   = config_all[config_all['platform']]['base_dir']
+from utilities import config, base_dir, find_last_time
 
 ## some setups
 workdir   = base_dir + '/forcing/nwm'
@@ -17,7 +10,6 @@ workdir   = base_dir + '/forcing/nwm'
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-print(comm)
 
 ## main function
 def main(argv):

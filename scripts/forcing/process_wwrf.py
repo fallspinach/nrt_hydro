@@ -8,7 +8,7 @@ from glob import glob
 import numpy as np
 import numpy.ma as ma
 from datetime import datetime, timedelta
-from utilities import find_last_time
+from utilities import config, base_dir, find_last_time
 from mpi4py import MPI
 
 # MPI setup
@@ -16,15 +16,8 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
-with open(fconfig, 'r') as f:
-    config_all = yaml.safe_load(f)
-    config     = config_all[config_all['platform']]['forcing']
-    base_dir   = config_all[config_all['platform']]['base_dir']
-
 ## some setups
 wwrfdir  = base_dir + '/forcing/wwrf'
-nwmdir   = base_dir + '/forcing/nwm'
 lockfile = 'wwrf.lock'
 
 fcst_init   = 'ecmwf'
@@ -38,7 +31,7 @@ def main(argv):
     
     '''main loop'''
     
-    os.chdir(nwmdir)
+    os.chdir(wwrfdir)
     
     # simple file to avoid running multiple instances of this code
     #if os.path.isfile(lockfile):
@@ -58,7 +51,7 @@ def main(argv):
     
     # figure out the water year
     wy      = curr_day.year if curr_day.month>=10 else curr_day.year-1
-    fcst_dir = '%s/nrt/%d-%d/NRT_%s' % (wwrfdir, wy, wy+1, fcst_init)
+    fcst_dir = 'links/NRT/%d-%d/NRT_%s' % (wy, wy+1, fcst_init)
     
     # find the latest West-WRF forecast
     latest_day = find_last_time(fcst_dir+'/??????????', '%Y%m%d%H') #- timedelta(hours=24)
@@ -80,12 +73,12 @@ def main(argv):
     
     for region in config['regions']:
         
-        out_dir  = '1km/%s/wwrf_%s' % (region, fcst_init)
+        out_dir  = 'NRT/%d-%d/NRT_%s/%s' % (wy, wy+1, fcst_init, region)
         if not os.path.isdir(out_dir):
             cmd = 'mkdir -p %s' % out_dir
             print(cmd); os.system(cmd)
         
-        cdocmd = 'cdo -O -f nc4 -z zip remap,domain/scrip_%s_bilinear.nc,domain/cdo_weights_d01_cf_%s.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr' % (region, region)
+        cdocmd = 'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_%s_bilinear.nc,NRT/%d-%d/NRT_%s/cdo_weights_d01_cf_%s.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr' % (region, wy, wy+1, fcst_init, region)
     
         t = latest_day + timedelta(hours=1)
         last_day = latest_day + timedelta(days=fcst_length)
@@ -110,14 +103,14 @@ def main(argv):
             fww = '%s/%s/cf/wrfcf_%s_d%s_%s_00_00.nc' % (fcst_dir, latest_day.strftime('%Y%m%d%H'), fcst_init, fcst_domain, t.strftime('%Y-%m-%d_%H'))
             ftmp = '%s/%s.LDASIN_DOMAIN1' % (tmpdir,  t.strftime('%Y%m%d%H'))
             ftmp2 = '%s/%s.LDASIN_DOMAIN1.nc' % (tmpdir,  t.strftime('%Y%m%d%H'))
-            fnwm = '%s/%s/%s.LDASIN_DOMAIN1' % (out_dir, t.strftime('%Y%m%d%H'))
+            fnwm = '%s/%s.LDASIN_DOMAIN1' % (out_dir, t.strftime('%Y%m%d%H'))
             if os.path.isfile(fww):
                 cmd = '%s %s %s' % (cdocmd, fww, ftmp)
                 #print(cmd)
                 os.system(cmd)
                 cmd = '%s %s %s' % (ncocmd1, ftmp, ftmp2)
                 os.system(cmd)
-                cmd = 'cdo -f nc4 -z zip add %s domain/xmask0_%s.nc %s' % (ftmp2, region, fnwm)
+                cmd = 'cdo -f nc4 -z zip add %s ../nwm/domain/xmask0_%s.nc %s' % (ftmp2, region, fnwm)
                 os.system(cmd)
                 cmd = '%s %s' % (ncocmd2, fnwm)
                 os.system(cmd)

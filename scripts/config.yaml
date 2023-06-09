@@ -15,8 +15,8 @@ comet:
         regions:    ['cnrfc', 'cbrfc']
         
     wrf_hydro:
-        # regions to process
-        regions:    ['cnrfc', 'cbrfc']
+        nrt:
+            regions:    ['cnrfc', 'cbrfc']
         
     obs:
         # products to process

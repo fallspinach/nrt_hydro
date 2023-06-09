@@ -8,14 +8,8 @@ from glob import glob
 import numpy as np
 import numpy.ma as ma
 from datetime import datetime, timedelta
-from utilities import find_last_time
+from utilities import config, base_dir, find_last_time
 
-
-fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
-with open(fconfig, 'r') as f:
-    config_all = yaml.safe_load(f)
-    config     = config_all[config_all['platform']]['forcing']
-    base_dir   = config_all[config_all['platform']]['base_dir']
 
 ## some setups
 workdir  = base_dir + '/forcing/stage4'
