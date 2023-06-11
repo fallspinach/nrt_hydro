@@ -2,13 +2,14 @@ import sys, os, math, pytz, yaml, subprocess
 from glob import glob
 from datetime import datetime, timedelta
 from mpi4py import MPI
-from utilities import config, base_dir, find_last_time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
+from utilities import config, find_last_time
 
 
 ## some setups
-workdir   = base_dir + '/forcing/nwm'
-stg4_path = base_dir + '/forcing/stage4/archive' # path to Stage IV files
-nld2_path = base_dir + '/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+workdir   = config['base_dir'] + '/forcing/nwm'
+stg4_path = config['base_dir'] + '/forcing/stage4/archive' # path to Stage IV files
+nld2_path = config['base_dir'] + '/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -55,7 +56,7 @@ def main(argv):
         arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
         arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'
 
-        cmd = 'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg.gs %s %s %s %s"' % (tg1, tg2, arg3, arg4)
+        cmd = 'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_nrt.gs %s %s %s %s"' % (tg1, tg2, arg3, arg4)
         print(cmd); os.system(cmd)
 
     comm.Barrier()

@@ -5,8 +5,7 @@ from glob import glob
 fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
 with open(fconfig, 'r') as f:
     config_all = yaml.safe_load(f)
-    config     = config_all[config_all['platform']]['forcing']
-    base_dir   = config_all[config_all['platform']]['base_dir']
+    config     = config_all[config_all['platform']]
 
 ## find the last file
 def find_last_time(glob_pattern, file_pattern):

@@ -10,11 +10,12 @@ import numpy.ma as ma
 from datetime import datetime, timedelta
 import requests, re
 from bs4 import BeautifulSoup
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, base_dir, find_last_time
 
     
 ## some setups
-workdir  = base_dir + '/forcing/hrrr'
+workdir  = config['base_dir'] + '/forcing/hrrr'
 lockfile = 'hrrr.lock'
 
 hrrr_ncep_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/'

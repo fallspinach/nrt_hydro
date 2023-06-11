@@ -1,14 +1,15 @@
 import sys, os, math, pytz, time, yaml, subprocess
 from glob import glob
 from datetime import datetime, timedelta
-from utilities import config, base_dir, find_last_time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
+from utilities import config, find_last_time
     
 ## some setups
-workdir   = base_dir + '/scripts/forcing'
-logdir    = base_dir + '/forcing/log'
-stg4_path = base_dir + '/forcing/stage4'                      # path to Stage IV files
-nld2_path = base_dir + '/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
-hrrr_path = base_dir + '/forcing/hrrr/analysis'               # path to HRRR analysis
+workdir   = config['base_dir'] + '/scripts/forcing'
+logdir    = config['base_dir'] + '/forcing/log'
+stg4_path = config['base_dir'] + '/forcing/stage4'                      # path to Stage IV files
+nld2_path = config['base_dir'] + '/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+hrrr_path = config['base_dir'] + '/forcing/hrrr/analysis'               # path to HRRR analysis
 
 
 ## main function

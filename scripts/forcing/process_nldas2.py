@@ -8,11 +8,12 @@ from glob import glob
 import numpy as np
 import numpy.ma as ma
 from datetime import datetime, timedelta
-from utilities import config, base_dir, find_last_time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
+from utilities import config, find_last_time
 
     
 ## some setups
-workdir  = base_dir + '/forcing/nldas2'
+workdir  = config['base_dir'] + '/forcing/nldas2'
 lockfile = 'nldas2.lock'
 
 httpshost  = 'hydro1.gesdisc.eosdis.nasa.gov'

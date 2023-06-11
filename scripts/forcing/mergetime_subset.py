@@ -1,10 +1,11 @@
 import sys, os, math, pytz, yaml
 from datetime import datetime, timedelta
 from mpi4py import MPI
-from utilities import config, base_dir, find_last_time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
+from utilities import config, find_last_time
 
 ## some setups
-workdir   = base_dir + '/forcing/nwm'
+workdir   = config['base_dir'] + '/forcing/nwm'
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -49,7 +50,7 @@ def main(argv):
         print(cmd); os.system(cmd)
 
         fsrc = fout
-        for region in config['regions']:
+        for region in config['forcing']['regions']:
             
             with open('domain/cdo_indexbox_%s.txt' % region, 'r') as f:
                 indexbox = f.read().rstrip()
