@@ -33,11 +33,12 @@ def main(argv):
         time1 = datetime.strptime(argv[1], '%Y')
         time2 = datetime.strptime(argv[2], '%Y')
     else:
-        print('Usage: %s [hourly|daily|monthly|yearly] [time_start] [time_end] [base_cmd] [cmd_args] ...' % sys.argv[0])
+        print('Usage: mpirun -np [num_of_procs] python %s [hourly|daily|monthly|yearly] [time_start] [time_end] [cmd_template_1] [cmd_template_2] ...' % sys.argv[0])
         sys.exit(1)
         
-    basecmd = argv[3]
-    cmdargs = argv[4]
+    #basecmd = argv[3]
+    #cmdargs = argv[4]
+    cmd_tpls = argv[3:]
 
     alltimes = []
     t = time1
@@ -46,11 +47,17 @@ def main(argv):
         t += step
 
     for t in alltimes[rank::size]:
-        targs = t.strftime(cmdargs)
-        cmd = '%s %s' % (basecmd, targs)
-        print(cmd)
-        if len(argv)==5:
-            os.system(cmd)
+        #targs = t.strftime(cmdargs)
+        #cmd = '%s %s' % (basecmd, targs)
+        #print(cmd)
+        #if len(argv)==5:
+        #    os.system(cmd)
+        for cmd_tpl in cmd_tpls:
+            cmd = t.strftime(cmd_tpl)
+            if cmd != '--dry-run':
+                print(cmd)
+            if argv[-1] != '--dry-run':
+                os.system(cmd)
 
     comm.Barrier()
 

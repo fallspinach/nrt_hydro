@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import requests, re
 from bs4 import BeautifulSoup
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
-from utilities import config, base_dir, find_last_time
+from utilities import config, find_last_time
 
     
 ## some setups

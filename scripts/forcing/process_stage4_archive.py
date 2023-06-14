@@ -50,7 +50,7 @@ def main(argv):
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
     
     # find the last nc file
-    lastnc_day = find_last_time('archive/20????/st4_conus.20??????.01h.nc', 'st4_conus.%Y%m%d.01h.nc')
+    lastnc_day = find_last_time('archive/20??/st4_conus.20??????.01h.nc', 'st4_conus.%Y%m%d.01h.nc')
     back_day    = curr_day - timedelta(days=9)
     
     print('Time range to download and process: %s to %s.' % ((lastnc_day+timedelta(days=1)).isoformat(), back_day.isoformat()))
@@ -65,7 +65,7 @@ def main(argv):
         # download archive
         fgrb = t.strftime('ST4.%Y%m%d')
         premo = 'ftp://%s/%s/%s' % (ftphost, ftppath, t.strftime('%Y%m'))
-        parch = t.strftime('archive/%Y%m')
+        parch = t.strftime('archive/%Y')
         if not os.path.isdir(parch):
             os.system('mkdir -p '+parch)
         #cmd = 'wget %s/%s -O %s/%s' % (premo, fgrb, parch, fgrb)
