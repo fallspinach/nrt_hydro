@@ -50,7 +50,7 @@ def main(argv):
         tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
         #print('Rank = %d, t1 = %d, t2 = %d, time1 = %s, time2 = %s' % (rank, t1, t2, tg1, tg2))
 
-        last_stg4 = find_last_time(stg4_path+'/20????/ST4.20??????', 'ST4.%Y%m%d')
+        last_stg4 = find_last_time(stg4_path+'/20??/ST4.20??????', 'ST4.%Y%m%d')
         last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
         
         arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'

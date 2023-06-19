@@ -6,15 +6,15 @@ from mpi4py import MPI
 ## some setups
 workdir   = '.'
 
-# MPI setup
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-
 ## main function
 def main(argv):
 
     '''main loop'''
+
+    # MPI setup
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
 
     if argv[0] == 'hourly':
         step = timedelta(hours=1)

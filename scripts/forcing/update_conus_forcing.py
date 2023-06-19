@@ -19,7 +19,7 @@ def main(argv):
     
     os.chdir(workdir)
 
-    last_st4a = find_last_time(stg4_path+'/archive/202???/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
+    last_st4a = find_last_time(stg4_path+'/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
     last_st4r = find_last_time(stg4_path+'/realtime/pcpanl.????????/st4_conus.??????????.01h.nc', 'st4_conus.%Y%m%d%H.01h.nc')
     last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
     last_hrrr = find_last_time(hrrr_path+'/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')
