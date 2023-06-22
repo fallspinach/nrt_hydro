@@ -2,8 +2,6 @@ function comb(args)
 
 time1=subwrd(args, 1)
 time2=subwrd(args, 2)
-flag_stg4=subwrd(args, 3)
-flag_anal=subwrd(args, 4)
 
 basedir=".."
 
@@ -17,9 +15,10 @@ step=1
 *flag_shift=1
 flag_shift=0
 
-* flag to rescale Stage IV daily total against PRISM
-* we do it when PRISM "recent histor" version is available
-resc_flag=1
+* flag to rescale Stage IV daily total P and mean T against PRISM
+* we do it when PRISM "recent history" version is available
+prismp_flag=1
+prismt_flag=1
 
 * flag to enable/disable interpolation of downward longwave from 3-hourly to hourly
 flag_dlitp=1
@@ -43,21 +42,15 @@ lon2=-67
 
 resdhi=0.01
 resdme=0.04
-resdlo=0.125
+resd12=0.125
 buff=4
 
 rehi=mkre(lat1%" "%lat2%" "%lon1%" "%lon2%" "%resdhi)
 reme=mkre(lat1%" "%lat2%" "%lon1%" "%lon2%" "%resdme)
-relo=mkre(lat1%" "%lat2%" "%lon1%" "%lon2%" "%resdlo)
-if (flag_anal="hrrr")
-*    relo="2503, linear, -134.095, 0.0292402, 1155, linear, 21.1405, 0.0272727"
-*    relo="1856, linear, -124.984375, 0.03125, 896, linear, 25.015625, 0.03125"
-    resdlo=0.03125
-    relo=mkre(lat1%" "%lat2%" "%lon1%" "%lon2%" "%resdlo)
-    flag_dlitp=0
-endif
+relo=mkre(lat1%" "%lat2%" "%lon1%" "%lon2%" "%resd12)
 
 say "Hires configuration: "rehi
+say "Meres configuration: "reme
 say "Lores configuration: "relo
 
 'xdfopen domain/wrfinput.d01.lat-lon.modis.ctl'
@@ -75,6 +68,7 @@ say "Lores configuration: "relo
 
 'open domain/gtopo30_nldas.ctl'
 'define demhi=re(const(dem, 0, -u), 'rehi', ba)'
+'define demme=re(const(dem, 0, -u), 'reme', ba)'
 'define demlo=re(const(dem, 0, -u), 'relo', ba)'
 
 'close 1'
@@ -82,45 +76,19 @@ say "Lores configuration: "relo
 year=substr(time1, strlen(time1)-3, 4)
 
 * NLDAS-2 as the backbone
-if (year<2021)
+if (year<2023)
     'xdfopen 'basedir'/nldas2/nldas2_retro.ctl'
 else
-    if (flag_anal="hrrr")
-        'xdfopen 'basedir'/hrrr/hrrr_anal.ctl'
-    else
-        'xdfopen 'basedir'/nldas2/nldas2_nrt.ctl'
-    endif
+    'xdfopen 'basedir'/nldas2/nldas2_nrt.ctl'
 endif
 
-* 
-'set time 'time1
-'q dim'
-line=sublin(result, 5)
-t1=subwrd(line, 9)
-'set time 20jul2020'
-'q dim'
-line=sublin(result, 5)
-tgrb2=subwrd(line, 9)
-
-* Merged Stage IV
-if (year<2018)
-*   use Stage IV diaggretated against Stage II over CN/NW RFCs before 2018-01-01
-    'open 'basedir'/stage4/archive/ST4n2a_archive.ctl'
-else
-*   use Stage IV diaggretated against MRMS over CN/NW RFCs after 2018-01-01
-    if (t1<tgrb2)
-        'open 'basedir'/stage4/archive/ST4.ctl'
-    else
-        'xdfopen 'basedir'/stage4/st4_conus_'flag_stg4'.ctl'
-    endif
-endif
+* Gap filled Stage IV
+'xdfopen 'basedir'/stage4/st4nl2.ctl'
+'xdfopen 'basedir'/stage4/st4nl2_daily.ctl'
 
 * PRISM
 'xdfopen 'basedir'/prism/recent/prism_ppt_recent.ctl'
 'xdfopen 'basedir'/prism/recent/prism_tmean_recent.ctl'
-
-* skip GSIP for long-term consisency
-use_gsip = 0
 
 'set lat 'lat1+resdhi/2' 'lat2-resdhi/2
 'set lon 'lon1+resdhi/2' 'lon2-resdhi/2
@@ -139,7 +107,8 @@ else
     t2=subwrd(line, 13)
 endif
 
-lastdate=0
+lstdatep=0
+lstdatet=0
 debug=0
 
 t=t1
@@ -159,63 +128,90 @@ while (t<=t2)
     
     say "Input file timestamp "tstamp1"; Forcing file timestamp "tstamp
     
-*   For precipitation, use Stage IV-II (no longer rescale against NLDAS-2),
-*   then gap-fill with NLDAS-2
+*   For precipitation, use Stage IV-II gap-fill with NLDAS-2
+*   then rescaled to match PRISM
 
-    if (resc_flag=1)
+    'define st42me=nfill(ave(apcpsfc.2, t='t', t='t+step-1'),lat.2,'buff')'
+
+    if (prismp_flag=1)
     
 *       determine the date, for precipitation, 00z is yesterday, so we use tstamp2
-        currdate = substr(tstamp2, 1, 8)
+        curdatep = substr(tstamp2, 1, 8)
     
-        if (currdate!=lastdate)
+        if (curdatep!=lstdatep)
 
-            dstr = gradsdate(currdate)
+            dstr = gradsdate(curdatep)
 *            say dstr
         
-            'define nl2lod=ave(apcpsfc.1, time=00Z'dstr', time=23Z'dstr')'
-            'define st42hid=ave(apcpsfc.2, time=00Z'dstr', time=23Z'dstr')'
-            'define st42lod=re(st42hid, 'relo', bl)'
+            'define st42med=apcpsfc.3(time='dstr')'
+            'define prsmmed=re(ppt.4(time='dstr'), 'reme')'
+            
 *           we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
-            'define fsclo=maskout(nl2lod/st42lod, st42lod-'mindaily')'
-            'define fschi=re(fsclo, 'rehi', ba)'
+            'define fscme=maskout(prsmmed/st42med, st42med-'mindaily')'
+            'define fscme=const(fscme, 1, -u)'
         
             'set gxout stat'
-            'd fsclo'
+            'd fscme'
             line=sublin(result, 8)
             fmax=subwrd(line, 5)
-            say currdate%": maximum rescaling factor = "%fmax
+            say curdatep%": maximum rescaling factor = "%fmax
             'set gxout fwrite'
         
-            lastdate = currdate
+            lstdatep = curdatep
+        endif
+    
+        'define st42me=st42me*fscme'
+    
+    endif
+    
+    'define st42hi=re(st42me, 'rehi', bl)'
+    'define pcphi=st42hi/3600'
+    'undefine st42hi'
+
+*   For temperature, use NLDAS-2, then offset to match PRISM
+
+    'define tmplo=ave(tmp2m.1, t='t', t='t+step-1')'
+    'define tmpls=tmplo-demlo*('lapse')'
+
+    if (prismt_flag=1)
+    
+*       determine the date, for temperature, 00z is today, so we use tstamp1
+        curdatet = substr(tstamp1, 1, 8)
+    
+        if (curdatet!=lstdatet)
+
+            dstr = gradsdate(curdatet)
+*            say dstr
+        
+            'define tnl2lod=ave(tmp2m.1, time=00z'dstr', time=23z'dstr')'
+            'define tnl2lsd=tnl2lod-demlo*('lapse')'
+            'define tnl2msd=re(nfill(tnl2lsd,lat,'buff'), 'reme', bl)'
+            'define tnl2med=tnl2msd+demme*('lapse')'
+            'define tprsmed=re(tmean.5(time='dstr')+273.15, 'reme')'
+*           we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
+            'define offme=const(tprsmed-tnl2med, 0, -u)'
+        
+            'set gxout stat'
+            'd abs(offme)'
+            line=sublin(result, 8)
+            fmax=subwrd(line, 5)
+            say curdatet%": maximum offset magnitude = "%fmax
+            'set gxout fwrite'
+        
+            lstdatet = curdatet
         endif
 
-    endif
-
-    if (flag_anal="hrrr")
-        'define nl2lo=ave(pratesfc.1*3600, t='t', t='t+step-1')'
-        'define nl2lo=const(nl2lo, 0, -u)'
+        'define tmpms=re(nfill(tmpls,lat,'buff'), 'reme', bl)'
+        'define tmpms=tmpms+offme'
+        'define tmphs=re(nfill(tmpms,lat.2,'buff'), 'rehi', bl)'
+    
     else
-        'define nl2lo=ave(apcpsfc.1, t='t', t='t+step-1')'
-    endif
-    'define nl2hi=re(nfill(nl2lo,lat,'buff'), 'rehi', bl)'
-    'define st42lo=ave(apcpsfc.2, t='t', t='t+step-1')'
-    'define st42hi=re(st42lo, 'rehi', bl)'
     
-    if (resc_flag=1)
-        'define st42hi=st42hi*fschi'
+        'define tmphs=re(nfill(tmpls,lat,'buff'), 'rehi', bl)'
+    
     endif
     
-    'define mks=const(st42hi*0+1, 0, -u)'
-    'define mkn=const(nl2hi*0+1, 0, -u)'
-    'define mki=mkn*(1-mks)'
-    'define pcphi=(const(st42hi, 0, -u)+const(nl2hi, 0, -u)*mki)*maskout(1, mks+mkn-0.5)'
-    'define pcphi=pcphi/3600'
-    
-    'undefine nl2hi'
-    'undefine st42hi'
-    'undefine mks'
-    'undefine mkn'
-    'undefine mki'
+    'define tmphi=tmphs+demhi*('lapse')'
 
 *   For temperature, pressure, humidiy, and longwave, the procedure is:
 *   1) Adjust temperature and pressure to mean sea level at low resolution
@@ -227,9 +223,6 @@ while (t<=t2)
 *   7) Calculate specific humidity/vapor pressure from new temperature, pressure, and relative humidity at high resolution
 *   8) Calculate longwave emissivity and Stephan-Boltzman emission from vapor pressure and temperature at high resolution
 *   9) Calculate longwave from emission ratio and Stephan-Boltzman emission at high resolution
-    
-    'define tmplo=ave(tmp2m.1, t='t', t='t+step-1')'
-    'define tmpls=tmplo-demlo*('lapse')'
     
     'define prslo=ave(pressfc.1, t='t', t='t+step-1')'
     'define prsls=prslo*exp('g/ra'*demlo/((tmplo+tmpls)/2))'
@@ -262,12 +255,10 @@ while (t<=t2)
     'define emilo=emvlo*'sb'*pow(tmplo, 4)'
     'define remlo=dlwlo/emilo'
     
-    'define tmphs=re(nfill(tmpls,lat,'buff'), 'rehi', bl)'
     'define prshs=re(nfill(prsls,lat,'buff'), 'rehi', bl)'
     'define rlhhi=re(nfill(rlhlo,lat,'buff'), 'rehi', bl)'
     'define remhi=re(nfill(remlo,lat,'buff'), 'rehi', bl)'
     
-    'define tmphi=tmphs+demhi*('lapse')'
     'define prshi=prshs/exp('g/ra'*demhi/((tmphi+tmphs)/2))'
 
     'undefine tmphs'
@@ -492,13 +483,13 @@ return dt
 
 function gradsdate(args)
 
-    currdate=subwrd(args, 1)
+    curdatep=subwrd(args, 1)
     
     monnums = "01 02 03 04 05 06 07 08 09 10 11 12"
     monstrs = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC"
-    curryear=substr(currdate, 1, 4)
-    currmonn=substr(currdate, 5, 2)
-    currday=substr(currdate, 7, 2)
+    curryear=substr(curdatep, 1, 4)
+    currmonn=substr(curdatep, 5, 2)
+    currday=substr(curdatep, 7, 2)
     i=1
     while (i<=12)
         monn=subwrd(monnums, i)
