@@ -23,7 +23,8 @@ def main(argv):
     time2 = datetime.strptime(argv[1], '%Y%m%d')
     time1 = time1.replace(tzinfo=pytz.utc)
     time2 = time2.replace(tzinfo=pytz.utc)
-    #step  = timedelta(hours=int(argv[3]))
+    prodtype = argv[2]
+    
     step  = timedelta(days=1)
 
     alltimes = []
@@ -36,13 +37,15 @@ def main(argv):
 
         fsrc = t.strftime('0.01deg/%Y/%Y%m/%Y%m%d??.LDASIN_DOMAIN1')
         fout = t.strftime('0.01deg/%Y/%Y%m/%Y%m%d.LDASIN_DOMAIN1')
-        #cmd = 'cdo -O -f nc4 -z zip mergetime %s %s; /bin/rm -f %s' % (fsrc, fout, fsrc)
-        cmd = 'cdo -O -f nc4 -z zip mergetime %s %s' % (fsrc, fout)
+        if prodtype == 'nrt':
+            cmd = 'cdo -O -f nc4 -z zip mergetime %s %s' % (fsrc, fout)
+        else:
+            cmd = 'cdo -O -f nc4 -z zip mergetime %s %s; /bin/rm -f %s' % (fsrc, fout, fsrc)
         print(cmd); os.system(cmd)
 
         fsrc = fout
         cdocmd = 'cdo -f nc4 -z zip remap,domain/scrip_conus_bilinear.nc,domain/cdo_weights_conus.nc'
-        fout = t.strftime('1km/conus/nrt/%Y/%Y%m%d.LDASIN_DOMAIN1')
+        fout = '1km/conus/%s/%s' % (prodtype, t.strftime('%Y/%Y%m%d.LDASIN_DOMAIN1'))
         dout = os.path.dirname(fout)
         if not os.path.isdir(dout):
             os.system('mkdir -p '+dout)
@@ -56,7 +59,7 @@ def main(argv):
                 indexbox = f.read().rstrip()
             cdocmd = 'cdo -f nc4 -z zip add -selindexbox,%s' % indexbox
             
-            fout = '1km/%s/nrt/%s' % (region, t.strftime('%Y/%Y%m%d.LDASIN_DOMAIN1'))
+            fout = '1km/%s/%s/%s' % (region, prodtype, t.strftime('%Y/%Y%m%d.LDASIN_DOMAIN1'))
             dout = os.path.dirname(fout)
             if not os.path.isdir(dout):
                 os.system('mkdir -p '+dout)

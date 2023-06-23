@@ -15,7 +15,7 @@ step=1
 *flag_shift=1
 flag_shift=0
 
-* flag to rescale Stage IV daily total P and mean T against PRISM
+* flag to rescale Stage IV daily total P and to offset mean T against PRISM
 * we do it when PRISM "recent history" version is available
 prismp_flag=1
 prismt_flag=1

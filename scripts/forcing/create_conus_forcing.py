@@ -27,7 +27,8 @@ def main(argv):
     time2 = datetime.strptime(argv[1], '%Y%m%d%H')
     time1 = time1.replace(tzinfo=pytz.utc)
     time2 = time2.replace(tzinfo=pytz.utc)
-    #step  = timedelta(hours=int(argv[2]))
+    prodtype = argv[2]
+    
     step  = timedelta(hours=1)
 
     alltimes = []
@@ -50,13 +51,19 @@ def main(argv):
         tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
         #print('Rank = %d, t1 = %d, t2 = %d, time1 = %s, time2 = %s' % (rank, t1, t2, tg1, tg2))
 
-        last_stg4 = find_last_time(stg4_path+'/20??/ST4.20??????', 'ST4.%Y%m%d')
-        last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
+        if prodtype == 'nrt':
+            
+            last_stg4 = find_last_time(stg4_path+'/20??/ST4.20??????', 'ST4.%Y%m%d')
+            last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
         
-        arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
-        arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'
+            arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
+            arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'
 
-        cmd = 'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_nrt.gs %s %s %s %s"' % (tg1, tg2, arg3, arg4)
+            cmd = 'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_%s.gs %s %s %s %s"' % (prodtype, tg1, tg2, arg3, arg4)
+            
+        else:
+            cmd = 'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_%s.gs %s %s"' % (prodtype, tg1, tg2)
+            
         print(cmd); os.system(cmd)
 
     comm.Barrier()
