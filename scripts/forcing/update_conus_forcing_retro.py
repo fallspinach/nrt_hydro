@@ -22,7 +22,7 @@ def main(argv):
     '''main loop'''
     
     # update PRISM data first
-    #process_prism.main('')
+    process_prism.main('')
     
     os.chdir(workdir)
 
@@ -36,7 +36,7 @@ def main(argv):
     first_prsm = datetime(1981, 1, 1, tzinfo=pytz.utc)
 
     # find last retro forcing in NWM format
-    last_prod = find_last_time(nwm_path+'/1km/conus/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
+    last_prod = find_last_time(nwm_path+'/1km/conus/retro/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
     last_stnl = find_last_time(stnl_path+'/????/st4nl2_????????.nc', 'st4nl2_%Y%m%d.nc') - timedelta(days=1)
     
     print('Last PRISM "recent history" data:  %s' % (last_prsm.isoformat()))
@@ -44,8 +44,8 @@ def main(argv):
     print('Last retro forcing file:           %s' % (last_prod.isoformat()))
 
     if len(argv)==2:
-        t1 = datetime.strptime(argv[0], '%Y%m%d')
-        t2 = datetime.strptime(argv[1], '%Y%m%d')
+        t1 = datetime.strptime(argv[0], '%Y%m%d%H')
+        t2 = datetime.strptime(argv[1], '%Y%m%d%H')
         t1 = t1.replace(tzinfo=pytz.utc)
         t2 = t2.replace(tzinfo=pytz.utc)
     else:
@@ -65,8 +65,8 @@ def main(argv):
         
         tt1 = last_stnl + timedelta(days=1)
         tt2 = last_prsm + timedelta(days=1)
-        cmd00 = 'sbatch -A cwp101 -p shared -n 12'
-        cmd11 = 'sbatch -A cwp101 -p shared -n 2'
+        cmd00 = 'sbatch -p shared -n 12'
+        cmd11 = 'sbatch -p shared -n 2'
         cmd22 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python fill_stage4_with_nldas2.py'
         cmd33 = 'unset SLURM_MEM_PER_NODE; mpirun -np  2 python calc_shifted_daily.py'
         
@@ -78,7 +78,7 @@ def main(argv):
         print('StageIV & NLDAS-2 precip merging job ID is: '+jid1)
 
         # Shifted daily average
-        cmd = '%s -d afterok:%s -t 00:10:00 -J shiftdai --wrap="%s %s %s %s" -o %s/shifted_daily_%s_%s.txt' % (cmd11, jid1, cmd33, t1.strftime('%Y'),
+        cmd = '%s -d afterok:%s -t 00:20:00 -J shiftdai --wrap="%s %s %s %s" -o %s/shifted_daily_%s_%s.txt' % (cmd11, jid1, cmd33, t1.strftime('%Y'),
                 t2.strftime('%Y'), prodtype, logdir, t1.strftime('%Y'), t2.strftime('%Y')); print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid2 = ret.decode().split(' ')[-1].rstrip()
@@ -89,20 +89,23 @@ def main(argv):
     else:
         dep = ''
         
-    cmd0 = 'sbatch -A cwp101 -p shared -n 12 '
-    cmd1 = 'sbatch -A cwp101 -p compute -N 1 '
+    cmd0 = 'sbatch -p shared -n 12 '
+    cmd1 = 'sbatch -p compute -N 1 '
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'mpirun -np 12 python mergetime_subset.py'
     
-    # NLDAS-2 + Stage-IV archive update
-    cmd = '%s %s -t 00:40:00 -J retrof --wrap="%s %s %s %s" -o %s/retrof_%s_%s.txt' % (cmd0, dep, cmd2, t1.strftime('%Y%m%d%H'),
+    # retro forcing update
+    ndays = (t2+timedelta(days=1)-t1).days
+    trun = (datetime(1,1,1)+timedelta(minutes=ndays*4+1)).strftime('%H:%M:%S')
+    cmd = '%s %s -t %s -J retrof --wrap="%s %s %s %s" -o %s/retrof_%s_%s.txt' % (cmd0, dep, trun, cmd2, t1.strftime('%Y%m%d%H'),
             t2.strftime('%Y%m%d%H'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid3 = ret.decode().split(' ')[-1].rstrip()
     print('Retro forcing job ID is: '+jid3)
     
     # merge hourly files to daily and subset/reproject
-    cmd = '%s -d afterok:%s -t 02:20:00 -J mergesub --wrap="%s %s %s %s"  -o %s/mergesub_retro_%s_%s.txt' % (cmd1, jid3, cmd3,
+    trun = (datetime(1,1,1)+timedelta(minutes=ndays*3+10)).strftime('%H:%M:%S')
+    cmd = '%s -d afterok:%s -t %s -J mergesub --wrap="%s %s %s %s"  -o %s/mergesub_retro_%s_%s.txt' % (cmd1, jid3, trun, cmd3,
             t1.strftime('%Y%m%d'), t2.strftime('%Y%m%d'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()

@@ -49,7 +49,10 @@ def main(argv):
         dout = os.path.dirname(fout)
         if not os.path.isdir(dout):
             os.system('mkdir -p '+dout)
-        cmd = '%s %s %s' % (cdocmd, fsrc, fout)
+        if prodtype == 'nrt':
+            cmd = '%s %s %s' % (cdocmd, fsrc, fout)
+        else:
+            cmd = '%s %s %s; /bin/rm -f %s' % (cdocmd, fsrc, fout, fsrc)
         print(cmd); os.system(cmd)
 
         fsrc = fout

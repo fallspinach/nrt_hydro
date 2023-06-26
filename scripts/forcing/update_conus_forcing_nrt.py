@@ -3,7 +3,12 @@ from glob import glob
 from datetime import datetime, timedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
-    
+
+import process_nldas2
+import process_stage4_archive
+import process_stage4_realtime
+import process_hrrr_analysis
+
 ## some setups
 workdir   = config['base_dir'] + '/scripts/forcing'
 logdir    = config['base_dir'] + '/forcing/log'
@@ -17,7 +22,20 @@ prodtype = 'nrt'
 def main(argv):
     
     '''main loop'''
-    
+
+    # update all external data first
+    print('Updating NLDAS2 data archive ...')
+    process_nldas2.main('')
+
+    print('Updating Stage IV non-realtime data archive ...')
+    process_stage4_archive.main('')
+
+    print('Updating Stage IV realtime data archive ...')
+    process_stage4_realtime.main('')
+
+    print('Updating HRRR Analysis data archive ...')
+    process_hrrr_analysis.main('')
+
     os.chdir(workdir)
 
     last_st4a = find_last_time(stg4_path+'/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
@@ -32,8 +50,8 @@ def main(argv):
     
     #cmd0 = 'sbatch --export=NONE -A cwp101 -p shared -n 12 '
     #cmd1 = 'sbatch --export=NONE -A cwp101 -p compute -N 1 '
-    cmd0 = 'sbatch -A cwp101 -p shared -n 12'
-    cmd1 = 'sbatch -A cwp101 -p compute -N 1'
+    cmd0 = 'sbatch -p shared -n 12'
+    cmd1 = 'sbatch -p compute -N 1'
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'mpirun -np 12 python mergetime_subset.py'
     

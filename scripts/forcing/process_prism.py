@@ -17,12 +17,6 @@ lockfile = 'prism.lock'
 
 httpspath = 'https://prism.oregonstate.edu/fetchData.php'
 
-bildir = '/scratch/%s/%s/bil' % (os.getenv('USER'), os.getenv('SLURM_JOBID'))
-ncdir  = bildir.replace('bil', 'nc')
-for d in [bildir, ncdir]:
-    if not os.path.isdir(d):
-        os.system('mkdir -p %s' % d)
-
 override_flag = True       # override the old output files or not
 
 vs = ['ppt', 'tmean']
@@ -45,6 +39,12 @@ def main(argv):
     # keep the time
     time_start = time.time()
         
+    bildir = '/scratch/%s/%s/bil' % (os.getenv('USER'), os.getenv('SLURM_JOBID'))
+    ncdir  = bildir.replace('bil', 'nc')
+    for d in [bildir, ncdir]:
+        if not os.path.isdir(d):
+            os.system('mkdir -p %s' % d)
+
     #update_prism('recent')
     #update_prism('provisional')
     update_prisms()
