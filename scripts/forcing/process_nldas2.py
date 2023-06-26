@@ -7,6 +7,7 @@ import sys, os, pytz, time, yaml
 from glob import glob
 import numpy as np
 import numpy.ma as ma
+import netCDF4 as nc
 from datetime import datetime, timedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
@@ -99,6 +100,7 @@ def main(argv):
         print(cmd); os.system(cmd)
         cmd = '/bin/mv %s/%s4 %s/%s' % (parch, fnc, parch, fnc)
         print(cmd); os.system(cmd)
+        fix_latlon('%s/%s' % (parch, fnc))
         cmd = '/bin/rm -f %s/%s' % (parch, fgrb)
         print(cmd); os.system(cmd)
 
@@ -113,6 +115,15 @@ def main(argv):
 
     return 0
     
+def fix_latlon(fnldas2):
+
+    f = nc.Dataset(fnldas2, 'a')
+    f.variables['lon'][:] = np.linspace(-124.9375, -67.0625, 464)
+    f.variables['lat'][:] = np.linspace(25.0625, 52.9375, 224)
+    f.sync()
+    f.close()
+
+    return 0
 
 if __name__ == '__main__':
     main(sys.argv[1:])
