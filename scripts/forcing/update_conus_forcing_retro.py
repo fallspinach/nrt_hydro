@@ -92,7 +92,7 @@ def main(argv):
     cmd0 = 'sbatch -p shared -n 12 '
     cmd1 = 'sbatch -p compute -N 1 '
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
-    cmd3 = 'mpirun -np 12 python mergetime_subset.py'
+    cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
     
     # retro forcing update
     ndays = (t2+timedelta(days=1)-t1).days
