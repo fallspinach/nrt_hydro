@@ -4,7 +4,7 @@ import process_stage4_realtime
 import process_hrrr_analysis
 
 print('Updating NLDAS2 data archive ...')
-process_nldas2.main('')
+process_nldas2.main('copy')
 
 print('Updating Stage IV non-realtime data archive ...')
 process_stage4_archive.main('copy')

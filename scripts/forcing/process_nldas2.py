@@ -49,7 +49,12 @@ def main(argv):
     '''main loop'''
     
     os.chdir(workdir)
-    
+
+    copyold_flag  = False
+    if len(argv)>0:
+        if argv[0] == 'copy':
+            copyold_flag  = True
+
     # simple file to avoid running multiple instances of this code
     if os.path.isfile(lockfile):
         print(f'{os.path.basename(__file__)} is exiting: another copy of the program is running.')
