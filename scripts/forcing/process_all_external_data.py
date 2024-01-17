@@ -7,10 +7,10 @@ print('Updating NLDAS2 data archive ...')
 process_nldas2.main('')
 
 print('Updating Stage IV non-realtime data archive ...')
-process_stage4_archive.main('')
+process_stage4_archive.main('copy')
 
 print('Updating Stage IV realtime data archive ...')
-process_stage4_realtime.main('')
+process_stage4_realtime.main('copy')
 
 print('Updating HRRR Analysis data archive ...')
 process_hrrr_analysis.main('')

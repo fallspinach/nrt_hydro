@@ -14,14 +14,16 @@ from utilities import config, find_last_time
 
     
 ## some setups
-workdir  = config['base_dir'] + '/forcing/nldas2'
+workdir  = f'{config["base_dir"]}/forcing/nldas2'
 lockfile = 'nldas2.lock'
 
 httpshost  = 'hydro1.gesdisc.eosdis.nasa.gov'
 httpspath  = 'data/NLDAS/NLDAS_FORA0125_H.002'
 
 nld2_path  = 'NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+nld2_old   = '/cw3e/mead/projects/cwp101/wrf_hydro/forcing/nldas2/NLDAS_FORA0125_H.002'
 override_flag = True       # override the old output files or not
+copyold_flag  = False      # copy from old instead of download
 
 varinfo = [
     {'name': 'apcpsfc',     'id': '61',  'long_name': 'surface Total precipitation',                              'units': 'kg/m^2'},
@@ -50,10 +52,10 @@ def main(argv):
     
     # simple file to avoid running multiple instances of this code
     if os.path.isfile(lockfile):
-        print('%s is exiting: another copy of the program is running.' % os.path.basename(__file__))
+        print(f'{os.path.basename(__file__)} is exiting: another copy of the program is running.')
         #return 1
     else:
-        #os.system('touch '+lockfile)
+        #os.system(f'touch {lockfile}')
         pass
     
     # keep the time
@@ -74,34 +76,41 @@ def main(argv):
     back_day    = curr_day - timedelta(days=3, hours=12)
     lastnc_day_old = lastnc_day
     
-    print('Time range to download and process: %s to %s.' % ((lastnc_day+timedelta(hours=1)).isoformat(), back_day.isoformat()))
+    print(f'Time range to download and process: {(lastnc_day+timedelta(hours=1)):%Y-%m-%dT%H} to {back_day:%Y-%m-%dT%H}.')
     
     #sys.exit("here")
    
     t = lastnc_day + timedelta(hours=1) 
     while t <= back_day:
 
-        print(t.strftime('Downloading %Y-%m-%d %H:00'))
+        print(f'Downloading {t:%Y-%m-%d %H:00}')
 
         # download archive
-        fgrb = 'NLDAS_FORA0125_H.A'+t.strftime('%Y%m%d.%H')+'00.002.grb'
+        fgrb = f'NLDAS_FORA0125_H.A{t:%Y%m%d.%H}00.002.grb'
         fnc  = fgrb.replace('grb', 'nc')
-        premo = 'https://%s/%s/%s' % (httpshost, httpspath, t.strftime('%Y/%j'))
-        parch = '%s/%s' % (nld2_path, t.strftime('%Y/%j'))
+        premo = f'https://{httpshost}/{httpspath}/{t:%Y/%j}'
+        parch = f'{nld2_path}/{t:%Y/%j}'
         if not os.path.isdir(parch):
-            os.system('mkdir -p '+parch)
-        cmd = 'wget --user=fallspinach --password=TsingHua1911 -q %s/%s -O %s/%s' % (premo, fgrb, parch, fgrb)
+            os.system(f'mkdir -p {parch}')
+            
+        if not copyold_flag:
+            # download
+            cmd = f'wget --user=fallspinach --password=TsingHua1911 -q {premo}/{fgrb} -O {parch}/{fgrb}'
+        else:
+            # copy from old path
+            cmd = f'/bin/cp -a {nld2_old}/{t:%Y/%j}/{fgrb} {parch}/{fgrb}'
         print(cmd); os.system(cmd)
-        cmd = '%s %s/%s %s/%s' % (cdocmd1, parch, fgrb, parch, fnc)
+        
+        cmd = f'{cdocmd1} {parch}/{fgrb} {parch}/{fnc}'
         print(cmd); os.system(cmd)
-        cmd = '%s %s/%s' % (ncocmd1, parch, fnc)
+        cmd = f'{ncocmd1} {parch}/{fnc}'
         print(cmd); os.system(cmd)
-        cmd = '%s %s/%s %s/%s4' % (ncocmd2, parch, fnc, parch, fnc)
+        cmd = f'{ncocmd2} {parch}/{fnc} {parch}/{fnc}4'
         print(cmd); os.system(cmd)
-        cmd = '/bin/mv %s/%s4 %s/%s' % (parch, fnc, parch, fnc)
+        cmd = f'/bin/mv {parch}/{fnc}4 {parch}/{fnc}'
         print(cmd); os.system(cmd)
-        fix_latlon('%s/%s' % (parch, fnc))
-        cmd = '/bin/rm -f %s/%s' % (parch, fgrb)
+        fix_latlon(f'{parch}/{fnc}')
+        cmd = f'/bin/rm -f {parch}/{fgrb}'
         print(cmd); os.system(cmd)
 
         t = t + timedelta(hours=1)
@@ -109,9 +118,9 @@ def main(argv):
     lastnc_day = find_last_time(nld2_path+'/20??/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
     
     time_finish = time.time()
-    print('Total download/process time %.1f seconds' % (time_finish-time_start))
+    print(f'Total download/process time {(time_finish-time_start):.1f} seconds')
     
-    os.system('/bin/rm -f '+lockfile)
+    os.system(f'/bin/rm -f {lockfile}')
 
     return 0
     

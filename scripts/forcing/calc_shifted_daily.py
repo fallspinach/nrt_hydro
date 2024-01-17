@@ -12,13 +12,15 @@ from utilities import config, find_last_time
 from mpi4py import MPI
 
 ## some setups
-workdir   = config['base_dir'] + '/forcing/stage4/'
+workdir   = f'{config["base_dir"]}/forcing/stage4/'
 
 ## main function
 def main(argv):
 
     '''main loop'''
 
+    os.chdir(workdir)
+    
     # MPI setup
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -42,14 +44,16 @@ def main(argv):
         y = t.year
         tny = datetime(y+1, 1, 1)
         ydays = (tny-t).days
-        fins = 'filled_with_nldas2/%d/st4nl2_%d????.nc' % (y, y)
-        fout = 'filled_with_nldas2/daily/st4nl2_daily_%d.nc' % (y)
+        fins = f'filled_with_nldas2/{y:d}/st4nl2_{y:d}????.nc'
+        fout = f'filled_with_nldas2/daily/st4nl2_daily_{y:d}.nc'
         ndays = len(glob(fins))
         if ndays==ydays:
-            fins += ' filled_with_nldas2/%d/st4nl2_%d0101.nc' % (y+1, y+1) 
+            fins += f' filled_with_nldas2/{y+1:d}/st4nl2_{y+1:d}0101.nc'
             t2 = ydays+1
+        else:
+            t2 = ndays-1
         t1 = 1 if y==1979 else 2
-        cmd = 'cdo -f nc4 -z zip -shifttime,-690minute -seltimestep,%d/%d -daysum -shifttime,-1hour -mergetime %s %s' % (t1, t2, fins, fout)
+        cmd = f'cdo -f nc4 -z zip -shifttime,-690minute -seltimestep,{t1:d}/{t2:d} -daysum -shifttime,-13hour -mergetime {fins} {fout}'
         print(cmd); os.system(cmd)
 
     comm.Barrier()

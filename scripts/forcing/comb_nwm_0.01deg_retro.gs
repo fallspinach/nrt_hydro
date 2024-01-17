@@ -55,14 +55,18 @@ say "Lores configuration: "relo
 
 'xdfopen domain/wrfinput.d01.lat-lon.modis.ctl'
 'xdfopen domain/wrfinput.d01.lat-lon.usgs.ctl'
+'sdfopen domain/pfconus2/CONUS2.0.Final1km.NWM.Mask.0.01deg.nc'
 
 'set lat 'lat1+resdhi/2' 'lat2-resdhi/2
 'set lon 'lon1+resdhi/2' 'lon2-resdhi/2
 
 'define msks1=const(maskout(1, 1.5-xland.1), 0, -u)'
 'define msks2=const(maskout(1, 1.5-xland.2), 0, -u)'
-'define msks=maskout(1, msks1+msks2-0.5)'
+'define msks3=const(band1.3(t=1), 0, -u)'
+'define msks=maskout(1, msks1+msks2+msks3-0.5)'
+'define msks=nfill(msks, lat, 2)'
 
+'close 3'
 'close 2'
 'close 1'
 
@@ -321,8 +325,8 @@ while (t<=t2)
         vc=subwrd(vars_cf, v)
         vu=subwrd(units, v)
        
-*        'define 'vs'=nfill('vi', msks, 30)*msks'
-        'define 'vs'='vi'*msks'
+        'define 'vs'=nfill('vi', msks, 30)*msks'
+*        'define 'vs'='vi'*msks'
         
         'clear sdfwrite'
 

@@ -8,11 +8,11 @@ from utilities import config, find_last_time
 import process_prism
     
 ## some setups
-workdir   = config['base_dir'] + '/scripts/forcing'
-logdir    = config['base_dir'] + '/forcing/log'
-prsm_path = config['base_dir'] + '/forcing/prism/recent/nc'             # path to PRISM files
-nwm_path  = config['base_dir'] + '/forcing/nwm'
-stnl_path = config['base_dir'] + '/forcing/stage4/filled_with_nldas2'   # path to Stage-IV NlDAS-2 merged precip data
+workdir   = f'{config["base_dir"]}/scripts/forcing'
+logdir    = f'{config["base_dir"]}/forcing/log'
+prsm_path = f'{config["base_dir"]}/forcing/prism/recent/nc'             # path to PRISM files
+nwm_path  = f'{config["base_dir"]}/forcing/nwm'
+stnl_path = f'{config["base_dir"]}/forcing/stage4/filled_with_nldas2'   # path to Stage-IV NlDAS-2 merged precip data
 
 prodtype = 'retro'
 
@@ -27,7 +27,7 @@ def main(argv):
     os.chdir(workdir)
 
     # find the last nc file
-    ncfiles = glob(prsm_path+'/PRISM_tmean_stable_4kmD2_*.nc')
+    ncfiles = glob(f'{prsm_path}/PRISM_tmean_stable_4kmD2_*.nc')
     ncfiles.sort()
     f = nc.Dataset(ncfiles[-1], 'r')
     last_prsm = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
@@ -36,8 +36,8 @@ def main(argv):
     first_prsm = datetime(1981, 1, 1, tzinfo=pytz.utc)
 
     # find last retro forcing in NWM format
-    last_prod = find_last_time(nwm_path+'/1km/conus/retro/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
-    last_stnl = find_last_time(stnl_path+'/????/st4nl2_????????.nc', 'st4nl2_%Y%m%d.nc') - timedelta(days=1)
+    last_prod = find_last_time(f'{nwm_path}/1km/conus/retro/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
+    last_stnl = find_last_time(f'{stnl_path}/????/st4nl2_????????.nc', 'st4nl2_%Y%m%d.nc') - timedelta(days=1)
     
     print('Last PRISM "recent history" data:  %s' % (last_prsm.isoformat()))
     print('Last StageIV/NLDAS2 merged precip: %s' % (last_stnl.isoformat()))
@@ -57,7 +57,7 @@ def main(argv):
     if t2>last_prsm:
         t2 = last_prsm
     
-    print('Processing %s data from %s to %s.' % (prodtype, t1.isoformat(), t2.isoformat()))
+    print(f'Processing {prodtype} data from {t1:%Y-%m-%dT%H} to {t2:%Y-%m-%dT%H}.')
 
     if last_stnl<last_prsm:
         
@@ -71,20 +71,18 @@ def main(argv):
         cmd33 = 'unset SLURM_MEM_PER_NODE; mpirun -np  2 python calc_shifted_daily.py'
         
         # Merge
-        cmd = '%s -t 00:30:00 -J st4nl2 --wrap="%s %s %s %s" -o %s/st4nl2_%s_%s.txt' % (cmd00, cmd22, t1.strftime('%Y%m%d'),
-                t2.strftime('%Y%m%d'), prodtype, logdir, t1.strftime('%Y%m%d'), t2.strftime('%Y%m%d')); print(cmd)
+        cmd = f'{cmd00} -t 00:30:00 -J st4nl2 --wrap="{cmd22} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}" -o {logdir}/st4nl2_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid1 = ret.decode().split(' ')[-1].rstrip()
-        print('StageIV & NLDAS-2 precip merging job ID is: '+jid1)
+        print(f'StageIV & NLDAS-2 precip merging job ID is: {jid1}')
 
         # Shifted daily average
-        cmd = '%s -d afterok:%s -t 00:20:00 -J shiftdai --wrap="%s %s %s %s" -o %s/shifted_daily_%s_%s.txt' % (cmd11, jid1, cmd33, t1.strftime('%Y'),
-                t2.strftime('%Y'), prodtype, logdir, t1.strftime('%Y'), t2.strftime('%Y')); print(cmd)
+        cmd = f'{cmd11} -d afterok:{jid1} -t 00:20:00 -J shiftdai --wrap="{cmd33} {t1:%Y} {t2:%Y} {prodtype}" -o {logdir}/shifted_daily_{t1:%Y}_{t2:%Y}.txt'; print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid2 = ret.decode().split(' ')[-1].rstrip()
-        print('Shifted daily averaging job ID is: '+jid2)
+        print(f'Shifted daily averaging job ID is: {jid2}')
 
-        dep = '-d afterok:%s' % jid2
+        dep = f'-d afterok:{jid2}'
 
     else:
         dep = ''
@@ -97,19 +95,17 @@ def main(argv):
     # retro forcing update
     ndays = (t2+timedelta(days=1)-t1).days
     trun = (datetime(1,1,1)+timedelta(minutes=ndays*4+1)).strftime('%H:%M:%S')
-    cmd = '%s %s -t %s -J retrof --wrap="%s %s %s %s" -o %s/retrof_%s_%s.txt' % (cmd0, dep, trun, cmd2, t1.strftime('%Y%m%d%H'),
-            t2.strftime('%Y%m%d%H'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd0} {dep} -t {trun} -J retrof --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/retrof_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid3 = ret.decode().split(' ')[-1].rstrip()
-    print('Retro forcing job ID is: '+jid3)
+    print(f'Retro forcing job ID is: {jid3}')
     
     # merge hourly files to daily and subset/reproject
     trun = (datetime(1,1,1)+timedelta(minutes=ndays*3+10)).strftime('%H:%M:%S')
-    cmd = '%s -d afterok:%s -t %s -J mergesub --wrap="%s %s %s %s"  -o %s/mergesub_retro_%s_%s.txt' % (cmd1, jid3, trun, cmd3,
-            t1.strftime('%Y%m%d'), t2.strftime('%Y%m%d'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd1} -d afterok:{jid3} -t {trun} -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_retro_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()
-    print('Mergetime and subset retro forcing job ID is: '+jid4)
+    print(f'Mergetime and subset retro forcing job ID is: {jid4}')
     
     return 0
 

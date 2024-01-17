@@ -12,8 +12,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/ut
 from utilities import config, find_last_time
 
 ## some setups
-workdir  = config['base_dir'] + '/forcing/prism'
+workdir  = f'{config["base_dir"]}/forcing/prism'
 lockfile = 'prism.lock'
+
+bildir = f'/scratch/{os.getenv("USER")}/{os.getenv("SLURM_JOBID")}/bil'
+ncdir  = bildir.replace('bil', 'nc')
 
 httpspath = 'https://prism.oregonstate.edu/fetchData.php'
 
@@ -30,29 +33,27 @@ def main(argv):
     
     # simple file to avoid running multiple instances of this code
     if os.path.isfile(lockfile):
-        print('%s is exiting: another copy of the program is running.' % os.path.basename(__file__))
+        print(f'{os.path.basename(__file__)} is exiting: another copy of the program is running.')
         #return 1
     else:
         pass
-        #os.system('touch '+lockfile)
+        #os.system(f'touch {lockfile}')
     
     # keep the time
     time_start = time.time()
         
-    bildir = '/scratch/%s/%s/bil' % (os.getenv('USER'), os.getenv('SLURM_JOBID'))
-    ncdir  = bildir.replace('bil', 'nc')
     for d in [bildir, ncdir]:
         if not os.path.isdir(d):
-            os.system('mkdir -p %s' % d)
+            os.system(f'mkdir -p {d}')
 
     #update_prism('recent')
     #update_prism('provisional')
     update_prisms()
     
     time_finish = time.time()
-    print('Total download/process time %.1f seconds' % (time_finish-time_start))
+    print(f'Total download/process time {(time_finish-time_start):.1f} seconds')
     
-    os.system('/bin/rm -f '+lockfile)
+    os.system(f'/bin/rm -f {lockfile}')
 
     return 0
 
@@ -66,7 +67,7 @@ def update_prism(ptype):
         prod = 'provisional'
 
     # find the last nc file
-    ncfiles = glob('nc/PRISM_tmean_%s_4kmD2_*.nc' % prod)
+    ncfiles = glob(f'nc/PRISM_tmean_{prod}_4kmD2_*.nc')
     ncfiles.sort()
     f = nc.Dataset(ncfiles[-1], 'r')
     last_day = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
@@ -77,41 +78,41 @@ def update_prism(ptype):
     ym = next_day.strftime('%Y%m')
 
     if ptype=='recent':
-        print('Last day of PRISM-recent: %s, year to update: %s' % (last_day.isoformat(), next_day.strftime('%Y')))
+        print(f'Last day of PRISM-recent: {last_day:%Y-%m-%d}, year to update: {next_day:%Y}')
         ts = y
     elif ptype=='provisional':
-        print('Last day of PRISM-provisional: %s, year-month to update: %s' % (last_day.isoformat(), next_day.strftime('%Y-%m')))
+        print(f'Last day of PRISM-provisional: {last_day:%Y-%m-%d}, year-month to update: {next_day:%Y-%m}')
         ts = ym
     
     for v in vs:
         if ptype=='recent':
-            cmd = 'wget "%s?type=all_year&range=daily&kind=recent&elem=%s&temporal=%s0101" -O zip/%s_%s.zip' % (httpspath, v, y, v, y)
+            cmd = f'wget "{httpspath}?type=all_year&range=daily&kind=recent&elem={v}&temporal={y}0101" -O zip/{v}_{y}.zip'
         elif ptype=='provisional':
-            cmd = 'wget "%s?type=all_bil&range=daily&kind=6months&elem=%s&temporal=%s01&year=%s" -O zip/%s_%s.zip' % (httpspath, v, m, y, v, ts)
+            cmd = f'wget "{httpspath}?type=all_bil&range=daily&kind=6months&elem={v}&temporal={m}01&year={y}" -O zip/{v}_{ts}.zip'
         print(cmd); os.system(cmd)
     
     for v in vs:
-        cmd = 'unzip -o -q -d %s zip/%s_%s.zip' % (bildir, v, ts)
+        cmd = f'unzip -o -q -d {bildir} zip/{v}_{ts}.zip'
         print(cmd); os.system(cmd)
-        fname = 'PRISM_%s_%s_4kmD2_%s' % (v, prod, ts)
-        bilfiles = glob('%s/%s*.bil' % (bildir, fname))
+        fname = f'PRISM_{v}_{prod}_4kmD2_{ts}'
+        bilfiles = glob(f'{bildir}/{fname}*.bil')
         bilfiles.sort()
         for f in bilfiles:
-            cmd = 'gdal_translate -of netcdf %s %s' % (f, f.replace('bil', 'nc'))
+            cmd = f'gdal_translate -of netcdf {f} {f.replace("bil", "nc")}'
             print(cmd); os.system(cmd)
-        cmd = 'ncecat -O -h -4 -L 5 -u time -v Band1 %s/%s* nc/%s.nc' % (ncdir, fname, fname)
+        cmd = f'ncecat -O -h -4 -L 5 -u time -v Band1 {ncdir}/{fname}* nc/{fname}.nc'
         print(cmd); os.system(cmd)
-        cmd = 'ncrename -v Band1,%s nc/%s.nc' % (v, fname)
+        cmd = f'ncrename -v Band1,{v} nc/{fname}.nc'
         print(cmd); os.system(cmd)
         times = ','.join(['%s' % i for i in range(len(bilfiles))])
-        cmd = 'ncap2 -O -s "time[time]={%s}" nc/%s.nc nc/%s.nc' % (times, fname, fname)
+        cmd = f'ncap2 -O -s "time[time]={{{times}}}" nc/{fname}.nc nc/{fname}.nc'
         print(cmd); os.system(cmd)
         if ptype=='recent':
-            cmd = 'ncatted -a units,time,o,c,"days since %s-01-01" nc/%s.nc' % (y, fname)
+            cmd = f'ncatted -a units,time,o,c,"days since {y}-01-01" nc/{fname}.nc'
         elif ptype=='provisional':
-            cmd = 'ncatted -a units,time,o,c,"days since %s-%s-01" nc/%s.nc' % (y, m, fname)
+            cmd = f'ncatted -a units,time,o,c,"days since {y}-{m}-01" nc/{fname}.nc'
         print(cmd); os.system(cmd)
-        cmd = 'rm -f %s/%s* %s/%s*' %(ncdir, fname, bildir, fname)
+        cmd = f'rm -f {ncdir}/{fname}* {bildir}/{fname}*'
         print(cmd); os.system(cmd)
 
     os.chdir('..')
@@ -133,12 +134,12 @@ def update_prisms():
         os.chdir(ptype)
 
         # find the last nc file
-        ncfiles = glob('nc/PRISM_tmean_%s_4kmD2_*.nc' % prod)
+        ncfiles = glob(f'nc/PRISM_tmean_{prod}_4kmD2_*.nc')
         ncfiles.sort()
         f = nc.Dataset(ncfiles[-1], 'r')
         last_day = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
         f.close()
-        print('Last day of PRISM-%s: %s, latest (assumed) available is %s' % (prod, last_day.isoformat(), latest.isoformat()))
+        print(f'Last day of PRISM-{prod}: {last_day:%Y-%m-%d}, latest (assumed) available is {latest:%Y-%m-%d}')
         
         next_day = last_day + timedelta(days=1)
         while next_day<=latest:
@@ -151,33 +152,33 @@ def update_prisms():
             for v in vs:
                 
                 if ptype=='recent':
-                    cmd = 'wget "%s?type=all_year&range=daily&kind=recent&elem=%s&temporal=%s0101" -O zip/%s_%s.zip' % (httpspath, v, y, v, y)
+                    cmd = f'wget "{httpspath}?type=all_year&range=daily&kind=recent&elem={v}&temporal={y}0101" -O zip/{v}_{y}.zip'
                 elif ptype=='provisional':
-                    cmd = 'wget "%s?type=all_bil&range=daily&kind=6months&elem=%s&temporal=%s01&year=%s" -O zip/%s_%s.zip' % (httpspath, v, m, y, v, ts)
+                    cmd = f'wget "{httpspath}?type=all_bil&range=daily&kind=6months&elem={v}&temporal={m}01&year={y}" -O zip/{v}_{ts}.zip'
                 print(cmd); os.system(cmd)
     
             for v in vs:
-                cmd = 'unzip -o -q -d %s zip/%s_%s.zip' % (bildir, v, ts)
+                cmd = f'unzip -o -q -d {bildir} zip/{v}_{ts}.zip'
                 print(cmd); os.system(cmd)
-                fname = 'PRISM_%s_%s_4kmD2_%s' % (v, prod, ts)
-                bilfiles = glob('%s/%s*.bil' % (bildir, fname))
+                fname = f'PRISM_{v}_{prod}_4kmD2_{ts}'
+                bilfiles = glob(f'{bildir}/{fname}*.bil')
                 bilfiles.sort()
                 for f in bilfiles:
-                    cmd = 'gdal_translate -of netcdf %s %s' % (f, f.replace('bil', 'nc'))
+                    cmd = f'gdal_translate -of netcdf {f} {f.replace("bil", "nc")}'
                     print(cmd); os.system(cmd)
-                cmd = 'ncecat -O -h -4 -L 5 -u time -v Band1 %s/%s* nc/%s.nc' % (ncdir, fname, fname)
+                cmd = f'ncecat -O -h -4 -L 5 -u time -v Band1 {ncdir}/{fname}* nc/{fname}.nc'
                 print(cmd); os.system(cmd)
-                cmd = 'ncrename -v Band1,%s nc/%s.nc' % (v, fname)
+                cmd = f'ncrename -v Band1,{v} nc/{fname}.nc'
                 print(cmd); os.system(cmd)
                 times = ','.join(['%s' % i for i in range(len(bilfiles))])
-                cmd = 'ncap2 -O -s "time[time]={%s}" nc/%s.nc nc/%s.nc' % (times, fname, fname)
+                cmd = f'ncap2 -O -s "time[time]={{{times}}}" nc/{fname}.nc nc/{fname}.nc'
                 print(cmd); os.system(cmd)
                 if ptype=='recent':
-                    cmd = 'ncatted -a units,time,o,c,"days since %s-01-01" nc/%s.nc' % (y, fname)
+                    cmd = f'ncatted -a units,time,o,c,"days since {y}-01-01" nc/{fname}.nc'
                 elif ptype=='provisional':
-                    cmd = 'ncatted -a units,time,o,c,"days since %s-%s-01" nc/%s.nc' % (y, m, fname)
+                    cmd = f'ncatted -a units,time,o,c,"days since {y}-{m}-01" nc/{fname}.nc'
                 print(cmd); os.system(cmd)
-                cmd = 'rm -f %s/%s* %s/%s*' %(ncdir, fname, bildir, fname)
+                cmd = f'rm -f {ncdir}/{fname}* {bildir}/{fname}*'
                 print(cmd); os.system(cmd)
 
             next_day += step

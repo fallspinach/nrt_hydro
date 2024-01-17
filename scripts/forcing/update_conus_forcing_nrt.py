@@ -10,11 +10,11 @@ import process_stage4_realtime
 import process_hrrr_analysis
 
 ## some setups
-workdir   = config['base_dir'] + '/scripts/forcing'
-logdir    = config['base_dir'] + '/forcing/log'
-stg4_path = config['base_dir'] + '/forcing/stage4'                      # path to Stage IV files
-nld2_path = config['base_dir'] + '/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
-hrrr_path = config['base_dir'] + '/forcing/hrrr/analysis'               # path to HRRR analysis
+workdir   = f'{config["base_dir"]}/scripts/forcing'
+logdir    = f'{config["base_dir"]}/forcing/log'
+stg4_path = f'{config["base_dir"]}/forcing/stage4'                      # path to Stage IV files
+nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+hrrr_path = f'{config["base_dir"]}/forcing/hrrr/analysis'               # path to HRRR analysis
 
 prodtype = 'nrt'
 
@@ -38,15 +38,15 @@ def main(argv):
 
     os.chdir(workdir)
 
-    last_st4a = find_last_time(stg4_path+'/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
-    last_st4r = find_last_time(stg4_path+'/realtime/pcpanl.????????/st4_conus.??????????.01h.nc', 'st4_conus.%Y%m%d%H.01h.nc')
-    last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
-    last_hrrr = find_last_time(hrrr_path+'/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')
+    last_st4a = find_last_time(f'{stg4_path}/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
+    last_st4r = find_last_time(f'{stg4_path}/realtime/pcpanl.????????/st4_conus.??????????.01h.nc', 'st4_conus.%Y%m%d%H.01h.nc')
+    last_nld2 = find_last_time(f'{nld2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
+    last_hrrr = find_last_time(f'{hrrr_path}/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')
     
-    print('Last Stage-IV archive:  %s' % (last_st4a.isoformat()))
-    print('Last Stage-IV realtime: %s' % (last_st4r.isoformat()))
-    print('Last NLDAS-2 data:      %s' % (last_nld2.isoformat()))
-    print('Last HRRR analysis:     %s' % (last_hrrr.isoformat()))
+    print(f'Last Stage-IV archive:  {last_st4a:%Y-%m-%dT%H}')
+    print(f'Last Stage-IV realtime: {last_st4r:%Y-%m-%dT%H}')
+    print(f'Last NLDAS-2 data:      {last_nld2:%Y-%m-%dT%H}')
+    print(f'Last HRRR analysis:     {last_hrrr:%Y-%m-%dT%H}')
     
     #cmd0 = 'sbatch --export=NONE -A cwp101 -p shared -n 12 '
     #cmd1 = 'sbatch --export=NONE -A cwp101 -p compute -N 1 '
@@ -57,35 +57,32 @@ def main(argv):
     
     # NLDAS-2 + Stage-IV archive update
     t1 = last_st4a - timedelta(hours=47); t2 = last_st4a
-    cmd = '%s -t 00:40:00 -J nld2st4a --wrap="%s %s %s %s" -o %s/nld2st4a_%s_%s.txt' % (cmd0, cmd2, t1.strftime('%Y%m%d%H'),
-            t2.strftime('%Y%m%d%H'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd0} -t 00:40:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid1 = ret.decode().split(' ')[-1].rstrip()
-    print('NLDAS-2 + StageIV archive forcing job ID is: '+jid1)
+    print(f'NLDAS-2 + StageIV archive forcing job ID is: {jid1}')
 
     # NLDAS-2 + Stage-IV realtime until end of NLDAS-2
     t1 = last_st4a + timedelta(hours=1); t2 = last_nld2
-    cmd = '%s -t 00:40:00 -J nld2st4r --wrap="%s %s %s %s" -o %s/nld2st4r_%s_%s.txt' % (cmd0, cmd2, t1.strftime('%Y%m%d%H'),
-            t2.strftime('%Y%m%d%H'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd0} -t 00:40:00 -J nld2st4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid2 = ret.decode().split(' ')[-1].rstrip()
-    print('NLDAS-2 + StageIV realtime forcing job ID is: '+jid2)
+    print(f'NLDAS-2 + StageIV realtime forcing job ID is: {jid2}')
 
     # HRRR + Stage-IV until end of HRRR analysis
     t1 = last_nld2 + timedelta(hours=1); t2 = last_hrrr
-    cmd = '%s -t 00:40:00 -J hrrrst4r --wrap="%s %s %s %s" -o %s/hrrrst4r_%s_%s.txt' % (cmd0, cmd2, t1.strftime('%Y%m%d%H'),
-            t2.strftime('%Y%m%d%H'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd0} -t 00:40:00 -J hrrrst4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/hrrrst4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid3 = ret.decode().split(' ')[-1].rstrip()
-    print('HRRR + StageIV realtime forcing job ID is: '+jid3)
+    print(f'HRRR + StageIV realtime forcing job ID is: {jid3}')
     
     # merge hourly files to daily and subset/reproject
     t1 = last_st4a - timedelta(hours=47); t2 = last_hrrr
-    cmd = '%s -d afterok:%s:%s:%s -t 02:20:00 -J mergesub --wrap="%s %s %s %s"  -o %s/mergesub_%s_%s.txt' % (cmd1, jid1, jid2, jid3, cmd3,
-            t1.strftime('%Y%m%d'), t2.strftime('%Y%m%d'), prodtype, logdir, t1.strftime('%Y%m%d%H'), t2.strftime('%Y%m%d%H')); print(cmd)
+    cmd = f'{cmd1} -d afterok:{jid1}:{jid2}:{jid3} -t 02:20:00 -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()
-    print('Mergetime and subset forcing job ID is: '+jid4)
+    print(f'Mergetime and subset forcing job ID is: {jid4}')
     
     return 0
 
