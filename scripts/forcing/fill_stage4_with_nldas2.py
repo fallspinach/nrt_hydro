@@ -11,7 +11,7 @@ import run_cmd_in_time_mpi
 
 
 ## some setups
-workdir  = config['base_dir'] + '/forcing/stage4'
+workdir  = f'{config["base_dir"]}/forcing/stage4'
 
 cdocmd1 = 'cdo -f nc4 -z zip -setrtomiss,-1000,-1 -expr,"apcpsfc=((apcpsfc>-1))?apcpsfc:nldas2" -merge -setmisstoc,-100 archive/%Y/st4n2_%Y%m%d.nc -chname,apcpsfc,nldas2 -remap,latlon_conus_0.04deg.txt,nldas2_to_0.04deg_weight.nc -selname,apcpsfc ../nldas2/NLDAS_FORA0125_H.002/%Y/NLDAS_FORA0125_H.A%Y%m%d.002.nc filled_with_nldas2/%Y/st4nl2_%Y%m%d.nc'
 

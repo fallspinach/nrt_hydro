@@ -15,7 +15,7 @@ from utilities import config, find_last_time
 
     
 ## some setups
-workdir  = config['base_dir'] + '/forcing/hrrr'
+workdir  = f'{config["base_dir"]}/forcing/hrrr'
 lockfile = 'hrrr.lock'
 
 hrrr_ncep_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/'
@@ -33,10 +33,10 @@ def main(argv):
     
     # simple file to avoid running multiple instances of this code
     if os.path.isfile(lockfile):
-        print('%s is exiting: another copy of the program is running.' % os.path.basename(__file__))
+        print(f'{os.path.basename(__file__)} is exiting: another copy of the program is running.')
         #return 1
     else:
-        #os.system('touch '+lockfile)
+        #os.system(f'touch {lockfile}')
         pass
     
     # keep the time
@@ -56,9 +56,9 @@ def main(argv):
 
     # find last file on server
     last_anal = find_last_hrrr_anal()
-    print('Last HRRR analysis time: %s' % last_anal.isoformat())
+    print(f'Last HRRR analysis time: {last_anal:%Y-%m-%dT%H}')
 
-    timeout = 'timeout 10m '
+    timeout = 'timeout 10m'
 
     if last_nc + timedelta(hours=1) < back_day:
         t1 = back_day
@@ -74,63 +74,63 @@ def main(argv):
     t = t1
     while t <= t2:
 
-        fullurl = hrrr_aws_url + t.strftime('hrrr.%Y%m%d/conus/hrrr.t%Hz.wrfsfcf00.grib2')
-        cmd = 'get_inv.pl %s.idx | grep -e DLWRF -e DSWRF | get_grib.pl %s tmp15.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
-        cmd = 'get_inv.pl %s.idx | grep -e "PRES:surface" | get_grib.pl %s tmp11.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
-        cmd = 'get_inv.pl %s.idx | grep -e "TMP:2 m"      | get_grib.pl %s tmp12.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
-        cmd = 'get_inv.pl %s.idx | grep -e "UGRD:10 m" -e "VGRD:10 m" | get_grib.pl %s tmp14.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
-        cmd = 'get_inv.pl %s.idx | grep -e SPFH           | get_grib.pl %s tmp13.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
+        fullurl = f'{hrrr_aws_url}hrrr.{t:%Y%m%d}/conus/hrrr.t{t:%H}z.wrfsfcf00.grib2'
+        cmd = f'get_inv.pl {fullurl}.idx | grep -e DLWRF -e DSWRF | get_grib.pl {fullurl} tmp15.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
+        cmd = f'get_inv.pl {fullurl}.idx | grep -e "PRES:surface" | get_grib.pl {fullurl} tmp11.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
+        cmd = f'get_inv.pl {fullurl}.idx | grep -e "TMP:2 m"      | get_grib.pl {fullurl} tmp12.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
+        cmd = f'get_inv.pl {fullurl}.idx | grep -e "UGRD:10 m" -e "VGRD:10 m" | get_grib.pl {fullurl} tmp14.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
+        cmd = f'get_inv.pl {fullurl}.idx | grep -e SPFH           | get_grib.pl {fullurl} tmp13.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
         cmd = 'cat tmp1?.grb2 > tmp1.grb2; rm -f tmp1?.grb2'
         print(cmd); os.system(cmd)
 
         t0 = t - timedelta(hours=1)
-        fullurl = hrrr_aws_url + t0.strftime('hrrr.%Y%m%d/conus/hrrr.t%Hz.wrfsfcf01.grib2')
-        cmd = 'get_inv.pl %s.idx | grep PRATE | get_grib.pl %s tmp0.grb2' % (fullurl, fullurl)
-        print(cmd); os.system(timeout+cmd)
+        fullurl = f'{hrrr_aws_url}hrrr.{t0:%Y%m%d}/conus/hrrr.t{t0:%H}z.wrfsfcf01.grib2'
+        cmd = f'get_inv.pl {fullurl}.idx | grep PRATE | get_grib.pl {fullurl} tmp0.grb2'
+        print(cmd); os.system(f'{timeout} {cmd}')
         cmd = 'cat tmp1.grb2 tmp0.grb2 > tmp2.grb2'
         print(cmd); os.system(cmd)
 
-        fout = 'analysis/%s/hrrr_anal_%s.grb2' % (t.strftime('%Y%m%d'), t.strftime('%Y%m%d%H'))
+        fout = f'analysis/{t:%Y%m%d}/hrrr_anal_{t:%Y%m%d%H}.grb2'
         dout = os.path.dirname(fout)
         if not os.path.isdir(dout):
-            os.system('mkdir -p '+dout)
-        cmd = 'wgrib2 tmp2.grb2 | grep -v "TMP:surface" | wgrib2 -i tmp2.grb2 -grib %s' % (fout)
+            os.system(f'mkdir -p {dout}')
+        cmd = f'wgrib2 tmp2.grb2 | grep -v "TMP:surface" | wgrib2 -i tmp2.grb2 -grib {fout}'
         print(cmd); os.system(cmd)
         cmd = 'rm -f tmp?.grb2 wget-log*'
         print(cmd); os.system(cmd)
         
         # check data integrity
-        cmd = 'wgrib2 %s | wc -l' % (fout)
+        cmd = f'wgrib2 {fout} | wc -l'
         ret = subprocess.check_output([cmd], shell=True)
         nrecs = ret.decode().split(' ')[-1].rstrip()
         
         if nrecs=='8':
-            print('%s is successfully retrieved.' % (fout))
+            print(f'{fout} is successfully retrieved.')
             fnc = fout.replace('grb2', 'nc')
-            cmd = '%s %s %s' % (cdocmd, fout, fnc)
+            cmd = f'{cdocmd} {fout} {fnc}'
             print(cmd); os.system(cmd)
-            cmd = '%s %s %s4' % (ncocmd, fnc, fnc)
+            cmd = f'{ncocmd} {fnc} {fnc}4'
             print(cmd); os.system(cmd)
-            cmd = '/bin/mv %s4 %s' % (fnc, fnc)
+            cmd = f'/bin/mv {fnc}4 {fnc}'
             print(cmd); os.system(cmd)
-            cmd = '/bin/rm -f %s' % (fout)
+            cmd = f'/bin/rm -f {fout}'
             print(cmd); os.system(cmd)
 
             t = t + timedelta(hours=1)
         else:
-            print('%s will be retried in 1 minute.' % (fout))
+            print(f'{fout} will be retried in 1 minute.')
 
         time.sleep(6)
 
     time_finish = time.time()
-    print('Total download/process time %.1f seconds' % (time_finish-time_start))
+    print(f'Total download/process time {time_finish-time_start:.1f} seconds')
     
-    os.system('/bin/rm -f '+lockfile)
+    os.system(f'/bin/rm -f {lockfile}')
     
     return 0
 

@@ -8,12 +8,10 @@ basedir=".."
 * time step size,  hours
 step=1
 
-* flag to shift time stamp by 1 hour:
+* flag to shift time stamp by 1 hour: deprecated now DO NOT USE
 * All input products have the file name time-stamped at the end of the hour,
 * i.e. the 01z file has the mean flux/accumulation from 00z to 01z
-* Here we re-stamp it with the starting time of the accumulation period, i.e. 1-hour shift backward
-*flag_shift=1
-flag_shift=0
+*flag_shift=0
 
 * flag to rescale Stage IV daily total P and to offset mean T against PRISM
 * we do it when PRISM "recent history" version is available
@@ -88,7 +86,6 @@ endif
 
 * Gap filled Stage IV
 'xdfopen 'basedir'/stage4/st4nl2.ctl'
-'xdfopen 'basedir'/stage4/st4nl2_daily.ctl'
 
 * PRISM
 'xdfopen 'basedir'/prism/recent/prism_ppt_recent.ctl'
@@ -117,18 +114,31 @@ debug=0
 
 t=t1
 while (t<=t2)
+
+*   PRISM daily precipitation is 12z to 12z, end-time labeled, thus 11 hours behind NLDAS-2/Stage-4
+*   to match PRISM, 12z and before is yesterday
+    'set t 't+11
+    tstampp=dtime()
+    curdatep = substr(tstampp, 1, 8)
+    'set t 't-13
+    tstampp=dtime()
+    prvdatep = substr(tstampp, 1, 8)
     
-    'set t 't-1
-    tstamp2=dtime()
+
+*   PRISM daily temperature is 12z to 12z, end-time labeled, thus 12 hours behind NLDAS-2
+*   to match PRISM, 11z and before is yesterday
+    'set t 't+12
+    tstampt=dtime()
+    curdatet = substr(tstampt, 1, 8)
+    'set t 't-12
+    tstampt=dtime()
+    prvdatet = substr(tstampt, 1, 8)
     
     'set t 't
     tstamp1=dtime()
     
-    if (flag_shift=1)
-        tstamp=tstamp2
-    else
-        tstamp=tstamp1
-    endif
+*   Always follow NCEP conventions on timestamping
+    tstamp=tstamp1
     
     say "Input file timestamp "tstamp1"; Forcing file timestamp "tstamp
     
@@ -139,16 +149,14 @@ while (t<=t2)
 
     if (prismp_flag=1)
     
-*       determine the date, for precipitation, 00z is yesterday, so we use tstamp2
-        curdatep = substr(tstamp2, 1, 8)
-    
         if (curdatep!=lstdatep)
 
-            dstr = gradsdate(curdatep)
-*            say dstr
-        
-            'define st42med=apcpsfc.3(time='dstr')'
-            'define prsmmed=re(ppt.4(time='dstr'), 'reme')'
+            dstr1 = gradsdate(prvdatep)
+            dstr2 = gradsdate(curdatep)
+            say "P averaging from 13z"dstr1" to 12z"dstr2
+
+            'define st42med=sum(apcpsfc.2, time=13z'dstr1', time=12z'dstr2')'
+            'define prsmmed=re(ppt.3(time='dstr2'), 'reme')'
             
 *           we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
             'define fscme=maskout(prsmmed/st42med, st42med-'mindaily')'
@@ -178,21 +186,19 @@ while (t<=t2)
     'define tmpls=tmplo-demlo*('lapse')'
 
     if (prismt_flag=1)
-    
-*       determine the date, for temperature, 00z is today, so we use tstamp1
-        curdatet = substr(tstamp1, 1, 8)
-    
+        
         if (curdatet!=lstdatet)
 
-            dstr = gradsdate(curdatet)
-*            say dstr
+            dstr1 = gradsdate(prvdatet)
+            dstr2 = gradsdate(curdatet)
+            say "T averaging from 12z"dstr1" to 11z"dstr2
         
-            'define tnl2lod=ave(tmp2m.1, time=00z'dstr', time=23z'dstr')'
+            'define tnl2lod=ave(tmp2m.1, time=12z'dstr1', time=11z'dstr2')'
             'define tnl2lsd=tnl2lod-demlo*('lapse')'
             'define tnl2msd=re(nfill(tnl2lsd,lat,'buff'), 'reme', bl)'
             'define tnl2med=tnl2msd+demme*('lapse')'
-            'define tprsmed=re(tmean.5(time='dstr')+273.15, 'reme')'
-*           we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
+            'define tprsmed=re(tmean.4(time='dstr2')+273.15, 'reme')'
+*           calculate offset
             'define offme=const(tprsmed-tnl2med, 0, -u)'
         
             'set gxout stat'

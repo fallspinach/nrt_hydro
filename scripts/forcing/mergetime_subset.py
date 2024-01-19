@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/ut
 from utilities import config, find_last_time
 
 ## some setups
-workdir   = config['base_dir'] + '/forcing/nwm'
+workdir   = f'{config["base_dir"]}/forcing/nwm'
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -35,39 +35,40 @@ def main(argv):
 
     for t in alltimes[rank::size]:
 
-        fsrc = t.strftime('0.01deg/%Y/%Y%m/%Y%m%d??.LDASIN_DOMAIN1')
-        fout = t.strftime('0.01deg/%Y/%Y%m/%Y%m%d.LDASIN_DOMAIN1')
+        fsrc = f'0.01deg/{t:%Y/%Y%m/%Y%m%d}??.LDASIN_DOMAIN1'
+        fout = f'0.01deg/{t:%Y/%Y%m/%Y%m%d}.LDASIN_DOMAIN1'
         if prodtype == 'nrt':
-            cmd = 'cdo -O -f nc4 -z zip mergetime %s %s' % (fsrc, fout)
+            cmd = f'cdo -O -f nc4 -z zip mergetime {fsrc} {fout}'
         else:
-            cmd = 'cdo -O -f nc4 -z zip mergetime %s %s; /bin/rm -f %s' % (fsrc, fout, fsrc)
+            cmd = f'cdo -O -f nc4 -z zip mergetime {fsrc} {fout}; /bin/rm -f {fsrc}'
         print(cmd); os.system(cmd)
 
         fsrc = fout
         cdocmd = 'cdo -f nc4 -z zip remap,domain/scrip_conus_bilinear.nc,domain/cdo_weights_conus.nc'
-        fout = '1km/conus/%s/%s' % (prodtype, t.strftime('%Y/%Y%m%d.LDASIN_DOMAIN1'))
+        fout = f'1km/conus/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
         dout = os.path.dirname(fout)
         if not os.path.isdir(dout):
-            os.system('mkdir -p '+dout)
+            os.system(f'mkdir -p {dout}')
         if prodtype == 'nrt':
-            cmd = '%s %s %s' % (cdocmd, fsrc, fout)
+            cmd = f'{cdocmd} {fsrc} {fout}' 
         else:
-            cmd = '%s %s %s; /bin/rm -f %s' % (cdocmd, fsrc, fout, fsrc)
+            #cmd = f'{cdocmd} {fsrc} {fout}; /bin/rm -f {fsrc}'
+            cmd = f'{cdocmd} {fsrc} {fout}' 
         print(cmd); os.system(cmd)
 
         fsrc = fout
         for region in config['forcing']['regions']:
             
-            with open('domain/cdo_indexbox_%s.txt' % region, 'r') as f:
+            with open(f'domain/cdo_indexbox_{region}.txt', 'r') as f:
                 indexbox = f.read().rstrip()
-            cdocmd = 'cdo -f nc4 -z zip add -selindexbox,%s' % indexbox
+            cdocmd = f'cdo -f nc4 -z zip add -selindexbox,{indexbox}'
             
-            fout = '1km/%s/%s/%s' % (region, prodtype, t.strftime('%Y/%Y%m%d.LDASIN_DOMAIN1'))
+            fout = f'1km/{region}/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             dout = os.path.dirname(fout)
             if not os.path.isdir(dout):
-                os.system('mkdir -p '+dout)
+                os.system(f'mkdir -p {dout}')
                 
-            cmd = '%s %s domain/xmask0_%s.nc %s' % (cdocmd, fsrc, region, fout)
+            cmd = f'{cdocmd} {fsrc} domain/xmask0_{region}.nc {fout}'
             print(cmd); os.system(cmd)
 
     comm.Barrier()

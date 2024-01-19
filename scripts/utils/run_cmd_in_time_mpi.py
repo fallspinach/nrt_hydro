@@ -33,7 +33,7 @@ def main(argv):
         time1 = datetime.strptime(argv[1], '%Y')
         time2 = datetime.strptime(argv[2], '%Y')
     else:
-        print('Usage: mpirun -np [num_of_procs] python %s [hourly|daily|monthly|yearly] [time_start] [time_end] [cmd_template_1] [cmd_template_2] ...' % sys.argv[0])
+        print(f'Usage: mpirun -np [num_of_procs] python {os.path.basename(sys.argv[0])} [hourly|daily|monthly|yearly] [time_start] [time_end] ["cmd_template_1"] ["cmd_template_2"] ...')
         sys.exit(1)
         
     #basecmd = argv[3]

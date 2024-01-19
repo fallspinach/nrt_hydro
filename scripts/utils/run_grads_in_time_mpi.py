@@ -31,7 +31,7 @@ def main(argv):
         time1 = datetime.strptime(argv[1], '%Y')
         time2 = datetime.strptime(argv[2], '%Y')
     else:
-        print('Usage: mpirun -np [num_of_procs] python %s [hourly|daily|monthly|yearly] [time_start] [time_end] [grads_script]' % sys.argv[0])
+        print(f'Usage: mpirun -np [num_of_procs] python {os.path.basename(sys.argv[0])} [hourly|daily|monthly|yearly] [time_start] [time_end] [grads_script]')
         sys.exit(1)
 
     gs = argv[3]
@@ -55,7 +55,7 @@ def main(argv):
         tg1 = alltimes[t1].strftime('%Hz%d%b%Y')
         tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
 
-        cmd = 'opengrads -lbc "%s %s %s"' % (gs, tg1, tg2)
+        cmd = f'opengrads -lbc "{gs} {tg1} {tg2}"'
         print(cmd); os.system(cmd)
 
     comm.Barrier()

@@ -39,9 +39,9 @@ def main(argv):
     last_prod = find_last_time(f'{nwm_path}/1km/conus/retro/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
     last_stnl = find_last_time(f'{stnl_path}/????/st4nl2_????????.nc', 'st4nl2_%Y%m%d.nc') - timedelta(days=1)
     
-    print('Last PRISM "recent history" data:  %s' % (last_prsm.isoformat()))
-    print('Last StageIV/NLDAS2 merged precip: %s' % (last_stnl.isoformat()))
-    print('Last retro forcing file:           %s' % (last_prod.isoformat()))
+    print(f'Last PRISM "recent history" data:  {last_prsm:%Y-%m-%dT%H}')
+    print(f'Last StageIV/NLDAS2 merged precip: {last_stnl:%Y-%m-%dT%H}')
+    print(f'Last retro forcing file:           {last_prod:%Y-%m-%dT%H}')
 
     if len(argv)==2:
         t1 = datetime.strptime(argv[0], '%Y%m%d%H')
@@ -61,7 +61,7 @@ def main(argv):
 
     if last_stnl<last_prsm:
         
-        print('PRISM (%s) is newer than StageIV-NLDAS2 merged (%s) - bring the latter up to date first.' % (last_prsm.isoformat(), last_stnl.isoformat()))
+        print(f'PRISM ({last_prsm:%Y-%m-%dT%H}) is newer than StageIV-NLDAS2 merged ({last_stnl:%Y-%m-%dT%H}) - bring the latter up to date first.')
         
         tt1 = last_stnl + timedelta(days=1)
         tt2 = last_prsm + timedelta(days=1)
@@ -76,13 +76,7 @@ def main(argv):
         jid1 = ret.decode().split(' ')[-1].rstrip()
         print(f'StageIV & NLDAS-2 precip merging job ID is: {jid1}')
 
-        # Shifted daily average
-        cmd = f'{cmd11} -d afterok:{jid1} -t 00:20:00 -J shiftdai --wrap="{cmd33} {t1:%Y} {t2:%Y} {prodtype}" -o {logdir}/shifted_daily_{t1:%Y}_{t2:%Y}.txt'; print(cmd)
-        ret = subprocess.check_output([cmd], shell=True)
-        jid2 = ret.decode().split(' ')[-1].rstrip()
-        print(f'Shifted daily averaging job ID is: {jid2}')
-
-        dep = f'-d afterok:{jid2}'
+        dep = f'-d afterok:{jid1}'
 
     else:
         dep = ''
@@ -102,7 +96,7 @@ def main(argv):
     
     # merge hourly files to daily and subset/reproject
     trun = (datetime(1,1,1)+timedelta(minutes=ndays*3+10)).strftime('%H:%M:%S')
-    cmd = f'{cmd1} -d afterok:{jid3} -t {trun} -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_retro_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
+    cmd = f'{cmd0} -d afterok:{jid3} -t {trun} -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_retro_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()
     print(f'Mergetime and subset retro forcing job ID is: {jid4}')

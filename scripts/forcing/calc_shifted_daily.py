@@ -53,7 +53,7 @@ def main(argv):
         else:
             t2 = ndays-1
         t1 = 1 if y==1979 else 2
-        cmd = f'cdo -f nc4 -z zip -shifttime,-690minute -seltimestep,{t1:d}/{t2:d} -daysum -shifttime,-13hour -mergetime {fins} {fout}'
+        cmd = f'cdo -f nc4 -z zip -shifttime,-690minute -seltimestep,{t1:d}/{t2:d} -daysum -shifttime,+11hour -mergetime {fins} {fout}'
         print(cmd); os.system(cmd)
 
     comm.Barrier()
