@@ -52,8 +52,8 @@ def main(argv):
         if prodtype == 'nrt':
             cmd = f'{cdocmd} {fsrc} {fout}' 
         else:
-            #cmd = f'{cdocmd} {fsrc} {fout}; /bin/rm -f {fsrc}'
-            cmd = f'{cdocmd} {fsrc} {fout}' 
+            cmd = f'{cdocmd} {fsrc} {fout}; /bin/rm -f {fsrc}'
+            #cmd = f'{cdocmd} {fsrc} {fout}' 
         print(cmd); os.system(cmd)
 
         fsrc = fout

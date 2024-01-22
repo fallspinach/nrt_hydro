@@ -33,7 +33,7 @@ def main(argv):
     last_prsm = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
     last_prsm = last_prsm.replace(tzinfo=pytz.utc)
     f.close()
-    first_prsm = datetime(1981, 1, 1, tzinfo=pytz.utc)
+    first_prsm = datetime(1895, 1, 1, tzinfo=pytz.utc)
 
     # find last retro forcing in NWM format
     last_prod = find_last_time(f'{nwm_path}/1km/conus/retro/????/????????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')

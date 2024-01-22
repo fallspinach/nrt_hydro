@@ -8,6 +8,8 @@ basedir=".."
 * time step size,  hours
 step=1
 
+override_flag=0
+
 * flag to shift time stamp by 1 hour: deprecated now DO NOT USE
 * All input products have the file name time-stamped at the end of the hour,
 * i.e. the 01z file has the mean flux/accumulation from 00z to 01z
@@ -29,6 +31,7 @@ rv=455
 sb=5.67e-8
 pi=3.1415926535897384626
 
+minmonthly=1
 mindaily=0.4
 minhourly=0.2
 
@@ -78,7 +81,7 @@ say "Lores configuration: "relo
 year=substr(time1, strlen(time1)-3, 4)
 
 * NLDAS-2 as the backbone
-if (year<2023)
+if (year<2024)
     'xdfopen 'basedir'/nldas2/nldas2_retro.ctl'
 else
     'xdfopen 'basedir'/nldas2/nldas2_nrt.ctl'
@@ -88,8 +91,13 @@ endif
 'xdfopen 'basedir'/stage4/st4nl2.ctl'
 
 * PRISM
-'xdfopen 'basedir'/prism/recent/prism_ppt_recent.ctl'
-'xdfopen 'basedir'/prism/recent/prism_tmean_recent.ctl'
+if (year<1981)
+    ptype="historical"
+else
+    ptype="recent"
+endif
+'xdfopen 'basedir'/prism/'ptype'/prism_ppt_'ptype'.ctl'
+'xdfopen 'basedir'/prism/'ptype'/prism_tmean_'ptype'.ctl'
 
 'set lat 'lat1+resdhi/2' 'lat2-resdhi/2
 'set lon 'lon1+resdhi/2' 'lon2-resdhi/2
@@ -115,31 +123,63 @@ debug=0
 t=t1
 while (t<=t2)
 
-*   PRISM daily precipitation is 12z to 12z, end-time labeled, thus 11 hours behind NLDAS-2/Stage-4
-*   to match PRISM, 12z and before is yesterday
-    'set t 't+11
-    tstampp=dtime()
-    curdatep = substr(tstampp, 1, 8)
-    'set t 't-13
-    tstampp=dtime()
-    prvdatep = substr(tstampp, 1, 8)
+    if (ptype="recent")
     
+*       PRISM daily precipitation is 12z to 12z, end-time labeled, thus 11 hours behind NLDAS-2/Stage-4
+*       to match PRISM, 12z and before is yesterday
+        'set t 't+11
+        tstampp=dtime()
+        curdatep = substr(tstampp, 1, 8)
+        'set t 't-13
+        tstampp=dtime()
+        prvdatep = substr(tstampp, 1, 8)
+    
+*       PRISM daily temperature is 12z to 12z, end-time labeled, thus 12 hours behind NLDAS-2
+*       to match PRISM, 11z and before is yesterday
+        'set t 't+12
+        tstampt=dtime()
+        curdatet = substr(tstampt, 1, 8)
+        'set t 't-12
+        tstampt=dtime()
+        prvdatet = substr(tstampt, 1, 8)
 
-*   PRISM daily temperature is 12z to 12z, end-time labeled, thus 12 hours behind NLDAS-2
-*   to match PRISM, 11z and before is yesterday
-    'set t 't+12
-    tstampt=dtime()
-    curdatet = substr(tstampt, 1, 8)
-    'set t 't-12
-    tstampt=dtime()
-    prvdatet = substr(tstampt, 1, 8)
+    else
+    
+*       Match PRISM monthly precipitation and temperature
+*       ignore the 11-/12-hour difference at monthly scale because no monthly data available after 1980-12
+        'set t 't
+        tstampp=dtime()
+        curdatep = substr(tstampp, 1, 6)%"01"
+        nxtdatep = endofmon(curdatep)
+        curdatet = curdatep
+        nxtdatet = nxtdatep
+
+    endif
     
     'set t 't
     tstamp1=dtime()
     
 *   Always follow NCEP conventions on timestamping
     tstamp=tstamp1
-    
+
+    if (override_flag=0)
+        curryear=substr(tstamp, 1, 4)
+        currmonn=substr(tstamp, 5, 2)
+        fdir="0.01deg/"%curryear%"/"%curryear%currmonn
+        fout=fdir%"/"tstamp%".LDASIN_DOMAIN1"
+        'sdfopen 'fout
+        lin=sublin(result, 2)
+        ans=subwrd(lin, 1)
+        if (ans="SDF")
+            say fout%" exists and override is turned off, skipping."
+            'close 5'
+            t=t+step
+            continue
+        else
+            say fout%" doesn't exist, processing now."
+        endif
+    endif
+
     say "Input file timestamp "tstamp1"; Forcing file timestamp "tstamp
     
 *   For precipitation, use Stage IV-II gap-fill with NLDAS-2
@@ -151,16 +191,29 @@ while (t<=t2)
     
         if (curdatep!=lstdatep)
 
-            dstr1 = gradsdate(prvdatep)
-            dstr2 = gradsdate(curdatep)
-            say "P averaging from 13z"dstr1" to 12z"dstr2
+            if (ptype="recent")
+                dstr1 = gradsdate(prvdatep)
+                dstr2 = gradsdate(curdatep)
+                say "P summing from 13z"dstr1" to 12z"dstr2
 
-            'define st42med=sum(apcpsfc.2, time=13z'dstr1', time=12z'dstr2')'
-            'define prsmmed=re(ppt.3(time='dstr2'), 'reme')'
+                'define st42med=sum(apcpsfc.2, time=13z'dstr1', time=12z'dstr2')'
+                'define prsmmed=re(ppt.3(time='dstr2'), 'reme')'
             
-*           we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
-            'define fscme=maskout(prsmmed/st42med, st42med-'mindaily')'
-            'define fscme=const(fscme, 1, -u)'
+*               we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
+                'define fscme=maskout(prsmmed/st42med, st42med-'mindaily')'
+                'define fscme=const(fscme, 1, -u)'
+            else
+                dstr1 = gradsdate(curdatep)
+                dstr2 = gradsdate(nxtdatep)
+                say "P summing from 00z"dstr1" to 23z"dstr2
+
+                'define st42mem=sum(apcpsfc.2, time=00z'dstr1', time=23z'dstr2')'
+                'define prsmmem=re(ppt.3(time='dstr1'), 'reme')'
+            
+*               we do not rescale if Stage IV is zero or below certain daily minimum because (1) impossible to rescale zero (2) scaling factor may be too high
+                'define fscme=maskout(prsmmem/st42mem, st42mem-'minmonthly')'
+                'define fscme=const(fscme, 1, -u)'
+            endif
         
             'set gxout stat'
             'd fscme'
@@ -189,18 +242,32 @@ while (t<=t2)
         
         if (curdatet!=lstdatet)
 
-            dstr1 = gradsdate(prvdatet)
-            dstr2 = gradsdate(curdatet)
-            say "T averaging from 12z"dstr1" to 11z"dstr2
+            if (ptype="recent")
+                dstr1 = gradsdate(prvdatet)
+                dstr2 = gradsdate(curdatet)
+                say "T averaging from 12z"dstr1" to 11z"dstr2
         
-            'define tnl2lod=ave(tmp2m.1, time=12z'dstr1', time=11z'dstr2')'
-            'define tnl2lsd=tnl2lod-demlo*('lapse')'
-            'define tnl2msd=re(nfill(tnl2lsd,lat,'buff'), 'reme', bl)'
-            'define tnl2med=tnl2msd+demme*('lapse')'
-            'define tprsmed=re(tmean.4(time='dstr2')+273.15, 'reme')'
-*           calculate offset
-            'define offme=const(tprsmed-tnl2med, 0, -u)'
+                'define tnl2lod=ave(tmp2m.1, time=12z'dstr1', time=11z'dstr2')'
+                'define tnl2lsd=tnl2lod-demlo*('lapse')'
+                'define tnl2msd=re(nfill(tnl2lsd,lat,'buff'), 'reme', bl)'
+                'define tnl2med=tnl2msd+demme*('lapse')'
+                'define tprsmed=re(tmean.4(time='dstr2')+273.15, 'reme')'
+*               calculate offset
+                'define offme=const(tprsmed-tnl2med, 0, -u)'
+            else
+                dstr1 = gradsdate(curdatet)
+                dstr2 = gradsdate(nxtdatet)
+                say "T averaging from 00z"dstr1" to 23z"dstr2
         
+                'define tnl2lom=ave(tmp2m.1, time=00z'dstr1', time=23z'dstr2')'
+                'define tnl2lsm=tnl2lom-demlo*('lapse')'
+                'define tnl2msm=re(nfill(tnl2lsm,lat,'buff'), 'reme', bl)'
+                'define tnl2mem=tnl2msm+demme*('lapse')'
+                'define tprsmem=re(tmean.4(time='dstr1')+273.15, 'reme')'
+*               calculate offset
+                'define offme=const(tprsmem-tnl2mem, 0, -u)'
+            endif
+            
             'set gxout stat'
             'd abs(offme)'
             line=sublin(result, 8)
@@ -509,5 +576,30 @@ function gradsdate(args)
         i=i+1
     endwhile
     dstr = currday%currmon%curryear
+    
+return dstr
+
+function endofmon(args)
+
+    curdatep=subwrd(args, 1)
+    
+    monnums = "01 02 03 04 05 06 07 08 09 10 11 12"
+    monstrs = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC"
+    endmons = "31 28 31 30 31 30 31 31 30 31 30 31"
+    curryear=substr(curdatep, 1, 4)
+    currmonn=substr(curdatep, 5, 2)
+    currday=substr(curdatep, 7, 2)
+    i=1
+    while (i<=12)
+        monn=subwrd(monnums, i)
+        if (currmonn=monn)
+            endmon=subwrd(endmons, i)
+        endif
+        i=i+1
+    endwhile
+    if (math_mod(curryear, 4)=0&currmonn="02")
+        endmon=29
+    endif
+    dstr = curryear%currmonn%endmon
     
 return dstr

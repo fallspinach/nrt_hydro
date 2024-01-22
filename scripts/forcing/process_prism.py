@@ -46,9 +46,8 @@ def main(argv):
         if not os.path.isdir(d):
             os.system(f'mkdir -p {d}')
 
-    #update_prism('recent')
-    #update_prism('provisional')
     update_prisms()
+    #update_historical()
     
     time_finish = time.time()
     print(f'Total download/process time {(time_finish-time_start):.1f} seconds')
@@ -57,65 +56,6 @@ def main(argv):
 
     return 0
 
-
-def update_prism(ptype):
-
-    os.chdir(ptype)
-    if ptype=='recent':
-        prod = 'stable'
-    elif ptype=='provisional':
-        prod = 'provisional'
-
-    # find the last nc file
-    ncfiles = glob(f'nc/PRISM_tmean_{prod}_4kmD2_*.nc')
-    ncfiles.sort()
-    f = nc.Dataset(ncfiles[-1], 'r')
-    last_day = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
-    next_day = last_day + timedelta(days=1)
-    f.close()
-    y  = next_day.strftime('%Y')
-    m  = next_day.strftime('%m')
-    ym = next_day.strftime('%Y%m')
-
-    if ptype=='recent':
-        print(f'Last day of PRISM-recent: {last_day:%Y-%m-%d}, year to update: {next_day:%Y}')
-        ts = y
-    elif ptype=='provisional':
-        print(f'Last day of PRISM-provisional: {last_day:%Y-%m-%d}, year-month to update: {next_day:%Y-%m}')
-        ts = ym
-    
-    for v in vs:
-        if ptype=='recent':
-            cmd = f'wget "{httpspath}?type=all_year&range=daily&kind=recent&elem={v}&temporal={y}0101" -O zip/{v}_{y}.zip'
-        elif ptype=='provisional':
-            cmd = f'wget "{httpspath}?type=all_bil&range=daily&kind=6months&elem={v}&temporal={m}01&year={y}" -O zip/{v}_{ts}.zip'
-        print(cmd); os.system(cmd)
-    
-    for v in vs:
-        cmd = f'unzip -o -q -d {bildir} zip/{v}_{ts}.zip'
-        print(cmd); os.system(cmd)
-        fname = f'PRISM_{v}_{prod}_4kmD2_{ts}'
-        bilfiles = glob(f'{bildir}/{fname}*.bil')
-        bilfiles.sort()
-        for f in bilfiles:
-            cmd = f'gdal_translate -of netcdf {f} {f.replace("bil", "nc")}'
-            print(cmd); os.system(cmd)
-        cmd = f'ncecat -O -h -4 -L 5 -u time -v Band1 {ncdir}/{fname}* nc/{fname}.nc'
-        print(cmd); os.system(cmd)
-        cmd = f'ncrename -v Band1,{v} nc/{fname}.nc'
-        print(cmd); os.system(cmd)
-        times = ','.join(['%s' % i for i in range(len(bilfiles))])
-        cmd = f'ncap2 -O -s "time[time]={{{times}}}" nc/{fname}.nc nc/{fname}.nc'
-        print(cmd); os.system(cmd)
-        if ptype=='recent':
-            cmd = f'ncatted -a units,time,o,c,"days since {y}-01-01" nc/{fname}.nc'
-        elif ptype=='provisional':
-            cmd = f'ncatted -a units,time,o,c,"days since {y}-{m}-01" nc/{fname}.nc'
-        print(cmd); os.system(cmd)
-        cmd = f'rm -f {ncdir}/{fname}* {bildir}/{fname}*'
-        print(cmd); os.system(cmd)
-
-    os.chdir('..')
 
 def update_prisms():
 
@@ -185,6 +125,60 @@ def update_prisms():
 
         os.chdir('..')
 
+def update_historical():
+
+    ptypes  = ['historical']
+    prods   = ['stable']
+    tsfmts  = ['%Y']
+    latests = [datetime(1980, 1, 1)]
+    steps   = [relativedelta(years=1)]
+    
+    for ptype,prod,tsfmt,latest,step in zip(ptypes, prods, tsfmts, latests, steps):        
+        
+        os.chdir(ptype)
+        
+        next_day = datetime(1895, 1, 1)
+        while next_day<=latest:
+            
+            y  = next_day.strftime('%Y')
+            ts = next_day.strftime(tsfmt)
+            
+            for v in vs:
+                if ptype=='historical':
+                    cmd = f'wget "{httpspath}?type=all_bil&range=monthly&kind=historical&elem={v}&year={y}" -O zip/{v}_{y}.zip'
+                print(cmd); os.system(cmd)
+    
+            for v in vs:
+                cmd = f'unzip -o -q -d {bildir} zip/{v}_{ts}.zip'
+                print(cmd); os.system(cmd)
+                if v=='ppt':
+                    fname = f'PRISM_{v}_{prod}_4kmM2_{ts}'
+                else:
+                    fname = f'PRISM_{v}_{prod}_4kmM3_{ts}'
+                bilfiles = glob(f'{bildir}/{fname}??_bil.bil')
+                bilfiles.sort()
+                for f in bilfiles:
+                    cmd = f'gdal_translate -of netcdf {f} {f.replace("bil", "nc")}'
+                    print(cmd); os.system(cmd)
+                cmd = f'ncecat -O -h -4 -L 5 -u time -v Band1 {ncdir}/{fname}* nc/{fname}.nc'
+                print(cmd); os.system(cmd)
+                cmd = f'ncrename -v Band1,{v} nc/{fname}.nc'
+                print(cmd); os.system(cmd)
+                if (next_day.year % 4) == 0 and next_day.year != 1900:
+                    times = '0, 31,  60,  91, 121, 152, 182, 213, 244, 274, 305, 335'
+                else:
+                    times = '0, 31,  59,  90, 120, 151, 181, 212, 243, 273, 304, 334'
+                cmd = f'ncap2 -O -s "time[time]={{{times}}}" nc/{fname}.nc nc/{fname}.nc'
+                print(cmd); os.system(cmd)
+                if ptype=='historical':
+                    cmd = f'ncatted -a units,time,o,c,"days since {y}-01-01" nc/{fname}.nc'
+                print(cmd); os.system(cmd)
+                cmd = f'rm -f {ncdir}/{fname}* {bildir}/{fname}*'
+                print(cmd); os.system(cmd)
+
+            next_day += step
+
+        os.chdir('..')
     
 if __name__ == '__main__':
     main(sys.argv[1:])
