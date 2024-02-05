@@ -88,14 +88,14 @@ def main(argv):
     
     # retro forcing update
     ndays = (t2+timedelta(days=1)-t1).days
-    trun = (datetime(1,1,1)+timedelta(minutes=ndays*4+1)).strftime('%H:%M:%S')
+    trun = (datetime(1,1,1)+timedelta(minutes=ndays*9+1)).strftime('%H:%M:%S')
     cmd = f'{cmd0} {dep} -t {trun} -J retrof --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/retrof_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid3 = ret.decode().split(' ')[-1].rstrip()
     print(f'Retro forcing job ID is: {jid3}')
     
     # merge hourly files to daily and subset/reproject
-    trun = (datetime(1,1,1)+timedelta(minutes=ndays*3+10)).strftime('%H:%M:%S')
+    trun = (datetime(1,1,1)+timedelta(minutes=ndays*6+10)).strftime('%H:%M:%S')
     cmd = f'{cmd0} -d afterok:{jid3} -t {trun} -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_retro_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()

@@ -1,11 +1,13 @@
 from datetime import datetime
 import os, pytz, yaml
 from glob import glob
+import socket
 
 fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
+cluster = socket.getfqdn().split('.')[-3].split('-')[0]
 with open(fconfig, 'r') as f:
     config_all = yaml.safe_load(f)
-    config     = config_all[config_all['platform']]
+    config     = config_all[cluster]
 
 ## find the last file
 def find_last_time(glob_pattern, file_pattern):

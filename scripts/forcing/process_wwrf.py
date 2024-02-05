@@ -65,9 +65,9 @@ def main(argv):
     ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
     ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
-    for region in config['forcing']['regions']:
+    for domain in config['forcing']['domains']:
         
-        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{region}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{region}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
+        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
     
         t = latest_day + timedelta(hours=1)
         last_day = latest_day + timedelta(days=fcst_length)
@@ -75,7 +75,7 @@ def main(argv):
         alldays  = []
         while t <= last_day:
             fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
-            fnwm = f'{out_dir}/{region}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
+            fnwm = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
             if os.path.isfile(fww): # and not os.path.isfile(fnwm):
                 allsteps.append(t)
             if t.hour == 23:
@@ -92,14 +92,14 @@ def main(argv):
             fww   = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
             ftmp  = f'{tmpdir}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
             ftmp2 = f'{ftmp}.nc'
-            fnwm  = f'{out_dir}/{region}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
+            fnwm  = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
             if os.path.isfile(fww):
                 cmd = f'{cdocmd} {fww} {ftmp}'
                 #print(cmd)
                 os.system(cmd)
                 cmd = f'{ncocmd1} {ftmp} {ftmp2}'
                 os.system(cmd)
-                cmd = f'cdo -f nc4 -z zip add {ftmp2} ../nwm/domain/xmask0_{region}.nc {fnwm}'
+                cmd = f'cdo -f nc4 -z zip add {ftmp2} ../nwm/domain/xmask0_{domain}.nc {fnwm}'
                 os.system(cmd)
                 cmd = f'{ncocmd2} {fnwm}'
                 os.system(cmd)
@@ -109,14 +109,14 @@ def main(argv):
         comm.Barrier()
     
         for t in alldays[rank::size]:
-            fh = f'{out_dir}/{region}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
-            fd = f'{out_dir}/{region}/{t:%Y%m%d}.LDASIN_DOMAIN1'
+            fh = f'{out_dir}/{domain}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
+            fd = f'{out_dir}/{domain}/{t:%Y%m%d}.LDASIN_DOMAIN1'
             cmd = f'cdo -O -f nc4 -z zip mergetime {fh} {fd}'
             os.system(cmd)
     
         # delete hourly files older than 2 days
         old_day = latest_day - timedelta(days=2)
-        cmd = f'/bin/rm -f {out_dir}/{region}/{old_day:%Y%m%d}.LDASIN_DOMAIN1'
+        cmd = f'/bin/rm -f {out_dir}/{domain}/{old_day:%Y%m%d}.LDASIN_DOMAIN1'
         os.system(cmd)
     
     time_finish = time.time()

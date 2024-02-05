@@ -57,18 +57,18 @@ def main(argv):
         print(cmd); os.system(cmd)
 
         fsrc = fout
-        for region in config['forcing']['regions']:
+        for domain in config['forcing']['domains']:
             
-            with open(f'domain/cdo_indexbox_{region}.txt', 'r') as f:
+            with open(f'domain/cdo_indexbox_{domain}.txt', 'r') as f:
                 indexbox = f.read().rstrip()
             cdocmd = f'cdo -f nc4 -z zip add -selindexbox,{indexbox}'
             
-            fout = f'1km/{region}/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            fout = f'1km/{domain}/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             dout = os.path.dirname(fout)
             if not os.path.isdir(dout):
                 os.system(f'mkdir -p {dout}')
                 
-            cmd = f'{cdocmd} {fsrc} domain/xmask0_{region}.nc {fout}'
+            cmd = f'{cdocmd} {fsrc} domain/xmask0_{domain}.nc {fout}'
             print(cmd); os.system(cmd)
 
     comm.Barrier()

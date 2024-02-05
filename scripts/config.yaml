@@ -1,23 +1,67 @@
 
 ---
 
-# computing platform, e.g., comet, expanse
-platform: comet
-
+# computing cluster Comet
 comet:
 
     # platform wide specs
     base_dir:       /cw3e/mead/projects/cnt107/nrt_hydro
     cores_per_node: 24
+    modules:        'intel intelmpi netcdf'
     
     forcing:
-        # regions to process
-        regions:    ['cnrfc', 'cbrfc']
+        # domains to subset after conus
+        domains:    ['cnrfc', 'cbrfc']
         
     wrf_hydro:
-        nrt:
-            regions:    ['cnrfc', 'cbrfc']
+        conus:
+            partition: 'compute'
+            nnodes:     4
+            nprocs:    96
+            minperday:  9
+        cnrfc:
+            partition: 'compute'
+            nnodes:     1
+            nprocs:    24
+            minperday:  2
+        cbrfc:
+            partition: 'compute'
+            nnodes:     1
+            nprocs:    24
+            minperday:  2
         
+    obs:
+        # products to process
+        products:   ['modis']
+
+# computing cluster Expanse
+expanse:
+
+    # platform wide specs
+    base_dir:       /expanse/nfs/cw3e/cwp101/nrt_hydro
+    cores_per_node: 64
+    modules:        ''
+    
+    forcing:
+        # domains to subset after conus
+        domains:    ['cnrfc', 'cbrfc']
+        
+        conus:
+            partition: 'cw3e-compute'
+            nnodes:     1
+            nprocs:    64
+            minperday:  7.5
+        cnrfc:
+            partition: 'cw3e-shared'
+            nnodes:     0
+            nprocs:    24
+            minperday:  2
+        cbrfc:
+            partition: 'cw3e-shared'
+            nnodes:     0
+            nprocs:    24
+            minperday:  2
+
     obs:
         # products to process
         products:   ['modis']

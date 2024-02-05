@@ -68,10 +68,10 @@ def main(argv):
     
     #sys.exit("here")
 
-    for region in config['forcing']['regions']:
+    for domain in config['forcing']['domains']:
         
-        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{region}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{region}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
-        ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
+        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
+        ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/10800" '
         ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
         t = latest_day + timedelta(hours=1)
@@ -80,7 +80,7 @@ def main(argv):
         alldays  = []
         while t <= last_day:
             fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/ecm004/wrfcf_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
-            fnwm = f'{out_dir}/{region}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
+            fnwm = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
             if os.path.isfile(fww): # and not os.path.isfile(fnwm):
                 allsteps.append(t)
             if t.hour == 23:
@@ -103,7 +103,7 @@ def main(argv):
                 dtmp = os.path.dirname(ftmp)
                 if not os.path.isdir(dtmp):
                     os.system(f'mkdir -p {dtmp}')
-                fnwm = f'{out_dir}/{region}/{ens}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
+                fnwm = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
                 dnwm = os.path.dirname(fnwm)
                 if not os.path.isdir(dnwm):
                     os.system(f'mkdir -p {dnwm}')
@@ -115,27 +115,27 @@ def main(argv):
                     os.system(cmd)
                     cmd = f'{ncocmd2} {ftmp2}' 
                     os.system(cmd)
-                    cmd = f'cdo -f nc4 -z zip add {ftmp2} ../nwm/domain/xmask0_{region}.nc {fnwm}'
+                    cmd = f'cdo -f nc4 -z zip add {ftmp2} ../nwm/domain/xmask0_{domain}.nc {fnwm}'
                     os.system(cmd)
                     cmd = f'/bin/rm -f {ftmp} {ftmp2}'
                     os.system(cmd)
     
             for t in alldays:
             
-                fh = f'{out_dir}/{region}/{ens}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
+                fh = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
                 # repeat each hour 3 times to "fake" hourly data
                 fhs = glob(fh)
                 fhs.sort()
                 #print(fhs)
                 fh3 = ' '.join([ f+' '+f+' '+f for f in fhs])
-                fd = f'{out_dir}/{region}/{ens}/{t:%Y%m%d}.LDASIN_DOMAIN1'
+                fd = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d}.LDASIN_DOMAIN1'
                 cmd = f'cdo -O -f nc4 -z zip mergetime {fh3} {fd}'
                 os.system(cmd)
                 if True:
-                    fh4 = f'{out_dir}/{region}/{ens}/{t:%Y%m%d}[12]?.LDASIN_DOMAIN1'
+                    fh4 = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d}[12]?.LDASIN_DOMAIN1'
                     cmd = f'rm -f {fh4}'
                     os.system(cmd)
-                    fh4 = f'{out_dir}/{region}/{ens}/{t:%Y%m%d}0[369].LDASIN_DOMAIN1'
+                    fh4 = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d}0[369].LDASIN_DOMAIN1'
                     cmd = f'rm -f {fh4}'
                     os.system(cmd)
     
@@ -143,7 +143,7 @@ def main(argv):
         if rank==0:
             old_day = latest_day - timedelta(days=2)
             for ens in enss:
-                cmd = f'/bin/rm -f {out_dir}/{region}/{ens}/{old_day:%Y%m%d}??.LDASIN_DOMAIN1'
+                cmd = f'/bin/rm -f {out_dir}/{domain}/{ens}/{old_day:%Y%m%d}??.LDASIN_DOMAIN1'
                 os.system(cmd)
     
     #time_finish = time.time()
