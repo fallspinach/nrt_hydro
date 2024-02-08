@@ -18,7 +18,7 @@ comet:
             partition: 'compute'
             nnodes:     4
             nprocs:    96
-            minperday:  9
+            minperday:  7
         cnrfc:
             partition: 'compute'
             nnodes:     1
