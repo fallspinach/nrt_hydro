@@ -15,7 +15,7 @@ from utilities import config, find_last_time
 workdir  = f'{config["base_dir"]}/forcing/prism'
 lockfile = 'prism.lock'
 
-bildir = f'/scratch/{os.getenv("USER")}/{os.getenv("SLURM_JOBID")}/bil'
+bildir = f'/scratch/{os.getenv("USER")}/{config["node_scratch"]}{os.getenv("SLURM_JOBID")}/bil'
 ncdir  = bildir.replace('bil', 'nc')
 
 httpspath = 'https://prism.oregonstate.edu/fetchData.php'

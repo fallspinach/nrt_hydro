@@ -72,7 +72,7 @@ def main(argv):
 
         # download archive
         fgrb = f'ST4.{t:%Y%m%d}'
-        premo = f'ftp://{ftphost}/{ftppath}/{t:%Y%m}'
+        premo = f'https://{ftphost}/{ftppath}/{t:%Y%m}'
         parch = f'archive/{t:%Y}'
         if not os.path.isdir(parch):
             os.system(f'mkdir -p {parch}')

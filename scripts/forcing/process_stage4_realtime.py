@@ -21,7 +21,7 @@ override_flag = True       # override the old output files or not
 copyold_flag  = False      # copy from old instead of download
 
 #stg4_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod/'
-stg4_url = 'ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/pcpanl'
+stg4_url = 'https://ftp.ncep.noaa.gov/data/nccf/com/pcpanl'
 stg4_old = '/cw3e/mead/projects/cwp101/wrf_hydro/forcing/stage4/realtime'
 
 cdocmd1 = 'cdo -f nc4 -z zip chname,tp,apcpsfc -remap,latlon_conus_0.04deg.txt' #',stage4_to_0.04deg_weight.nc'

@@ -14,12 +14,15 @@ def main(argv):
     t1 = datetime.strptime(argv[0], '%Y%m%d')
     t2 = datetime.strptime(argv[1], '%Y%m%d')
     ndays = (t2+timedelta(days=1)-t1).days
+    nmons = round(ndays/30.5)
     domain = argv[2]
 
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/run'
+    tpn = config['cores_per_node']
     config_dom = config['wrf_hydro'][domain]
     minperday = config_dom['minperday']
-    trun = (datetime(1,1,1)+timedelta(minutes=ndays*minperday+10)).strftime('%H:%M:%S')
+    trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
+    trun = f'{trun1.day-1}-{trun1:%H:%M:%S}'
     nnodes    = config_dom['nnodes']
     nprocs    = config_dom['nprocs']
     partition = config_dom['partition']
@@ -43,14 +46,18 @@ def main(argv):
         f = os.path.basename(ftpl).replace('.tpl', '')
         #print(ftpl, f)
         os.system(f'/bin/cp {ftpl} {f}')
-        os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/g; s/<RSTHOURS>/{rst_hr:d}/g; s/<RSTMINUTES>/{rst_mn:d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<PARTITION>/{partition}/g; s/<MODULES>/{modules}/g" {f}')
+        os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/g; s/<RSTHOURS>/{rst_hr:d}/g; s/<RSTMINUTES>/{rst_mn:d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
 
     ret = subprocess.check_output(['sbatch run_wrf_hydro.sh'], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'WRF-Hydro job ID is: {jid}')
     
     os.chdir(f'{config["base_dir"]}/scripts/wrf_hydro')
-    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 -N 1 -p {config_dom["partition"]} -J mfm --wrap="mpirun -np 8 python merge_fix_time_retro.py {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    nc_shared   = nmons
+    mem_shared  = 12*nc_shared
+    part_shared = config_dom["partition"].replace("compute", "shared")
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
+    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mfm --wrap="{cmd1} {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print('Merging/percentile calculation job ID is: '+jid)
