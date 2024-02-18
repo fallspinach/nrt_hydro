@@ -17,6 +17,7 @@ nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path t
 hrrr_path = f'{config["base_dir"]}/forcing/hrrr/analysis'               # path to HRRR analysis
 
 prodtype = 'nrt'
+update_external = False
 
 ## main function
 def main(argv):
@@ -24,17 +25,19 @@ def main(argv):
     '''main loop'''
 
     # update all external data first
-    print('Updating NLDAS2 data archive ...')
-    process_nldas2.main('')
-
-    print('Updating Stage IV non-realtime data archive ...')
-    process_stage4_archive.main('')
-
-    print('Updating Stage IV realtime data archive ...')
-    process_stage4_realtime.main('')
-
-    print('Updating HRRR Analysis data archive ...')
-    process_hrrr_analysis.main('')
+    if update_external:
+        
+        print('Updating NLDAS2 data archive ...')
+        process_nldas2.main('')
+    
+        print('Updating Stage IV non-realtime data archive ...')
+        process_stage4_archive.main('')
+    
+        print('Updating Stage IV realtime data archive ...')
+        process_stage4_realtime.main('')
+    
+        print('Updating HRRR Analysis data archive ...')
+        process_hrrr_analysis.main('')
 
     os.chdir(workdir)
 
@@ -48,16 +51,16 @@ def main(argv):
     print(f'Last NLDAS-2 data:      {last_nld2:%Y-%m-%dT%H}')
     print(f'Last HRRR analysis:     {last_hrrr:%Y-%m-%dT%H}')
     
-    #cmd0 = 'sbatch --export=NONE -A cwp101 -p shared -n 12 '
-    #cmd1 = 'sbatch --export=NONE -A cwp101 -p compute -N 1 '
-    cmd0 = 'sbatch -p shared -n 12'
-    cmd1 = 'sbatch -p compute -N 1'
+    #cmd0 = 'sbatch -p shared -n 12'
+    #cmd1 = 'sbatch -p compute -N 1'
+    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
+    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=120G'
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
     
     # NLDAS-2 + Stage-IV archive update
     t1 = last_st4a - timedelta(hours=47); t2 = last_st4a
-    cmd = f'{cmd0} -t 00:40:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
+    cmd = f'{cmd0} -t 01:00:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid1 = ret.decode().split(' ')[-1].rstrip()
     print(f'NLDAS-2 + StageIV archive forcing job ID is: {jid1}')

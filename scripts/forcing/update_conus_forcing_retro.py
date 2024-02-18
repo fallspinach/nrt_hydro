@@ -65,10 +65,8 @@ def main(argv):
         
         tt1 = last_stnl + timedelta(days=1)
         tt2 = last_prsm + timedelta(days=1)
-        cmd00 = 'sbatch -p shared -n 12'
-        cmd11 = 'sbatch -p shared -n 2'
+        cmd00 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12'
         cmd22 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python fill_stage4_with_nldas2.py'
-        cmd33 = 'unset SLURM_MEM_PER_NODE; mpirun -np  2 python calc_shifted_daily.py'
         
         # Merge
         cmd = f'{cmd00} -t 00:30:00 -J st4nl2 --wrap="{cmd22} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}" -o {logdir}/st4nl2_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
@@ -81,8 +79,12 @@ def main(argv):
     else:
         dep = ''
         
-    cmd0 = 'sbatch -p shared -n 12 '
-    cmd1 = 'sbatch -p compute -N 1 '
+    #cmd0 = 'sbatch -p shared -n 12 '
+    #cmd1 = 'sbatch -p compute -N 1 '
+    #cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
+    #cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
+    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
+    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=120G'
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
     
