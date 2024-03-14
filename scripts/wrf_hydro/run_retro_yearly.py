@@ -11,9 +11,9 @@ def main(argv):
 
     '''main loop'''
 
-    y1 = int(argv[0])
-    y2 = int(argv[1])
-    domain = argv[2]
+    domain = argv[0]
+    y1 = int(argv[1])
+    y2 = int(argv[2])
 
     jid1 = argv[3] if len(argv)>3 else ''
 
@@ -25,6 +25,10 @@ def main(argv):
     nprocs    = config_dom['nprocs']
     partition = config_dom['partition']
     modules   = config['modules']
+    
+    # single shared node case
+    if nprocs<tpn:
+        tpn = nprocs
 
     for y in range(y1, y2+1):
 
@@ -56,16 +60,18 @@ def main(argv):
         ret = subprocess.check_output([f'sbatch {dep} run_wrf_hydro.sh'], shell=True)
         jid1 = ret.decode().split(' ')[-1].rstrip()
         print(f'WRF-Hydro job ID for year {y} is: {jid1}')
+        time.sleep(2)
     
         os.chdir(f'{config["base_dir"]}/scripts/wrf_hydro')
         nc_shared   = nmons
         mem_shared  = 12*nc_shared
         part_shared = config_dom["partition"].replace("compute", "shared")
         cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
-        cmd = f'sbatch -d afterok:{jid1} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mfm --wrap="{cmd1} {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd = f'sbatch -d afterok:{jid1} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
         ret = subprocess.check_output([cmd], shell=True)
         jid2 = ret.decode().split(' ')[-1].rstrip()
         print(f'Merging/percentile calculation job ID for year {y} is: {jid2}')
+        time.sleep(2)
     
     return 0
 

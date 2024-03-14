@@ -10,15 +10,31 @@ from utilities import config, find_last_time
 def main(argv):
 
     '''main loop'''
+    curr_time = datetime.utcnow()
+    curr_time = curr_time.replace(tzinfo=pytz.utc)
 
-    domain = argv[0]
-    t1 = datetime.strptime(argv[1], '%Y%m%d')
-    t2 = datetime.strptime(argv[2], '%Y%m%d')
+    if len(argv)>=1:
+        domain = argv[0]
+    else:
+        domain = 'cnrfc'
+    
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/run'
+    
+    if len(argv)>=3:
+        t1 = datetime.strptime(argv[0], '%Y%m%d')
+        t2 = datetime.strptime(argv[1], '%Y%m%d')
+    else:
+        curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
+        t1 = curr_day - timedelta(days=11)
+        t2 = find_last_time(f'{workdir}/../forcing/1km_hourly/202?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+        if t2 > curr_day - timedelta(days=1):
+            t2 = curr_day - timedelta(days=1)
     
     ndays = (t2+timedelta(days=1)-t1).days
     nmons = round(ndays/30.5)
 
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/run'
+    print(f'Current day is {curr_time:%Y-%m-%d}, running model from {t1:%Y-%m-%d} to {t2:%Y-%m-%d} ({ndays:d} days).') 
+
     tpn = config['cores_per_node']
     config_dom = config['wrf_hydro'][domain]
     minperday = config_dom['minperday']
@@ -33,10 +49,8 @@ def main(argv):
     if nprocs<tpn:
         tpn = nprocs
 
-    os.system(f'mkdir -p {workdir}/{t1:%Y}')
-    os.system(f'mkdir -p {workdir}/../output/1km_daily/{t1:%Y}')
-    os.chdir(f'{workdir}/{t1:%Y}')
-    os.system('ln -s ../../../../shared/tables/*.TBL .')
+    os.chdir(workdir)
+    os.system('ln -s ../../../shared/tables/*.TBL .')
 
     if ndays>25:
         rst_hr = -99999
@@ -45,7 +59,7 @@ def main(argv):
         rst_hr = 24
         rst_mn = 1440
 
-    for ftpl in glob('../../../../shared/retro/*.tpl'):
+    for ftpl in glob('../../../shared/nrt/*.tpl'):
 
         #f = ftpl.strip('.tpl')
         f = os.path.basename(ftpl).replace('.tpl', '')
@@ -61,7 +75,7 @@ def main(argv):
     nc_shared   = nmons
     mem_shared  = 12*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
-    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_nrt.py'
     cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()

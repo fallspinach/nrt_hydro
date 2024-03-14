@@ -49,10 +49,16 @@ def main(argv):
     '''main loop'''
     
     os.chdir(workdir)
+    
+    if len(argv)==2:
+        t1 = datetime.strptime(argv[0], '%Y%m%d%H')
+        t2 = datetime.strptime(argv[1], '%Y%m%d%H')
+        t1 = t1.replace(tzinfo=pytz.utc)
+        t2 = t2.replace(tzinfo=pytz.utc)
 
     copyold_flag  = False
-    if len(argv)>0:
-        if argv[0] == 'copy':
+    if len(argv)>2:
+        if argv[2] == 'copy':
             copyold_flag  = True
 
     # simple file to avoid running multiple instances of this code
@@ -84,8 +90,12 @@ def main(argv):
     print(f'Time range to download and process: {(lastnc_day+timedelta(hours=1)):%Y-%m-%dT%H} to {back_day:%Y-%m-%dT%H}.')
     
     #sys.exit("here")
+    
+    if len(argv)==2:
+        lastnc_day = t1 - timedelta(hours=1)
+        back_day   = t2
    
-    t = lastnc_day + timedelta(hours=1) 
+    t = lastnc_day + timedelta(hours=1)
     while t <= back_day:
 
         print(f'Downloading {t:%Y-%m-%d %H:00}')

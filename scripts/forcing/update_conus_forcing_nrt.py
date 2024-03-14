@@ -17,7 +17,6 @@ nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path t
 hrrr_path = f'{config["base_dir"]}/forcing/hrrr/analysis'               # path to HRRR analysis
 
 prodtype = 'nrt'
-update_external = False
 
 ## main function
 def main(argv):
@@ -25,7 +24,7 @@ def main(argv):
     '''main loop'''
 
     # update all external data first
-    if update_external:
+    if len(argv)==0:
         
         print('Updating NLDAS2 data archive ...')
         process_nldas2.main('')
@@ -38,7 +37,12 @@ def main(argv):
     
         print('Updating HRRR Analysis data archive ...')
         process_hrrr_analysis.main('')
-
+        
+    else:
+        
+        t0 = datetime.strptime(argv[0], '%Y%m%d')
+        t0 = t0.replace(tzinfo=pytz.utc)
+        
     os.chdir(workdir)
 
     last_st4a = find_last_time(f'{stg4_path}/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
@@ -54,12 +58,18 @@ def main(argv):
     #cmd0 = 'sbatch -p shared -n 12'
     #cmd1 = 'sbatch -p compute -N 1'
     cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
-    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=120G'
-    cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
-    cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
+    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=8 --mem=120G'
+    cmd2 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 12 python create_conus_forcing.py'
+    cmd3 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 8 python mergetime_subset.py'
+    #cmd2 = 'mpirun -np 12 python create_conus_forcing.py'
+    #cmd3 = 'mpirun -np 8 python mergetime_subset.py'
     
     # NLDAS-2 + Stage-IV archive update
-    t1 = last_st4a - timedelta(hours=47); t2 = last_st4a
+    if len(argv)==0:
+        t1 = last_st4a - timedelta(hours=47)
+    else:
+        t1 = t0
+    t2 = last_st4a
     cmd = f'{cmd0} -t 01:00:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid1 = ret.decode().split(' ')[-1].rstrip()
@@ -80,8 +90,12 @@ def main(argv):
     print(f'HRRR + StageIV realtime forcing job ID is: {jid3}')
     
     # merge hourly files to daily and subset/reproject
-    t1 = last_st4a - timedelta(hours=47); t2 = last_hrrr
-    cmd = f'{cmd1} -d afterok:{jid1}:{jid2}:{jid3} -t 02:20:00 -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    if len(argv)==0:
+        t1 = last_st4a - timedelta(hours=47)
+    else:
+        t1 = t0
+    t2 = last_hrrr
+    cmd = f'{cmd1} -d afterok:{jid1}:{jid2}:{jid3} -t 04:00:00 -J mergesub --wrap="{cmd3} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}"  -o {logdir}/mergesub_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()

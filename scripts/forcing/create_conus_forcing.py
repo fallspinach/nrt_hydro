@@ -1,5 +1,6 @@
 import sys, os, math, pytz, yaml, subprocess
 from glob import glob
+import netCDF4 as nc
 from datetime import datetime, timedelta
 from mpi4py import MPI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
@@ -10,6 +11,7 @@ from utilities import config, find_last_time
 workdir   = f'{config["base_dir"]}/forcing/nwm'
 stg4_path = f'{config["base_dir"]}/forcing/stage4/archive' # path to Stage IV files
 nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+prsm_path = f'{config["base_dir"]}/forcing/prism/recent/nc'             # path to PRISM files
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -62,7 +64,23 @@ def main(argv):
             cmd = f'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs {tg1} {tg2} {arg3} {arg4}"'
             
         else:
-            cmd = f'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs {tg1} {tg2}"'
+            
+            # find the last PRISM recent file
+            ncfiles = glob(f'{prsm_path}/PRISM_tmean_stable_4kmD2_*.nc')
+            ncfiles.sort()
+            f = nc.Dataset(ncfiles[-1], 'r')
+            last_prsm = datetime.strptime(str(nc.num2date(f['time'][-1], f['time'].units)), '%Y-%m-%d %H:%M:%S')
+            last_prsm = last_prsm.replace(tzinfo=pytz.utc)
+            f.close()
+
+            if alltimes[t1].year<1981:
+                arg3 = 'historical'
+            elif alltimes[t1]<last_prsm-timedelta(days=1):
+                arg3 = 'recent'
+            else:
+                arg3 = 'provisional'
+                
+            cmd = f'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs {tg1} {tg2} {arg3}"'
             
         print(cmd); os.system(cmd)
 

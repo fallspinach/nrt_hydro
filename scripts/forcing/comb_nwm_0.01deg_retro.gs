@@ -2,6 +2,7 @@ function comb(args)
 
 time1=subwrd(args, 1)
 time2=subwrd(args, 2)
+ptype=subwrd(args, 3)
 
 basedir=".."
 
@@ -91,11 +92,11 @@ endif
 'xdfopen 'basedir'/stage4/st4nl2.ctl'
 
 * PRISM
-if (year<1981)
-    ptype="historical"
-else
-    ptype="recent"
-endif
+*if (year<1981)
+*    ptype="historical"
+*else
+*    ptype="recent"
+*endif
 'xdfopen 'basedir'/prism/'ptype'/prism_ppt_'ptype'.ctl'
 'xdfopen 'basedir'/prism/'ptype'/prism_tmean_'ptype'.ctl'
 
@@ -123,7 +124,7 @@ debug=0
 t=t1
 while (t<=t2)
 
-    if (ptype="recent")
+    if (ptype="recent"|ptype="provisional")
     
 *       PRISM daily precipitation is 12z to 12z, end-time labeled, thus 11 hours behind NLDAS-2/Stage-4
 *       to match PRISM, 12z and before is yesterday
@@ -191,7 +192,7 @@ while (t<=t2)
     
         if (curdatep!=lstdatep)
 
-            if (ptype="recent")
+            if (ptype="recent"|ptype="provisional")
                 dstr1 = gradsdate(prvdatep)
                 dstr2 = gradsdate(curdatep)
                 say "P summing from 13z"dstr1" to 12z"dstr2
@@ -242,7 +243,7 @@ while (t<=t2)
         
         if (curdatet!=lstdatet)
 
-            if (ptype="recent")
+            if (ptype="recent"|ptype="provisional")
                 dstr1 = gradsdate(prvdatet)
                 dstr2 = gradsdate(curdatet)
                 say "T averaging from 12z"dstr1" to 11z"dstr2

@@ -16,6 +16,10 @@ size = comm.Get_size()
 def main(argv):
     
     '''main loop'''
+
+    for key,value in os.environ.items():
+        if 'SLURM' in key:
+            print(key, '=', value)
     
     os.chdir(workdir)
 
@@ -56,8 +60,13 @@ def main(argv):
             #cmd = f'{cdocmd} {fsrc} {fout}' 
         print(cmd); os.system(cmd)
 
-        fsrc = fout
+        fconus = fout
         for domain in config['forcing']['domains']:
+
+            if domain=='basins24':
+                fsrc = f'1km/cnrfc/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            else:
+                fsrc = fconus
             
             with open(f'domain/cdo_indexbox_{domain}.txt', 'r') as f:
                 indexbox = f.read().rstrip()

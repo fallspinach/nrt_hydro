@@ -47,7 +47,7 @@ expanse:
     
     forcing:
         # domains to subset after conus
-        domains:    ['cnrfc', 'cbrfc']
+        domains:    ['cnrfc', 'cbrfc', 'basins24']
         
     wrf_hydro:
         conus:
@@ -57,14 +57,19 @@ expanse:
             minperday:  5
         cnrfc:
             partition: 'cw3e-shared'
-            nnodes:     0
-            nprocs:    24
+            nnodes:     1
+            nprocs:    64
             minperday:  2
         cbrfc:
             partition: 'cw3e-shared'
-            nnodes:     0
-            nprocs:    24
+            nnodes:     1
+            nprocs:    64
             minperday:  2
+        basins24:
+            partition: 'cw3e-shared'
+            nnodes:     1
+            nprocs:    24
+            minperday:  1
 
     obs:
         # products to process
