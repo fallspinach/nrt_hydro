@@ -21,10 +21,10 @@ def main(argv):
 
     '''main loop'''
 
-    t1 = datetime.strptime(argv[0], '%Y%m')
-    t2 = datetime.strptime(argv[1], '%Y%m')
+    domain = argv[0]
+    t1 = datetime.strptime(argv[1], '%Y%m')
+    t2 = datetime.strptime(argv[2], '%Y%m')
     step  = timedelta(days=1)
-    domain = argv[2]
 
     workdir   = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/1km_daily'
     os.chdir(workdir)

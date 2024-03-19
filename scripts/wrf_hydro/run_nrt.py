@@ -21,8 +21,8 @@ def main(argv):
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/run'
     
     if len(argv)>=3:
-        t1 = datetime.strptime(argv[0], '%Y%m%d')
-        t2 = datetime.strptime(argv[1], '%Y%m%d')
+        t1 = datetime.strptime(argv[1], '%Y%m%d')
+        t2 = datetime.strptime(argv[2], '%Y%m%d')
     else:
         curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
         t1 = curr_day - timedelta(days=11)
@@ -32,6 +32,8 @@ def main(argv):
     
     ndays = (t2+timedelta(days=1)-t1).days
     nmons = round(ndays/30.5)
+    if nmons==0:
+        nmons = 1
 
     print(f'Current day is {curr_time:%Y-%m-%d}, running model from {t1:%Y-%m-%d} to {t2:%Y-%m-%d} ({ndays:d} days).') 
 
@@ -50,7 +52,7 @@ def main(argv):
         tpn = nprocs
 
     os.chdir(workdir)
-    os.system('ln -s ../../../shared/tables/*.TBL .')
+    #os.system('ln -s ../../../shared/tables/*.TBL .')
 
     if ndays>25:
         rst_hr = -99999
@@ -76,7 +78,7 @@ def main(argv):
     mem_shared  = 12*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_nrt.py'
-    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {t1:%Y%m} {t2:%Y%m} {domain}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print('Merging/percentile calculation job ID is: '+jid)

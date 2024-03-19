@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-#import add_pctl_rank_monthly_forcing
+import add_pctl_rank_monthly
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
@@ -178,7 +178,7 @@ def main(argv):
         else:
             cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
             print(cmd); os.system(cmd)
-            add_pctl_rank_monthly_forcing.main([f'1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'])
+            add_pctl_rank_monthly.main([domain, f'1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'])
         
         fn = f'{nrtdir}/forcing/1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
         f = nc.Dataset(fn, 'r')

@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/ut
 from utilities import config, find_last_time
 
 from mpi4py import MPI
-#import add_pctl_rank_daily, add_pctl_rank_monthly
+import add_pctl_rank_daily, add_pctl_rank_monthly
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -53,14 +53,14 @@ def main(argv):
         print(cmd); os.system(cmd)
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
-        #add_pctl_rank_daily.main([fout])
+        add_pctl_rank_daily.main([domain, fout])
         
         fmout = f'../1km_monthly/{m:%Y%m}.LDASOUT_DOMAIN1.monthly'
         cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
         print(cmd); os.system(cmd)
         cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
         print(cmd); os.system(cmd)
-        #add_pctl_rank_monthly.main([fmout])
+        add_pctl_rank_monthly.main([domain, fmout])
 
         for rout in ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
 
@@ -109,7 +109,7 @@ def main(argv):
                     break
 
             dst.close()
-            #add_pctl_rank_daily.main([fndst])
+            #add_pctl_rank_daily.main([domain, fndst])
 
             # caculate monthly
             fout  = f'{m:%Y/%Y%m}.{rout}'
@@ -118,7 +118,7 @@ def main(argv):
             print(cmd); os.system(cmd)
             cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
             print(cmd); os.system(cmd)
-            #add_pctl_rank_monthly.main([fmout])
+            add_pctl_rank_monthly.main([domain, fmout])
 
     return 0
 
