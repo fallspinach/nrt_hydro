@@ -90,8 +90,8 @@ def main(argv):
 
     domain = argv[0]
     
-    time1 = datetime.strptime(argv[0], '%Y%m')
-    time2 = datetime.strptime(argv[1], '%Y%m')
+    time1 = datetime.strptime(argv[1], '%Y%m')
+    time2 = datetime.strptime(argv[2], '%Y%m')
     
     time1 = time1.replace(tzinfo=pytz.utc)
     time2 = time2.replace(tzinfo=pytz.utc)
@@ -173,7 +173,7 @@ def main(argv):
         # precipitation and temperature
         os.chdir(f'{nrtdir}/forcing')
         if not monthly_flag:
-            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1 -daymean -shifttime,-1hour -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1 -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             print(cmd); os.system(cmd)
         else:
             cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
@@ -276,7 +276,7 @@ def main(argv):
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
                 fig1.savefig(fout, dpi=50, transparent=True)
-                    os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
                 plt.close(fig1)
                 
                 if i==0 and t==time1:

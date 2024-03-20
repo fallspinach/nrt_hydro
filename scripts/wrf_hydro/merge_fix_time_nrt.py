@@ -112,7 +112,7 @@ def main(argv):
             #add_pctl_rank_daily.main([domain, fndst])
 
             # caculate monthly
-            fout  = f'{m:%Y/%Y%m}.{rout}'
+            fout  = f'{m:%Y%m}.{rout}'
             fmout = f'../1km_monthly/{m:%Y%m}.{rout}.monthly'
             cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
             print(cmd); os.system(cmd)
