@@ -58,7 +58,7 @@ expanse:
         cnrfc:
             partition: 'cw3e-shared'
             nnodes:     1
-            nprocs:    64
+            nprocs:    32
             minperday:  2
         cbrfc:
             partition: 'cw3e-shared'

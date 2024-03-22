@@ -78,17 +78,27 @@ def main(argv):
     mem_shared  = 12*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_nrt.py'
-    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    flog = f'{workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'Merging/percentile calculation job ID is: {jid}')
 
-    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 1 python plot_nrt.py'
-    cmd = f'sbatch -d afterok:{jid} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101 -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 1 {config["base_dir"]}/scripts/wrf_hydro/python plot_nrt.py'
+    flog = f'{workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101 -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'Plotting job ID is: {jid}')
     
+    cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_rivers_nrt.py'
+    flog = f'{workdir}/log/extract_rivers_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 -J "exrivnrt" --wrap="{cmd1} {domain}" -o {flog}'
+    #print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip()
+    print(f'River extraction will run with job ID: {jid}')
+
     return 0
 
 if __name__ == '__main__':

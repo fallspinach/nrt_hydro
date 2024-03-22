@@ -19,7 +19,7 @@ while true; do
     elif  [ $currhour == 10 ]; then
         # run WRF-Hydro
         for domain in cnrfc; do
-            flog=wrf_hydro/$domain/log/log_nrt_$(date -u +%Y%m%d_%H)z.txt
+            flog=wrf_hydro/$domain/nrt/run/log/log_nrt_$(date -u +%Y%m%d_%H)z.txt
             python scripts/wrf_hydro/run_nrt.py $domain > $flog 2>&1
         done
         sleep 60m

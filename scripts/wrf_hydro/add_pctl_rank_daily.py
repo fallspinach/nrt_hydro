@@ -46,11 +46,10 @@ def main(argv):
         for v in vs:
             if v == 'SOIL_M':
                 fdata[v+'_r'][t] = ((fdata[v][t, :, 0, :]*0.05+fdata[v][t, :, 1, :]*0.15+fdata[v][t, :, 2, :]*0.3+fdata[v][t, :, 3, :]*0.5)>fpctl[v][yday]).sum(axis=0).astype(float)
+            elif v == 'streamflow' and len(fdata[v].shape) == 1:
+                fdata[v+'_r'][:] = (fdata[v][:]>fpctl[v][yday]).sum(axis=0).astype(float)
             else:
-                if v == 'streamflow' and len(fdata[v].shape) == 1:
-                    fdata[v+'_r'][:] = (fdata[v][:]>fpctl[v][yday]).sum(axis=0).astype(float)
-                else:
-                    fdata[v+'_r'][t] = (fdata[v][t]>fpctl[v][yday]).sum(axis=0).astype(float)
+                fdata[v+'_r'][t] = (fdata[v][t]>fpctl[v][yday]).sum(axis=0).astype(float)
             fdata.sync()
 
     fpctl.close()

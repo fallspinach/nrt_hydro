@@ -47,13 +47,16 @@ def main(argv):
             if dd==m+relativedelta(months=1):
                 break
 
-        cmd = f'cdo -O -f nc4 -z zip shifttime,-12hour -mergetime {" ".join(fin)} {fout}'
-        print(cmd); os.system(cmd)
-        cmd = f'ncks -4 -L 5 {fout} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
+        xmask = f'{config["base_dir"]}/wrf_hydro/{domain}/domain/xmask0_{domain}.nc'
+        cmd = f'cdo -O -f nc4 -z zip -shifttime,-12hour [ -mergetime {" ".join(fin)} ] {fout}'
         print(cmd); os.system(cmd)
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
         add_pctl_rank_daily.main([domain, fout])
+        cmd = f'cdo -O -f nc4 -z zip add {fout} {xmask} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
+        print(cmd); os.system(cmd)
+        cmd = f'ncks -4 -L 5 {fout} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
+        print(cmd); os.system(cmd)
         
         fmout = f'../1km_monthly/{m:%Y%m}.LDASOUT_DOMAIN1.monthly'
         cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
