@@ -20,13 +20,13 @@ def main(argv):
 
     '''main loop'''
 
-    domain = 'cnrfc'
+    domain = argv[0]
 
-    t1 = datetime.strptime(argv[0], '%Y%m%d')
-    t2 = datetime.strptime(argv[1], '%Y%m%d')
-    tupdate = datetime.strptime(argv[2], '%Y%m%d')
+    t1 = datetime.strptime(argv[1], '%Y%m%d')
+    t2 = datetime.strptime(argv[2], '%Y%m%d')
+    tupdate = datetime.strptime(argv[3], '%Y%m%d')
     
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{argv[3]}/output/init{t1:%Y%m%d}_update{tupdate:%Y%m%d}'
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{argv[4]}/output/init{t1:%Y%m%d}_update{tupdate:%Y%m%d}'
     os.chdir(workdir)
     nens = len(glob('??'))
     #nens = 2
@@ -119,7 +119,7 @@ def main(argv):
             else:
                 # give April-July sum a special month number 0
                 month = 0
-            [matched, mavg] = sparse_cdf_match(df.iloc[m].to_numpy(), name, month)
+            [matched, mavg] = sparse_cdf_match(domain, df.iloc[m].to_numpy(), name, month)
             df.iloc[m] = matched
             matched.sort()
             
@@ -142,7 +142,7 @@ def main(argv):
         
     return 0
 
-def sparse_cdf_match(data, site, month):
+def sparse_cdf_match(domain, data, site, month):
         
     # load historic data, FNF and reanalysis simulated values
     hist_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/csv/{site}.csv'

@@ -68,7 +68,7 @@ expanse:
         basins24:
             partition: 'cw3e-shared'
             nnodes:     1
-            nprocs:    24
+            nprocs:    16
             minperday:  1
 
     obs:

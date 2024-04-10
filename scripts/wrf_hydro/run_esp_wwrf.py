@@ -106,10 +106,10 @@ def main(argv):
         os.chdir(forcedir)
         if t1.month<4 or t1.month>9:
             print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
-            tlast = find_last_time(f'../NRT_ens/{domain}/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+            tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
         else:
             print('  Apr 1 - Sep 30 season, using WWRF deterministic forecast')
-            tlast = find_last_time(f'../NRT_ens/{domain}/42/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+            tlast = find_last_time(f'../NRT_ens/42/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
         # don't go beyond 9-day forecasts (for makeup runs that are executed later)
         if tlast > tupdate+timedelta(days=8):
             tlast = tupdate+timedelta(days=8)
@@ -119,9 +119,9 @@ def main(argv):
             #while tforc<t1+timedelta(days=7):
             while tforc<=tlast:
                 if t1.month<4 or t1.month>9:
-                    fww   = f'../NRT_ens/{domain}/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
+                    fww   = f'../NRT_ens/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
                 else:
-                    fww   = f'../NRT_ens/{domain}/42/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
+                    fww   = f'../NRT_ens/42/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
                 fforc = f'{ens:02d}/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
                 #print(f'{forcedir}/{fww}')
                 if os.path.isfile(fww):

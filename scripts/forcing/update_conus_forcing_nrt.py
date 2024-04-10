@@ -70,7 +70,7 @@ def main(argv):
     else:
         t1 = t0
     t2 = last_st4a
-    cmd = f'{cmd0} -t 01:00:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
+    cmd = f'{cmd0} -t 01:30:00 -J nld2st4a --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4a_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid1 = ret.decode().split(' ')[-1].rstrip()
     print(f'NLDAS-2 + StageIV archive forcing job ID is: {jid1}')

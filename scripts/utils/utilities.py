@@ -48,4 +48,21 @@ def find_last_time_dir(glob_pattern, file_pattern):
 
     return last_time
 
+## find the last file
+def find_last_time2(glob_pattern, file_pattern0, file_pattern1, sep):
 
+    last_time0 = datetime(1000, 1, 1, 0, 0, 0, 0, pytz.utc)
+    last_time1 = datetime(1000, 1, 1, 0, 0, 0, 0, pytz.utc)
+
+    for dfile in glob(glob_pattern):
+        ftime0 = datetime.strptime(os.path.basename(dfile).split(sep)[0], file_pattern0)
+        ftime1 = datetime.strptime(os.path.basename(dfile).split(sep)[1], file_pattern1)
+        ftime0 = ftime0.replace(tzinfo=pytz.utc)
+        ftime1 = ftime1.replace(tzinfo=pytz.utc)
+        if ftime0>last_time0:
+            last_time0 = ftime0
+            last_time1 = ftime1
+        elif ftime0==last_time0 and ftime1>last_time1:
+            last_time1 = ftime1
+
+    return last_time0, last_time1

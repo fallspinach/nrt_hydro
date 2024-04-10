@@ -76,7 +76,7 @@ def main(argv):
     #for t in alltimes[rank::size]:
     if True:
         
-        print(f'{t1:%Y-%m} {t2:%Y%m}')
+        print(f'{t1:%Y-%m} {t2:%Y-%m}')
         fnin = fnout
         
         if os.path.isfile(fnin):

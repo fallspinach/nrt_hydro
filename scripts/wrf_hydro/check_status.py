@@ -3,10 +3,11 @@ from glob import glob
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
-from utilities import config, find_last_time
+from utilities import config, find_last_time, find_last_time2
 
 ## some setups
 domain = 'cnrfc'
+domain1 = 'basins24'
 stage4_path = f'{config["base_dir"]}/forcing/stage4'  # path to Stage IV files
 nldas2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
 hrrran_path = f'{config["base_dir"]}/forcing/hrrr/analysis' # path to HRRR analysis
@@ -19,7 +20,7 @@ fwwens_path = f'{config["base_dir"]}/forcing/wwrf/NRT/2022-2023/NRT_ens/{domain}
 whmoni_path = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/1km_daily'
 whrean_path = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/1km_daily'
 whwwrf_path = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/wwrf/output/41'
-whespw_path = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/output'
+whespw_path = f'{config["base_dir"]}/wrf_hydro/{domain1}/fcst/esp_wwrf/output'
 scamod_path = f'{config["base_dir"]}/wrf_hydro/{domain}/obs/modis/nc'
 
 fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain}/web/imgs/monitor/system_status.csv'
@@ -46,8 +47,8 @@ def main(argv):
     
     last_whrean  = find_last_time(f'{whrean_path}/202?/202???.CHRTOUT_DOMAIN1', '%Y%m.CHRTOUT_DOMAIN1') + relativedelta(months=1) - timedelta(hours=1)
     last_whmoni  = find_last_time(f'{whmoni_path}/202?????00.CHRTOUT_DOMAIN1', '%Y%m%d%H.CHRTOUT_DOMAIN1') - timedelta(hours=1)
-    last_whespw1 = find_last_time(f'{whespw_path}/202?????', '%Y%m%d')
-    if not os.path.isdir(whespw_path+'/'+last_whespw1.strftime('%Y%m%d')+'/basins'):
+    last_whespw1, last_whespwu = find_last_time2(f'{whespw_path}/init202?????_update202?????', 'init%Y%m%d', 'update%Y%m%d', '_')
+    if not os.path.isdir(f'{whespw_path}/init{last_whespw1:%Y%m%d}_update{last_whespwu:%Y%m%d}/basins'):
         last_whespw1 -= relativedelta(months=1)
     last_whespw2 = last_whespw1 + relativedelta(months=6) - timedelta(days=1)
     if last_whespw1.month==1:
@@ -72,6 +73,7 @@ def main(argv):
     
     for i,d in enumerate(datastreams):
         print(f'{d:22s}: {datastart[i]:{dtfmt}} to {dataend[i]:{dtfmt}}')
+    print(f'Last ESP-WWRF-CCA Forecast Update: {last_whespwu:{dtfmt}}')
     
     with open(fnstatus, 'w') as csvfile:
         if True:
@@ -85,7 +87,7 @@ def main(argv):
             for i,d in enumerate(datastreams):
                 swriter.writerow({'ID': i, 'Data Stream': d, 'Start': f'{datastart[i]:{dtfmt}}', 'End': f'{datastart[i]:{dtfmt}}'})
     
-    river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel/data/monitor'
+    river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/monitor'
     if last_whmoni.month>=10:
         last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni:%Y}01-{last_whmoni:%Y%m}.daily.db'
     else:
@@ -98,10 +100,10 @@ def main(argv):
     cmd = f'rsync -a {fnstatus} cw3e@cw3e.ucsd.edu:htdocs/wrf_hydro/cnrfc/imgs/monitor/'
     print(cmd); #os.system(cmd)
     
-    if len(sys.argv)>1:
-        if sys.argv[1]=='update_gcloud':
-            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel')
-            os.system('gcloud storage rsync ../../../web/imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
+    if len(argv)>0:
+        if argv[0]=='update_gcloud':
+            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud')
+            os.system('gcloud storage rsync ../imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
             os.system('gcloud app deploy -q')
     
     return 0
