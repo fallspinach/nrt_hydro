@@ -89,13 +89,8 @@ def main(argv):
         # cdf matching
         ee = np.zeros([probs.size, ntimes+1])
         pp = np.zeros([probs.size, ntimes+1])
-        ##e10 = np.zeros(ntimes+1);  e50 = np.zeros(ntimes+1); e90 = np.zeros(ntimes+1)
-        ##p10 = np.zeros(ntimes+1);  p50 = np.zeros(ntimes+1); p90 = np.zeros(ntimes+1)
         # AMS formula for exceedance probability with plotting position b is: p = (i-b)/(n+1-2b) and i = (n+1-2b)*p+b
         # using plotting position b=0.4 from Cunnane (1978) for GEV p = (i-0.4)/(n+0.2) and i = (n+0.2)*p+0.4
-        ##i10 = round((nens+0.2)*0.9+0.4)-1
-        ##i50 = round((nens+0.2)*0.5+0.4)-1
-        ##i90 = round((nens+0.2)*0.1+0.4)-1
         ii    = (nens+0.2)*(1-probs)+0.4-1            # real index value in decimals
         ii_lo = np.floor((nens+0.2)*(1-probs)+0.4).astype(int)-1  # lower bound integer
         ii_up = np.ceil((nens+0.2)*(1-probs)+0.4).astype(int)-1   # upper bound integer
@@ -132,8 +127,6 @@ def main(argv):
             pct = int(prob*100)
             df[f'Exc{pct:02d}'] = ee[ip,:]
             df[f'Pav{pct:02d}'] = pp[ip,:]
-        #df['Exc10'] = e10; df['Exc50'] = e50; df['Exc90'] = e90
-        #df['Pav10'] = p10; df['Pav50'] = p50; df['Pav90'] = p90
         df['Avg'] = avg
         
         os.system('mkdir -p basins')

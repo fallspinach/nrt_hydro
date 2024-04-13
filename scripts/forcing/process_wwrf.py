@@ -24,7 +24,7 @@ fcst_init   = 'ecmwf'
 fcst_domain = '01'
 fcst_length = 10
 
-tmpdir = f'/scratch/{os.getenv("USER")}/{os.getenv("SLURM_JOBID")}'
+tmpdir = f'/scratch/{os.getenv("USER")}/{config["node_scratch"]}{os.getenv("SLURM_JOBID")}'
 
 ## main function
 def main(argv):
@@ -65,7 +65,7 @@ def main(argv):
     ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
     ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
-    for domain in config['forcing']['domains']:
+    for domain in ['cnrfc']: #config['forcing']['domains']:
         
         cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
     
