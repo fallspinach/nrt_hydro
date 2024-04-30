@@ -1,3 +1,15 @@
+''' Merge WRF-Hydro per-day ensemble forecast output files into per-fcst and make the time dimension compliant to standard format
+
+Usage:
+    mpirun -np [# of procs] python merge_fix_time_ens.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2] [fcst_type]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob
@@ -47,7 +59,7 @@ def main(argv):
         os.system(f'rm -f {" ".join(fin_rm)}')
         add_pctl_rank_monthly.main([domain, fout])
 
-        for rout in ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
+        for rout in ['CHRTOUT_DOMAIN1']: #['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
 
             tofix = ['streamflow', 'q_lateral', 'velocity', 'qSfcLatRunoff', 'qBucket', 'qBtmVertRunoff',
                      'reservoir_assimilated_value', 'water_sfc_elev', 'inflow', 'outflow']

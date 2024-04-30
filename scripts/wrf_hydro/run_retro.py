@@ -1,3 +1,15 @@
+''' Run WRF-Hydro in retrospective time horizon from one date to another
+
+Usage:
+    python run_retro.py [domain] [date_start] [date_end]
+Default values:
+    must spcify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time, subprocess
 from glob import glob
 from datetime import datetime, timedelta
@@ -28,6 +40,8 @@ def main(argv):
     nprocs    = config_dom['nprocs']
     partition = config_dom['partition']
     modules   = config['modules']
+    if domain=='basins24':
+        nprocs = 32
 
     # single shared node case
     if nprocs<tpn:
@@ -52,6 +66,9 @@ def main(argv):
         #print(ftpl, f)
         os.system(f'/bin/cp {ftpl} {f}')
         os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/g; s/<RSTHOURS>/{rst_hr:d}/g; s/<RSTMINUTES>/{rst_mn:d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
+        
+        if domain=='basins24' and f=='hydro.namelist':
+            os.system(f'sed -i "s#outlake  = 1#outlake  = 0#g; s#route_lake_f#!route_lake_f#g" {f}')
 
     ret = subprocess.check_output(['sbatch run_wrf_hydro.sh'], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
@@ -62,7 +79,7 @@ def main(argv):
     mem_shared  = 12*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
-    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid} -t 04:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print('Merging/percentile calculation job ID is: '+jid)

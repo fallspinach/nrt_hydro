@@ -1,7 +1,15 @@
-###############################################################################
-# Download and process NAM data, up to current day
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Download and process HRRR analysis fields
+
+Usage:
+    python process_hrrr_analysis.py [yyyymmddhh1] [yyyymmddhh2]
+Default values:
+    [yyyymmddhh1]: time of last HRRR analysis on disk
+    [yyyymmddhh2]: time of latest HRRR analysis on server
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
 
 import sys, os, pytz, time, yaml, subprocess
 from glob import glob

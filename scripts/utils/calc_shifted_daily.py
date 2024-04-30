@@ -1,7 +1,14 @@
-###############################################################################
-# Calculate daily sums of Stage 4 filled with NLDAS-2, time shifted by -1 hour
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Calculate daily sums of Stage 4 filled with NLDAS-2, time shifted by -1 hour
+
+Usage:
+    python update_conus_forcing_retro.py [yyyy1] [yyyy2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Deprecated'
 
 import sys, os, pytz, time
 from datetime import datetime, timedelta
@@ -30,10 +37,6 @@ def main(argv):
     time1 = datetime.strptime(argv[0], '%Y')
     time2 = datetime.strptime(argv[1], '%Y')
         
-    #basecmd = argv[3]
-    #cmdargs = argv[4]
-    cmd_tpls = argv[3:]
-
     alltimes = []
     t = time1
     while t <= time2:

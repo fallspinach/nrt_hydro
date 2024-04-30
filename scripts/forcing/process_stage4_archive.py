@@ -1,7 +1,13 @@
-###############################################################################
-# Download and process grb2 version of Stage IV archive (not recent 10 days)
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Download and process Stage IV archive version
+
+Usage:
+    python process_stage4_archive.py
+Default values:
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
 
 import sys, os, pytz, time, yaml, subprocess
 from glob import glob

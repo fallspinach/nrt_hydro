@@ -1,3 +1,15 @@
+''' Merge per-hour lat/lon forcing data into per-day, reproject to NWM grid, and subset it for domains of interest
+
+Usage:
+    python mergetime_subset.py [yyyymmdd1] [yyyymmdd2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, math, pytz, yaml
 from datetime import datetime, timedelta
 from mpi4py import MPI

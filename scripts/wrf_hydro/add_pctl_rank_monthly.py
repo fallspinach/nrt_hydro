@@ -1,3 +1,13 @@
+''' Calculate monthly percentile ranks and append to WRF-Hydro output
+
+Usage:
+    imported by other scripts most of the time
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import numpy as np
 import netCDF4 as nc

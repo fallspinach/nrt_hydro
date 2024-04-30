@@ -1,5 +1,9 @@
-
 ---
+# configuration for the system
+#
+# author: Ming Pan
+# email: m3pan@ucsd.edu
+# status: Development
 
 # computing cluster Comet
 comet:
@@ -69,7 +73,7 @@ expanse:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    16
-            minperday:  1
+            minperday:  1.5
 
     obs:
         # products to process

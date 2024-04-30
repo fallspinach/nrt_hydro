@@ -1,3 +1,17 @@
+''' Run WRF-Hydro in Near Real Time (NRT)
+
+Usage:
+    python run_nrt.py [domain] [date_start] [date_end]
+Default values:
+    [domain]: "cnrfc"
+    [date_start]: 11 days before current time
+    [date_end]: date of most recent full-day NRT forcing
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time, subprocess
 from glob import glob
 from datetime import datetime, timedelta

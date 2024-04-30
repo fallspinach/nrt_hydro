@@ -1,3 +1,13 @@
+''' Some utility functions
+
+Usage:
+    imported by other scripts only
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 from datetime import datetime
 import os, pytz, yaml
 from glob import glob

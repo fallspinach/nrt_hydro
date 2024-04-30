@@ -1,3 +1,16 @@
+''' Update retro WRF-Hydro forcing
+
+Usage:
+    python update_conus_forcing_retro.py [yyyymmddhh1] [yyyymmddhh2]
+Default values:
+    [yyyymmddhh1]: time of last retro forcing on disk
+    [yyyymmddhh2]: time of latest PRISM recent history version product
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, math, pytz, time, yaml, subprocess
 from glob import glob
 import netCDF4 as nc

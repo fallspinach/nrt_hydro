@@ -1,3 +1,19 @@
+''' Run WRF-Hydro short-range forecast driven by West-WRF
+
+Usage:
+    python run_wwrf.py [domain] [date_start] [date_end] [ens1] [ens2]
+Default values:
+    [domain]: "cnrfc"
+    [date_start]: most recent date of NRT model state
+    [date_end]: last West-WRF full-day forecast (deterministic at the moment)
+    [ens1]: 41 (fixed at the moment)
+    [ens2]: 41 (fixed at the moment)
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time, subprocess
 from glob import glob
 from datetime import datetime, timedelta

@@ -1,7 +1,13 @@
-###############################################################################
-# Download and process PRISM data
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Download and process PRISM "recent" and "provisional" versions
+
+Usage:
+    python process_prism.py
+Default values:
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
 
 import sys, os, pytz, time, subprocess
 from glob import glob

@@ -1,7 +1,17 @@
-###############################################################################
-# Pprocess West-WRF NRT ensemble forecast data, 
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Process West-WRF ensemble forecast data into WRF-Hydro format
+
+Usage:
+    mpirun -np [# of procs] python process_wwrf_ens.py [fcst_length] [fcst_date]
+Default values:
+    [# of procs]: must specify
+    [fcst_length]: 7
+    [fcst_date]: latest West-WRF ensemble forecast
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 
 import sys, os, pytz, time
 from glob import glob

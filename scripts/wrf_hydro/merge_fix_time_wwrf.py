@@ -1,3 +1,15 @@
+''' Merge WRF-Hydro per-day deterministic forecast output files into per-month and make the time dimension compliant to standard format
+
+Usage:
+    mpirun -np [# of procs] python merge_fix_time_wwrf.py [domain] [yyyymm1] [yyyymm2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob

@@ -1,3 +1,19 @@
+''' Extract flows from West-WRF driven WRF-Hydro forecast for all river reaches in the domain
+
+Usage:
+    python extract_rivers_wwrf.py [domain] [fcst_start] [fcst_end] [ens1] [ens2]
+Default values:
+    [domain]: "cnrfc"
+    [fcst_start]: latest West-WRF initialization
+    [fcst_end]: last West-WRF full-day forecast (deterministic at the moment)
+    [ens1]: 41 (fixed at the moment)
+    [ens2]: 41 (fixed at the moment)
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob

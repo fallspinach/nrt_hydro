@@ -1,3 +1,15 @@
+''' Extract flow climatology (percentiles) in WRF-Hydro retro simulation for all river reaches in the domain from pre-calculated (30-day) moving averages
+
+Usage:
+    python extract_rivers_clim.py [domain]
+Default values:
+    [domain]: "cnrfc"
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob

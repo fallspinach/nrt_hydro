@@ -1,3 +1,10 @@
+* GrADS script to merge different forcing products, perform bias correction, and elevation-based downscaling for retro period
+* Usage: opengrads -lbc "comb_nwm_0.01deg_retro_dailyprism.gs [time1] [time2] [flag_stg4] [flag_anal]"
+*
+* author: Ming Pan
+* email: m3pan@ucsd.edu
+* status: Deprecated
+
 function comb(args)
 
 time1=subwrd(args, 1)

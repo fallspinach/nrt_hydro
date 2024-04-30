@@ -1,3 +1,15 @@
+''' Extract flows from WRF-Hydro ensemble forecast for all B-120 sites and perform CDF matching (no FNF obs)
+
+Usage:
+    python extract_b120_ens_a2j.py [domain] [fcst_start] [fcst_end] [fcst_update] [fcst_type]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob

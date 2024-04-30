@@ -1,7 +1,16 @@
-###############################################################################
-# Process West-WRF NRT deterministic forecast data, 
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Process West-WRF deterministic forecast data into WRF-Hydro format
+
+Usage:
+    mpirun -np [# of procs] python process_wwrf.py [fcst_length] [fcst_date]
+Default values:
+    [# of procs]: must specify
+    [fcst_length]: 10
+    [fcst_date]: latest West-WRF deterministic forecast
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
 
 import sys, os, pytz, time, yaml
 from glob import glob
@@ -48,7 +57,7 @@ def main(argv):
     out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     
     # find the latest West-WRF forecast
-    latest_day = find_last_time(fcst_dir+'/??????????', '%Y%m%d%H') #- timedelta(hours=24)
+    latest_day = find_last_time(fcst_dir+'/????????00', '%Y%m%d%H') #- timedelta(hours=24)
     
     fcst_length = 10
 
@@ -59,9 +68,7 @@ def main(argv):
         latest_day = latest_day.replace(tzinfo=pytz.utc)
         
     print(f'Latest forecast to process: {latest_day:%Y-%m-%dT%H}.')
-    
-    #sys.exit("here")
-    
+        
     ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
     ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
@@ -111,7 +118,7 @@ def main(argv):
         for t in alldays[rank::size]:
             fh = f'{out_dir}/{domain}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
             fd = f'{out_dir}/{domain}/{t:%Y%m%d}.LDASIN_DOMAIN1'
-            cmd = f'cdo -O -f nc4 -z zip mergetime {fh} {fd}'
+            cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fh} {fd}'
             os.system(cmd)
     
         # delete hourly files older than 2 days
@@ -119,7 +126,7 @@ def main(argv):
         cmd = f'/bin/rm -f {out_dir}/{domain}/{old_day:%Y%m%d}.LDASIN_DOMAIN1'
         os.system(cmd)
     
-    time_finish = time.time()
+    #time_finish = time.time()
     #print('Total processing time %.1f seconds' % (time_finish-time_start))
     
     comm.Barrier()

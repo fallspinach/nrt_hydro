@@ -1,3 +1,15 @@
+''' Update NRT WRF-Hydro forcing
+
+Usage:
+    python update_conus_forcing_nrt.py [backdate]
+Default values:
+    [backdate]: date of last Stage IV archive product on disk
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, math, pytz, time, yaml, subprocess
 from glob import glob
 from datetime import datetime, timedelta

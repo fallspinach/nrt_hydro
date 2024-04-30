@@ -1,3 +1,15 @@
+''' Merge WRF-Hydro per-day retro output files into per-month and make the time dimension compliant to standard format
+
+Usage:
+    mpirun -np [# of procs] python merge_fix_time_retro.py [domain] [yyyymm1] [yyyymm2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob
@@ -60,7 +72,12 @@ def main(argv):
         print(cmd); os.system(cmd)
         #add_pctl_rank_monthly.main([fmout])
 
-        for rout in ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
+        if domain=='basins24':
+            outtypes = ['CHRTOUT_DOMAIN1']
+        else:
+            outtypes = ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']
+            
+        for rout in outtypes:
 
             tofix = ['streamflow', 'q_lateral', 'velocity', 'qSfcLatRunoff', 'qBucket', 'qBtmVertRunoff',
                      'reservoir_assimilated_value', 'water_sfc_elev', 'inflow', 'outflow']

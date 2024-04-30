@@ -1,3 +1,19 @@
+''' Plot NRT WRF-Hydro results and forcing
+
+Usage:
+    mpirun -np [# of procs] python plot_nrt.py [domain] [yyyymm1] [yyyymm2] [monthly_flag]
+Default values:
+    [# of procs]: must specify
+    [domain]: "cnrfc"
+    [yyyymm1]: must specify
+    [yyyymm2]: must specify
+    [monthly_flag]: left empty for daily plots or "monthly" for monthly plots
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta

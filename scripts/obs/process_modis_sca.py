@@ -1,3 +1,15 @@
+''' Download and process MODIS snow covere area
+
+Usage:
+    python process_modis_sca.py [domain]
+Default values:
+    [domain]: "cnrfc"
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import os, sys
 from glob import glob
 

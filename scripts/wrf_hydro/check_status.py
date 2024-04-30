@@ -1,3 +1,15 @@
+''' Check the status of the entire system
+
+Usage:
+    python check_status.py [update_gcloud]
+Default values:
+    must specify all (empty for not updating gcloud)
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time, subprocess, csv
 from glob import glob
 from datetime import datetime, timedelta

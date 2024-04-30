@@ -1,7 +1,14 @@
-###############################################################################
-# Fill gaps in Stage 4 data (archive version) with NLDAS-2
-# Ming Pan <m3pan@ucsd.edu>
-###############################################################################
+''' Fill gaps in Stage IV archive version with NLDAS-2
+
+Usage:
+    python fill_stage4_with_nldas2.py [yyyymmdd1] [yyyymmdd2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
 
 import sys, os, pytz, time
 from datetime import datetime, timedelta

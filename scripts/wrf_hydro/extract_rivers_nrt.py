@@ -1,3 +1,17 @@
+''' Extract flows from NRT WRF-Hydro output for all river reaches in the domain
+
+Usage:
+    python extract_rivers_nrt.py [domain] [yyyymm1] [yyyymm2]
+Default values:
+    [domain]: "cnrfc"
+    [yyyymm1]: Oct 1 (start of current water year) if before Oct or Jan 1 if on/after Oct 1
+    [yyyymm2]: latest WRF-Hydro NRT date
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time
 import netCDF4 as nc
 from glob import glob

@@ -1,3 +1,15 @@
+''' Run West-WRF + ESP forecast
+
+Usage:
+    python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz, time, subprocess
 import netCDF4 as nc
 from glob import glob
@@ -107,12 +119,15 @@ def main(argv):
         if t1.month<4 or t1.month>9:
             print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
             tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+            max_lead = 7
         else:
             print('  Apr 1 - Sep 30 season, using WWRF deterministic forecast')
             tlast = find_last_time(f'../NRT_ens/42/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
-        # don't go beyond 9-day forecasts (for makeup runs that are executed later)
-        if tlast > tupdate+timedelta(days=8):
-            tlast = tupdate+timedelta(days=8)
+            # don't go beyond 7-day forecasts (for makeup runs that are executed later)
+            max_lead = 5 # avoid overkilling the ensemble spread by the 10-day deterministic forecast
+            
+        if tlast > tupdate+timedelta(days=max_lead-1):
+            tlast = tupdate+timedelta(days=max_lead-1)
         print(f'Last ensemble forecast date is: {tlast:%Y-%m-%d}; forecast update date is {tupdate:%Y-%m-%d}')
         for ens in range(1, 43):
             tforc = tupdate

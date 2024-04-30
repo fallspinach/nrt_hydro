@@ -1,3 +1,15 @@
+''' Run GrADS scripts to create 0.01 deg forcing data
+
+Usage:
+    python create_conus_forcing.py [yyyymmddhh1] [yyyymmddhh2] [product_type]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, math, pytz, yaml, subprocess
 from glob import glob
 import netCDF4 as nc

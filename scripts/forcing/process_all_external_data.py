@@ -1,3 +1,14 @@
+''' Update all external sources of data products
+
+Usage:
+    python process_all_external_data.py
+Default values:
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import process_nldas2
 import process_stage4_archive
 import process_stage4_realtime
