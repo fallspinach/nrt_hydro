@@ -61,15 +61,19 @@ def main(argv):
         data.columns=['Flow']; data.index.names=['Date']
         data2 = pd.DataFrame(pd.to_numeric(data['Flow'], errors='coerce').reindex(idx_d, fill_value=pd.NA)).fillna(pd.NA)
         data2.index.names=['Date']
+        
         if site=='AMF':
             # sensor 290 provides cumulative values from Oct 1 on
             data2.rename(columns={'Flow': 'CumFlow'}, inplace=True)
             data2['Flow'] = data2['CumFlow'].diff()
             data2.loc[data2.index.strftime('%m-%d')=='10-01', 'Flow'] = data2['CumFlow']
             data2.drop(columns=['CumFlow'], inplace=True)
-
-        # AF to KAF
-        data2['Flow'] = data2['Flow'].multiply(0.001)
+            # AF to KAF
+            data2['Flow'] = data2['Flow'].multiply(0.001)
+        else:
+            # CFS to KAF per day
+            data2['Flow'] = data2['Flow'].multiply(1.983459/1000)
+            
         data2.to_csv(f'fnf/FNF_daily_{site}.csv', na_rep='NaN', float_format='%g')
 
         # monthly FNF
@@ -78,6 +82,7 @@ def main(argv):
         data.columns=['Flow']; data.index.names=['Date']
         data2 = pd.DataFrame(pd.to_numeric(data['Flow'], errors='coerce').reindex(idx_m, fill_value=pd.NA)).fillna(pd.NA)
         data2.index.names=['Date']
+        # AF to KAF
         data2['Flow'] = data2['Flow'].multiply(0.001)
         data2.to_csv(f'fnf/FNF_monthly_{site}.csv', na_rep='NaN', float_format='%g')
 
