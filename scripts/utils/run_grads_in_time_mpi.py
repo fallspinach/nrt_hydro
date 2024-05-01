@@ -1,3 +1,15 @@
+''' Run a templated GrADS script for many time steps with MPI parallel processing
+
+Usage:
+    mpirun -np [num_of_procs] python run_grads_in_time_mpi.py [hourly|daily|monthly|yearly] [time_start] [time_end] ["grads_script"]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, math, pytz
 from glob import glob
 from datetime import datetime, timedelta

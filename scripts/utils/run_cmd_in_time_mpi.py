@@ -1,3 +1,15 @@
+''' Run a templated shell command for many time steps with MPI parallel processing
+
+Usage:
+    mpirun -np [num_of_procs] python run_cmd_in_time_mpi.py [hourly|daily|monthly|yearly] [time_start] [time_end] ["cmd_template"]
+Default values:
+    must specify all
+'''
+
+__author__ = 'Ming Pan'
+__email__  = 'm3pan@ucsd.edu'
+__status__ = 'Development'
+
 import sys, os, pytz
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
