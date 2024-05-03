@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 import pytz
 import pandas as pd
+import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
 
@@ -76,6 +77,10 @@ def main(argv):
             
         data2.to_csv(f'fnf/FNF_daily_{site}.csv', na_rep='NaN', float_format='%g')
 
+        # monthly sum derived from daily, just in case the official monthly is not out in time
+        data3 = data2.resample('1M').agg(pd.Series.sum, min_count=25)
+        data3.to_csv(f'fnf/FNF_derived_monthly_{site}.csv', na_rep='NaN', float_format='%g')
+
         # monthly FNF
         sn = 65
         data = pd.read_csv(f'{query}&dur_code=M&SensorNums={sn:d}&Stations={site}', usecols=['DATE TIME', 'VALUE'], index_col=['DATE TIME'], parse_dates=['DATE TIME'])
@@ -84,6 +89,9 @@ def main(argv):
         data2.index.names=['Date']
         # AF to KAF
         data2['Flow'] = data2['Flow'].multiply(0.001)
+        # fill the last record with values derived from daily data if monthly data not released yet
+        if data2.index[-1].month==data3.index[-1].month and np.isnan(data2.iloc[-1]['Flow']):
+            data2.iloc[-1]['Flow'] = data3.iloc[-1]['Flow']
         data2.to_csv(f'fnf/FNF_monthly_{site}.csv', na_rep='NaN', float_format='%g')
 
 
