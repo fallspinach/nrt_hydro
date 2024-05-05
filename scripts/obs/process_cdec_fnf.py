@@ -1,9 +1,8 @@
 ''' Download and process Full Natural Flow from CDEC
 
 Usage:
-    python process_cdec_fnf.py [domain]
+    python process_cdec_fnf.py
 Default values:
-    [domain]: "cnrfc"
 '''
 
 __author__ = 'Ming Pan'
@@ -26,13 +25,8 @@ def main(argv):
     
     '''main loop'''
     
-    if len(argv)>=1:
-        domain = argv[0]
-    else:
-        domain = 'cnrfc'
-    
-    cdec_dir  = f'{config["base_dir"]}/wrf_hydro/{domain}/obs/cdec'
-    site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/b-120/site_list_25.csv')
+    cdec_dir  = f'{config["base_dir"]}/obs/cdec'
+    site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/cnrfc/b-120/site_list_25.csv')
 
     date_0 = datetime(1979, 1, 1)
     

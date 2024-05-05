@@ -33,7 +33,7 @@ whmoni_path = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/1km_daily'
 whrean_path = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/1km_daily'
 whwwrf_path = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/wwrf/output/41'
 whespw_path = f'{config["base_dir"]}/wrf_hydro/{domain1}/fcst/esp_wwrf/output'
-scamod_path = f'{config["base_dir"]}/wrf_hydro/{domain}/obs/modis/nc'
+scamod_path = f'{config["base_dir"]}/obs/modis/nc'
 
 fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain}/web/imgs/monitor/system_status.csv'
 

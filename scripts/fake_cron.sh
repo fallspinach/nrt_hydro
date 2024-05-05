@@ -32,13 +32,12 @@ while true; do
             #sbatch -t 04:00:00 --nodes=1 --ntasks-per-node=12 -p cw3e-shared -A cwp101 -J wwrfens -o $flog --wrap="mpirun -np 12 python scripts/forcing/process_wwrf_ens.py"
         fi
         
-        for domain in cnrfc; do
-            # collect MODIS SCA
-            flog=wrf_hydro/$domain/nrt/run/log/log_modis_$(date -u +%Y%m%d_%H)z.txt
-            sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 --mem=20G -p cw3e-shared -A cwp101 -J modissca -o $flog --wrap="python scripts/obs/process_modis_sca.py $domain"
-            # collect FNF data from CDEC
-            python scripts/obs/process_cdec_fnf.py
-        done
+        # collect MODIS SCA
+        flog=wrf_hydro/$domain/nrt/run/log/log_modis_$(date -u +%Y%m%d_%H)z.txt
+        sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 --mem=20G -p cw3e-shared -A cwp101 -J modissca -o $flog --wrap="python scripts/obs/process_modis_sca.py"
+        # collect FNF data from CDEC
+        python scripts/obs/process_cdec_fnf.py
+        
         sleep 60m
     
     elif  [ $currhour == 10 ]; then

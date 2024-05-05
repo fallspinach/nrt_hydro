@@ -1,9 +1,8 @@
 ''' Download and process MODIS snow covere area
 
 Usage:
-    python process_modis_sca.py [domain]
+    python process_modis_sca.py
 Default values:
-    [domain]: "cnrfc"
 '''
 
 __author__ = 'Ming Pan'
@@ -53,14 +52,9 @@ def cmap_listed(cmname, vmin=0, vmax=100):
 def main(argv):
     
     '''main loop'''
-    
-    if len(argv)>=1:
-        domain = argv[0]
-    else:
-        domain = 'cnrfc'
-    
-    modis_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/obs/modis'
-    web_dir   = f'{config["base_dir"]}/wrf_hydro/{domain}/web'
+        
+    modis_dir = f'{config["base_dir"]}/obs/modis'
+    web_dir   = f'{config["base_dir"]}/wrf_hydro/cnrfc/web'
     
     os.chdir(modis_dir)
 

@@ -73,7 +73,7 @@ expanse:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    16
-            minperday:  1.5
+            minperday:  2.5
 
     obs:
         # products to process

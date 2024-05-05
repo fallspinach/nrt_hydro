@@ -102,7 +102,7 @@ def main(argv):
             name = 'TRF'
         
         # read CDEC monthly data
-        cdec_file = f'{config["base_dir"]}/wrf_hydro/{domain}/obs/cdec/fnf/FNF_monthly_{name}.csv'
+        cdec_file = f'{config["base_dir"]}/obs/cdec/fnf/FNF_monthly_{name}.csv'
         cdec_data = pd.read_csv(cdec_file, index_col='Date', parse_dates=True)
         
         # cdf matching
