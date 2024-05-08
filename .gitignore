@@ -3,6 +3,7 @@ __pycache__
 *.py[cod]
 
 /forcing
+/gis
 /log
 /obs
 /wrf_hydro

@@ -72,11 +72,10 @@ def main(argv):
         print(cmd); os.system(cmd)
         #add_pctl_rank_monthly.main([fmout])
 
-        if domain=='basins24':
-            outtypes = ['CHRTOUT_DOMAIN1']
-        else:
+        outtypes = ['CHRTOUT_DOMAIN1']
+        if config['wrf_hydro'][domain]['lake']:
             outtypes = ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']
-            
+
         for rout in outtypes:
 
             tofix = ['streamflow', 'q_lateral', 'velocity', 'qSfcLatRunoff', 'qBucket', 'qBtmVertRunoff',

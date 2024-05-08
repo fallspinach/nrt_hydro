@@ -59,21 +59,25 @@ expanse:
             nnodes:     1
             nprocs:   128
             minperday:  5
+            lake:       True
         cnrfc:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    32
             minperday:  2
+            lake:       True
         cbrfc:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    64
             minperday:  2
+            lake:       False
         basins24:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    16
             minperday:  2.5
+            lake:       False
 
     obs:
         # products to process

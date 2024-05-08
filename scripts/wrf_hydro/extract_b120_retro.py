@@ -93,7 +93,7 @@ def main(argv):
             name = 'TRF'
         
         os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}')
-        fnout = f'basins/{t1:%Y}-{t2:%Y}/{name}.csv'
+        fnout = f'basins/{t1:%Y}-{t2:%Y}/simulated/{name}.csv'
         df.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
         
     return 0

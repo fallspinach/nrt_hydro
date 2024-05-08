@@ -64,7 +64,8 @@ def main(argv):
         print(cmd); os.system(cmd)
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
-        add_pctl_rank_daily.main([domain, fout])
+        if config['wrf_hydro'][domain]['lake']:
+            add_pctl_rank_daily.main([domain, fout])
         cmd = f'cdo -O -f nc4 -z zip add {fout} {xmask} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
         print(cmd); os.system(cmd)
         cmd = f'ncks -4 -L 5 {fout} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
@@ -75,9 +76,14 @@ def main(argv):
         print(cmd); os.system(cmd)
         cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
         print(cmd); os.system(cmd)
-        add_pctl_rank_monthly.main([domain, fmout])
+        if config['wrf_hydro'][domain]['lake']:
+            add_pctl_rank_monthly.main([domain, fmout])
 
-        for rout in ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
+        outtypes = ['CHRTOUT_DOMAIN1']
+        if config['wrf_hydro'][domain]['lake']:
+            outtypes = ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']
+
+        for rout in outtypes:
 
             tofix = ['streamflow', 'q_lateral', 'velocity', 'qSfcLatRunoff', 'qBucket', 'qBtmVertRunoff',
                      'reservoir_assimilated_value', 'water_sfc_elev', 'inflow', 'outflow']
@@ -124,7 +130,8 @@ def main(argv):
                     break
 
             dst.close()
-            #add_pctl_rank_daily.main([domain, fndst])
+            #config['wrf_hydro'][domain]['lake']:
+            #    add_pctl_rank_daily.main([domain, fndst])
 
             # caculate monthly
             fout  = f'{m:%Y%m}.{rout}'
@@ -133,7 +140,8 @@ def main(argv):
             print(cmd); os.system(cmd)
             cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
             print(cmd); os.system(cmd)
-            add_pctl_rank_monthly.main([domain, fmout])
+            if config['wrf_hydro'][domain]['lake']:
+                add_pctl_rank_monthly.main([domain, fmout])
 
     return 0
 

@@ -48,10 +48,10 @@ def main(argv):
         if name=='TRF1':
             name = 'TRF'
         
-        os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}/bc')
-        fnout = f'basins/{t1:%Y}-{t2:%Y}/bc/{name}.csv'
+        os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}/matched')
+        fnout = f'basins/{t1:%Y}-{t2:%Y}/matched/{name}.csv'
 
-        comb_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/{t1:%Y}-{t2:%Y}/comb/{name}.csv'
+        comb_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/{t1:%Y}-{t2:%Y}/combined/{name}.csv'
         df = pd.read_csv(comb_file, index_col='Date', parse_dates=True)
 
         qsimbc = np.zeros(len(df.index))
@@ -70,7 +70,7 @@ def main(argv):
 def sparse_cdf_match(domain, data, site, month, y1, y2, year):
 
     # load historic data, FNF and reanalysis simulated values
-    hist_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/{y1}-{y2}/comb/{site}.csv'
+    hist_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/{y1}-{y2}/combined/{site}.csv'
     hist_data = pd.read_csv(hist_file, index_col='Date', parse_dates=True)
     # remove dates beyond 2020
     hist_data.drop(hist_data[hist_data.index>datetime(2020, 12, 31)].index, inplace=True)

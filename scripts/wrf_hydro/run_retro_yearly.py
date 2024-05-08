@@ -37,8 +37,6 @@ def main(argv):
     nprocs    = config_dom['nprocs']
     partition = config_dom['partition']
     modules   = config['modules']
-    if domain=='basins24':
-        nprocs = 32
     
     # single shared node case
     if nprocs<tpn:
@@ -70,7 +68,7 @@ def main(argv):
             os.system(f'/bin/cp {ftpl} {f}')
             os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/g; s/<RSTHOURS>/{rst_hr:d}/g; s/<RSTMINUTES>/{rst_mn:d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
             
-            if domain=='basins24' and f=='hydro.namelist':
+            if (not config_dom['lake']) and f=='hydro.namelist':
                 os.system(f'sed -i "s#outlake  = 1#outlake  = 0#g; s#route_lake_f#!route_lake_f#g" {f}')
 
         dep = '' if jid1=='' else f'-d afterok:{jid1}'

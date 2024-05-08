@@ -59,7 +59,11 @@ def main(argv):
         os.system(f'rm -f {" ".join(fin_rm)}')
         add_pctl_rank_monthly.main([domain, fout])
 
-        for rout in ['CHRTOUT_DOMAIN1']: #['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']:
+        outtypes = ['CHRTOUT_DOMAIN1']
+        if config['wrf_hydro'][domain]['lake']:
+            outtypes = ['CHRTOUT_DOMAIN1', 'LAKEOUT_DOMAIN1']
+
+        for rout in outtypes:
 
             tofix = ['streamflow', 'q_lateral', 'velocity', 'qSfcLatRunoff', 'qBucket', 'qBtmVertRunoff',
                      'reservoir_assimilated_value', 'water_sfc_elev', 'inflow', 'outflow']
