@@ -99,7 +99,7 @@ def main(argv):
             for i,d in enumerate(datastreams):
                 swriter.writerow({'ID': i, 'Data Stream': d, 'Start': f'{datastart[i]:{dtfmt}}', 'End': f'{datastart[i]:{dtfmt}}'})
     
-    river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/monitor'
+    river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/nrt/rivers'
     if last_whmoni.month>=10:
         last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni:%Y}01-{last_whmoni:%Y%m}.daily.db'
     else:

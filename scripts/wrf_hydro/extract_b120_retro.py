@@ -45,8 +45,13 @@ def main(argv):
     site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/b-120/site_list_25.csv')
     nsites = site_list.shape[0]
 
-    ntimes = (t2.year-t1.year+1)*12
-
+    fnin = f'1km_monthly/{t2:%Y}.CHRTOUT_DOMAIN1.monthly'
+    fin  = nc.Dataset(fnin, 'r')
+    nt  = fin['time'].size
+    fin.close()
+    
+    ntimes = (t2.year-t1.year)*12 + nt
+    
     data = np.zeros((nsites, ntimes))
     tstamps = []
     mcnt = 0
@@ -56,13 +61,15 @@ def main(argv):
         fnin = f'1km_monthly/{t:%Y}.CHRTOUT_DOMAIN1.monthly'
         fin  = nc.Dataset(fnin, 'r')
         print(f'Year {t:%Y}')
+
+        nt = fin['time'].size
         
         for i,row in zip(site_list.index, site_list['row']):
-            data[i, mcnt:mcnt+12] = fin['streamflow'][:, row]
+            data[i, mcnt:mcnt+nt] = fin['streamflow'][:, row]
             if t==t1:
                 print(f'{site_list["name"][i]} {site_list["id"][i]} {fin["feature_id"][row]}')
             
-        tstamps.extend([nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-16') for i in range(12)])
+        tstamps.extend([nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-16') for i in range(nt)])
         fin.close()
 
         mcnt += 12
@@ -92,7 +99,7 @@ def main(argv):
         if name=='TRF1':
             name = 'TRF'
         
-        os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}')
+        os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}/simulated')
         fnout = f'basins/{t1:%Y}-{t2:%Y}/simulated/{name}.csv'
         df.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
         

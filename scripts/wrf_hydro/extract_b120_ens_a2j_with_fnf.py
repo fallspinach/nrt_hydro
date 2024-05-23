@@ -175,8 +175,8 @@ def sparse_cdf_match(domain, data, site, month, n_obs):
     # load historic data, FNF and reanalysis simulated values
     hist_file = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output/basins/csv/{site}.csv'
     hist_data = pd.read_csv(hist_file, index_col='Date', parse_dates=True)
-    # remove dates beyond 2020
-    hist_data.drop(hist_data[hist_data.index>datetime(2020, 12, 31)].index, inplace=True)
+    # remove dates beyond WY 2023
+    hist_data.drop(hist_data[hist_data.index>datetime(2023, 9, 30)].index, inplace=True)
     # remove 0 FNF data -- not doing it since it seems some rivers have quite some zeros flows
     # hist_data.drop(hist_data[hist_data['FNF']<=0].index, inplace=True)
     # extract the target month

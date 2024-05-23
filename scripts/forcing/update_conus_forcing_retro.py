@@ -70,7 +70,7 @@ def main(argv):
         t2 = t2.replace(tzinfo=pytz.utc)
     else:
         t1 = last_prod + timedelta(days=1)
-        t2 = last_prsm
+        t2 = last_prsm_provis
 
     if t1<first_prsm:
         t1 = first_prsm

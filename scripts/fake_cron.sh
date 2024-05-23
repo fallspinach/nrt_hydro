@@ -22,16 +22,6 @@ while true; do
         flog=forcing/log/update_nrt_`date -u +\%Y\%m\%d_\%H`z.txt
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 -p cw3e-shared -A cwp101 -J forcnrt -o $flog --wrap="python scripts/forcing/update_conus_forcing_nrt.py"
         
-        # update WWRF deterministic (ECMWF) forecast forcing
-        flog=forcing/log/update_wwrf_`date -u +\%Y\%m\%d_\%H`z.txt
-        sbatch -t 00:20:00 --nodes=1 --ntasks-per-node=10 -p cw3e-shared -A cwp101 -J wwrfdet -o $flog --wrap="unset SLURM_MEM_PER_NODE; mpirun -np 10 python scripts/forcing/process_wwrf.py"
-        
-        # update WWRF ensemble forecast forcing between September and April
-        if [ `date -u +%m` -le "04" ] || [ `date -u +%m` -ge "09" ]; then
-            flog=forcing/log/update_wwrfens_`date -u +\%Y\%m\%d_\%Hz`.txt
-            #sbatch -t 04:00:00 --nodes=1 --ntasks-per-node=12 -p cw3e-shared -A cwp101 -J wwrfens -o $flog --wrap="mpirun -np 12 python scripts/forcing/process_wwrf_ens.py"
-        fi
-        
         # collect MODIS SCA
         flog=wrf_hydro/$domain/nrt/run/log/log_modis_$(date -u +%Y%m%d_%H)z.txt
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 --mem=20G -p cw3e-shared -A cwp101 -J modissca -o $flog --wrap="python scripts/obs/process_modis_sca.py"
@@ -59,6 +49,20 @@ while true; do
         # update system status
         flog=wrf_hydro/$domain/fcst/wwrf/run/log/log_status_$(date -u +%Y%m%d_%H)z.txt
         python scripts/wrf_hydro/check_status.py update_gcloud > $flog 2>&1
+        
+    elif  [ $currhour == 18 ]; then
+    
+        # update WWRF deterministic (ECMWF) forecast forcing
+        flog=forcing/log/update_wwrf_`date -u +\%Y\%m\%d_\%H`z.txt
+        sbatch -t 00:20:00 --nodes=1 --ntasks-per-node=10 -p cw3e-shared -A cwp101 -J wwrfdet -o $flog --wrap="unset SLURM_MEM_PER_NODE; mpirun -np 10 python scripts/forcing/process_wwrf.py"
+        
+        # update WWRF ensemble forecast forcing between September and April
+        if [ `date -u +%m` -le "04" ] || [ `date -u +%m` -ge "09" ]; then
+            flog=forcing/log/update_wwrfens_`date -u +\%Y\%m\%d_\%Hz`.txt
+            #sbatch -t 04:00:00 --nodes=1 --ntasks-per-node=12 -p cw3e-shared -A cwp101 -J wwrfens -o $flog --wrap="mpirun -np 12 python scripts/forcing/process_wwrf_ens.py"
+        fi
+
+        sleep 60m
         
     else
         sleep 10m

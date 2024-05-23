@@ -57,7 +57,8 @@ def main(argv):
         cmd = f'cdo -O -f nc4 -z zip monmean -shifttime,-12hour -mergetime {" ".join(fin)} {fout}'
         print(cmd); os.system(cmd)
         os.system(f'rm -f {" ".join(fin_rm)}')
-        add_pctl_rank_monthly.main([domain, fout])
+        if config['wrf_hydro'][domain]['lake']:
+            add_pctl_rank_monthly.main([domain, fout])
 
         outtypes = ['CHRTOUT_DOMAIN1']
         if config['wrf_hydro'][domain]['lake']:
@@ -114,7 +115,8 @@ def main(argv):
             fndstm = f'{t1:%Y%m%d}-{t2:%Y%m%d}.{rout}.monthly'
             cmd = f'cdo -f nc4 -z zip monmean {fndst} {fndstm}'
             print(cmd); os.system(cmd)
-            add_pctl_rank_monthly.main([domain, fndstm])
+            if config['wrf_hydro'][domain]['lake']:
+                add_pctl_rank_monthly.main([domain, fndstm])
 
     comm.Barrier()
     return 0

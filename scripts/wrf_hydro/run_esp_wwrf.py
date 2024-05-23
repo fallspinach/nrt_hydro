@@ -186,6 +186,9 @@ def main(argv):
             os.system(f'/bin/cp {ftpl} {f}')
             os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<ENDYEAR>/{t2.year:d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/; s/<RSTHOURS>/{rst_hr:d}/; s/<RSTMINUTES>/{rst_mn:d}/; s/<ENS>/{ens:02d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<UPDATEYMD>/{tupdate:%Y%m%d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
 
+            if (not config_dom['lake']) and f=='hydro.namelist':
+                os.system(f'sed -i "s#outlake  = 1#outlake  = 0#g; s#route_lake_f#!route_lake_f#g" {f}')
+
         cmd = f'sbatch -J espww{ens:02d} run_wrf_hydro.sh'
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()

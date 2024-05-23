@@ -57,7 +57,9 @@ def main(argv):
     out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     
     # find the latest West-WRF forecast
-    latest_day = find_last_time(fcst_dir+'/????????00', '%Y%m%d%H') #- timedelta(hours=24)
+    latest_day = find_last_time(fcst_dir+'/????????00', '%Y%m%d%H')
+    if len(glob(f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_*_temp.nc'))>0:
+        latest_day -= timedelta(hours=24)
     
     fcst_length = 10
 
