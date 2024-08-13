@@ -22,7 +22,7 @@ from utilities import config, find_last_time
 ## some setups
 workdir   = f'{config["base_dir"]}/forcing/nwm'
 stg4_path = f'{config["base_dir"]}/forcing/stage4/archive' # path to Stage IV files
-nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
 prsm_path = f'{config["base_dir"]}/forcing/prism/recent/nc'             # path to PRISM files
 
 # MPI setup
@@ -68,7 +68,7 @@ def main(argv):
         if prodtype == 'nrt':
             
             last_stg4 = find_last_time(stg4_path+'/20??/ST4.20??????', 'ST4.%Y%m%d')
-            last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
+            last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
         
             arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
             arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'

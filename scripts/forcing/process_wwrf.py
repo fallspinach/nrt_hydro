@@ -58,11 +58,14 @@ def main(argv):
     
     # find the latest West-WRF forecast
     latest_day = find_last_time(fcst_dir+'/????????00', '%Y%m%d%H')
-    if len(glob(f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_*_temp.nc'))>0:
+    fcst_length = 10
+    
+    last_day = latest_day + timedelta(days=fcst_length)
+    fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_{last_day:%Y-%m-%d_%H}_00_00.nc'
+    ntmp = len(glob(f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_*_temp.nc'))
+    if (not os.path.isfile(fww)) or ntmp>0:
         latest_day -= timedelta(hours=24)
     
-    fcst_length = 10
-
     if len(argv)>0:
         fcst_length = int(argv[0])
     if len(argv)>1:

@@ -84,8 +84,8 @@ def main(argv):
         # AF to KAF
         data2['Flow'] = data2['Flow'].multiply(0.001)
         # fill the last record with values derived from daily data if monthly data not released yet
-        if data2.index[-1].month==data3.index[-1].month and np.isnan(data2.iloc[-1]['Flow']):
-            data2.iloc[-1]['Flow'] = data3.iloc[-1]['Flow']
+        if data2.index[-1].month==data3.index[-2].month and np.isnan(data2.iloc[-1]['Flow']):
+            data2.iloc[-1]['Flow'] = data3.iloc[-2]['Flow']
         data2.to_csv(f'fnf/FNF_monthly_{site}.csv', na_rep='NaN', float_format='%g')
 
 

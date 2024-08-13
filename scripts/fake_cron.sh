@@ -9,7 +9,8 @@
 hinterval=4
 hoffset=0
 
-cd /expanse/nfs/cw3e/cwp101/nrt_hydro/
+#cd /expanse/nfs/cw3e/cwp101/nrt_hydro/
+cd $(realpath $(dirname $0))/../
 
 sleep 60m
 
@@ -61,6 +62,9 @@ while true; do
             flog=forcing/log/update_wwrfens_`date -u +\%Y\%m\%d_\%Hz`.txt
             #sbatch -t 04:00:00 --nodes=1 --ntasks-per-node=12 -p cw3e-shared -A cwp101 -J wwrfens -o $flog --wrap="mpirun -np 12 python scripts/forcing/process_wwrf_ens.py"
         fi
+
+        # rsync data to skyriver
+        
 
         sleep 60m
         

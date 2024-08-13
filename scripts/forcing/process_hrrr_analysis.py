@@ -56,7 +56,7 @@ def main(argv):
     
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
 
-    back_day = curr_day - timedelta(days=2)
+    back_day = curr_day - timedelta(days=4)
 
     # find last file in archive
     last_nc = find_last_time('analysis/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')

@@ -25,7 +25,7 @@ import process_hrrr_analysis
 workdir   = f'{config["base_dir"]}/scripts/forcing'
 logdir    = f'{config["base_dir"]}/forcing/log'
 stg4_path = f'{config["base_dir"]}/forcing/stage4'                      # path to Stage IV files
-nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
 hrrr_path = f'{config["base_dir"]}/forcing/hrrr/analysis'               # path to HRRR analysis
 
 prodtype = 'nrt'
@@ -59,7 +59,7 @@ def main(argv):
 
     last_st4a = find_last_time(f'{stg4_path}/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
     last_st4r = find_last_time(f'{stg4_path}/realtime/pcpanl.????????/st4_conus.??????????.01h.nc', 'st4_conus.%Y%m%d%H.01h.nc')
-    last_nld2 = find_last_time(f'{nld2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
+    last_nld2 = find_last_time(f'{nld2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
     last_hrrr = find_last_time(f'{hrrr_path}/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')
     
     print(f'Last Stage-IV archive:  {last_st4a:%Y-%m-%dT%H}')

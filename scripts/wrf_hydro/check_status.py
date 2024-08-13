@@ -21,7 +21,7 @@ from utilities import config, find_last_time, find_last_time2
 domain = 'cnrfc'
 domain1 = 'basins24'
 stage4_path = f'{config["base_dir"]}/forcing/stage4'  # path to Stage IV files
-nldas2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.002' # path to NLDAS-2 archive folder
+nldas2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
 hrrran_path = f'{config["base_dir"]}/forcing/hrrr/analysis' # path to HRRR analysis
 fnwmrt_path = f'{config["base_dir"]}/forcing/nwm/1km/{domain}/nrt'
 fnwmpr_path = f'{config["base_dir"]}/forcing/nwm/1km/{domain}/retro'
@@ -51,7 +51,7 @@ def main(argv):
     
     last_stage4a = find_last_time(f'{stage4_path}/archive/202?/ST4.20??????', 'ST4.%Y%m%d') + timedelta(hours=23)
     last_stage4r = find_last_time(f'{stage4_path}/realtime/pcpanl.????????/st4_conus.??????????.01h.nc', 'st4_conus.%Y%m%d%H.01h.nc')
-    last_nldas2  = find_last_time(f'{nldas2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.002.nc')
+    last_nldas2  = find_last_time(f'{nldas2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
     last_hrrran  = find_last_time(f'{hrrran_path}/202?????/hrrr_anal_202???????.nc', 'hrrr_anal_%Y%m%d%H.nc')
     last_fnwmrt  = find_last_time(f'{fnwmrt_path}/202?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1')
     last_fnwmpr  = find_last_time(f'{fnwmpr_path}/202?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') + timedelta(hours=23)
