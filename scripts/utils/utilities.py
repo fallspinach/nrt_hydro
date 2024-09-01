@@ -76,3 +76,27 @@ def find_last_time2(glob_pattern, file_pattern0, file_pattern1, sep):
             last_time1 = ftime1
 
     return last_time0, last_time1
+
+## Written by ChatGPT, with slight modifications
+def replace_brackets(file_name, replacements, bracket=True):
+    """
+    Replaces strings (bracketed in <>) in a file based on the keys and values in the replacements dictionary.
+
+    :param file_name: The name of the file to modify.
+    :param replacements: A dictionary where each key is a string (without <>) to be replaced, 
+                         and the corresponding value is the string to replace it with.
+    """
+    # Read the file content
+    with open(file_name, 'r') as file:
+        content = file.read()
+
+    # Replace the strings in the content
+    for key, value in replacements.items():
+        if bracket:
+            content = content.replace(f'<{key}>', value)
+        else:
+            content = content.replace(key, value)
+
+    # Write the modified content back to the file
+    with open(file_name, 'w') as file:
+        file.write(content)

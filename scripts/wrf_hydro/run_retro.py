@@ -14,7 +14,7 @@ import sys, os, pytz, time, subprocess
 from glob import glob
 from datetime import datetime, timedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
-from utilities import config, find_last_time
+from utilities import config, find_last_time, replace_brackets
 
 ## some setups
 
@@ -48,7 +48,7 @@ def main(argv):
     os.system(f'mkdir -p {workdir}/{t1:%Y}')
     os.system(f'mkdir -p {workdir}/../output/1km_daily/{t1:%Y}')
     os.chdir(f'{workdir}/{t1:%Y}')
-    os.system('ln -s ../../../../shared/tables/*.TBL .')
+    os.system('ln -nfs ../../../../shared/tables/*.TBL .')
 
     if ndays>25:
         rst_hr = -99999
@@ -59,14 +59,33 @@ def main(argv):
 
     for ftpl in glob('../../../../shared/retro/*.tpl'):
 
-        #f = ftpl.strip('.tpl')
         f = os.path.basename(ftpl).replace('.tpl', '')
-        #print(ftpl, f)
         os.system(f'/bin/cp {ftpl} {f}')
-        os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/g; s/<RSTHOURS>/{rst_hr:d}/g; s/<RSTMINUTES>/{rst_mn:d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
-        
+        replace_brackets(f, {'DOMAIN': domain,        'DOM': domain[:2],         'STARTYEAR': f'{t1:%Y}',     'STARTMONTH': f'{t1:%m}', 'STARTDAY': f'{t1:%d}',
+                             'NDAYS':  f'{ndays:d}',  'RSTHOURS': f'{rst_hr:d}', 'RSTMINUTES': f'{rst_mn:d}', 'SBATCHTIME': trun,       'NNODES': f'{nnodes:d}',
+                             'NPROCS': f'{nprocs:d}', 'PARTITION': partition,    'TPN': f'{tpn:d}',           'MODULES': modules})
+
         if (not config_dom['lake']) and f=='hydro.namelist':
-            os.system(f'sed -i "s#outlake  = 1#outlake  = 0#g; s#route_lake_f#!route_lake_f#g" {f}')
+            replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
+
+    # check restart files
+    frestart = f'../../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
+    if not os.path.isfile(frestart):
+        print(f'{frestart} not found, quitting now.')
+        return 1
+    frestart = f'../../restart/HYDRO_RST.{t1:%Y-%m-%d}_00:00_DOMAIN1'
+    if not os.path.isfile(frestart):
+        print(f'{frestart} not found, quitting now.')
+        return 1
+    
+    # check forcing files
+    t = t1
+    while t<=t2:
+        fforcing = f'../../forcing/1km_hourly/{t1:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+        if not os.path.isfile(fforcing):
+            print(f'{fforcing} not found, quitting now.')
+            return 1
+        t += timedelta(days=1)
 
     ret = subprocess.check_output(['sbatch run_wrf_hydro.sh'], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
