@@ -66,7 +66,7 @@ def main(argv):
 def update_prisms():
 
     # get current UTC time
-    curr_time  = datetime.utcnow()    
+    curr_time  = datetime.utcnow() - timedelta(days=1) # add 1 days buffer for PRISM
     curr_month = datetime(curr_time.year, curr_time.month, 1)
 
     ptypes  = ['recent', 'provisional']

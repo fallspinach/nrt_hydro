@@ -85,11 +85,11 @@ def main(argv):
         
         tt1 = last_stnl + timedelta(days=1)
         tt2 = last_prsm_provis + timedelta(days=1)
-        cmd00 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12'
-        cmd22 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python fill_stage4_with_nldas2.py'
+        cmd00 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=6'
+        cmd22 = 'unset SLURM_MEM_PER_NODE; mpirun -np 6 python fill_stage4_with_nldas2.py'
         
         # Merge
-        cmd = f'{cmd00} -t 00:30:00 -J st4nl2 --wrap="{cmd22} {t1:%Y%m%d} {t2:%Y%m%d} {prodtype}" -o {logdir}/st4nl2_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
+        cmd = f'{cmd00} -t 00:30:00 -J st4nl2 --wrap="{cmd22} {t1:%Y%m%d} {t2:%Y%m%d}" -o {logdir}/st4nl2_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'; print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid1 = ret.decode().split(' ')[-1].rstrip()
         print(f'StageIV & NLDAS-2 precip merging job ID is: {jid1}')

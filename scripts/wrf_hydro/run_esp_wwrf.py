@@ -83,7 +83,7 @@ def main(argv):
                     tclim2 = datetime(yclim, 12, 31)
                 else:
                     tclim1 = datetime(yclim, 8, 1)
-                    tclim2 = datetime(yclim+1, 5, 31)
+                    tclim2 = datetime(yclim+1, 6, 1)
                     os.system(f'mkdir -p {ens:02d}/{t2.year:d}')
 
                 tclim = tclim1

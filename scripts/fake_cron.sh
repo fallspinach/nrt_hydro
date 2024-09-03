@@ -55,7 +55,7 @@ while true; do
     
         # update WWRF deterministic (ECMWF) forecast forcing
         flog=forcing/log/update_wwrf_`date -u +\%Y\%m\%d_\%H`z.txt
-        sbatch -t 00:20:00 --nodes=1 --ntasks-per-node=10 -p cw3e-shared -A cwp101 -J wwrfdet -o $flog --wrap="unset SLURM_MEM_PER_NODE; mpirun -np 10 python scripts/forcing/process_wwrf.py"
+        sbatch -t 00:30:00 --nodes=1 --ntasks-per-node=10 --mem=30G -p cw3e-shared -A cwp101 -J wwrfdet -o $flog --wrap="unset SLURM_MEM_PER_NODE; mpirun -np 10 python scripts/forcing/process_wwrf.py"
         
         # update WWRF ensemble forecast forcing between September and April
         if [ `date -u +%m` -le "04" ] || [ `date -u +%m` -ge "09" ]; then
