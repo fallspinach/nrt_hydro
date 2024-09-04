@@ -1,7 +1,11 @@
 ''' Run West-WRF + ESP forecast
 
-Usage:
-    python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2]
+    (1) to set up forcing links:
+        python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update]
+        
+    (2) to run WRF-Hydro ensemble simulations after the forcing links have been set up:
+        python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2]
+        
 Default values:
     must specify all
 '''
@@ -21,51 +25,13 @@ from utilities import config, find_last_time
 yclim1 = 1979
 yclim2 = 2023
 
-## main function
-def main(argv):
+## setup links
+def setup_links(domain, t1, t2, tupdate):
 
-    '''main loop'''
+    '''setup links for ensemble forecast'''
     
-    domain = argv[0]
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/run'
-
-    t1 = datetime.strptime(argv[1], '%Y%m%d')
-    t2 = datetime.strptime(argv[2], '%Y%m%d')
-    t1 = t1.replace(tzinfo=pytz.utc)
-    t2 = t2.replace(tzinfo=pytz.utc)
-    tupdate = datetime.strptime(argv[3], '%Y%m%d')
-    tupdate = tupdate.replace(tzinfo=pytz.utc)
-    if len(argv)>4:
-        ens1 = int(argv[4])
-        ens2 = int(argv[5])
-        link_only = False
-    else:
-        link_only = True
-    ndays = (t2+timedelta(days=1)-t1).days
-
-    tpn = config['cores_per_node']
-    config_dom = config['wrf_hydro'][domain]
-    minperday = config_dom['minperday']
-    trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
-    trun = f'{trun1.day-1}-{trun1:%H:%M:%S}'
-    nnodes    = config_dom['nnodes']
-    nprocs    = config_dom['nprocs']
-    partition = config_dom['partition']
-    modules   = config['modules']
-    
-    # single shared node case
-    if nprocs<tpn:
-        tpn = nprocs
-
-    if ndays>31:
-        rst_hr = -99999
-        rst_mn = -99999
-    else:
-        rst_hr = 24
-        rst_mn = 1440
-
     # create forcing links
-    forcedir = f'{workdir}/../forcing/{t1.year:d}-{t2.year:d}'
+    forcedir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/forcing/{t1.year:d}-{t2.year:d}'
     if not os.path.isdir(forcedir):
 
         print('Creating forcing links ...')
@@ -112,67 +78,94 @@ def main(argv):
 
                 ens += 1
                 
-    if link_only:
-        # link WestWRF ensemble forecasts
-        print('Creating links to West-WRF ensemble forecasts.')
-        os.chdir(forcedir)
-        if t1.month<4 or t1.month>9:
-            print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
-            tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
-            max_lead = 7
-        else:
-            print('  Apr 1 - Sep 30 season, using WWRF deterministic forecast')
-            tlast = find_last_time(f'../NRT_ens/42/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
-            # don't go beyond 7-day forecasts (for makeup runs that are executed later)
-            max_lead = 5 # avoid overkilling the ensemble spread by the 10-day deterministic forecast
+    # link WestWRF ensemble forecasts
+    print('Creating links to West-WRF ensemble forecasts.')
+    os.chdir(forcedir)
+    if t1.month<4 or t1.month>9:
+        print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
+        tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+        max_lead = 7
+    else:
+        print('  Apr 1 - Sep 30 season, using WWRF deterministic forecast')
+        tlast = find_last_time(f'../NRT_ens/42/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+        # don't go beyond 7-day forecasts (for makeup runs that are executed later)
+        max_lead = 5 # avoid overkilling the ensemble spread by the 10-day deterministic forecast
             
-        if tlast > tupdate+timedelta(days=max_lead-1):
-            tlast = tupdate+timedelta(days=max_lead-1)
-        print(f'Last ensemble forecast date is: {tlast:%Y-%m-%d}; forecast update date is {tupdate:%Y-%m-%d}')
-        for ens in range(1, 43):
-            tforc = tupdate
-            #while tforc<t1+timedelta(days=7):
-            while tforc<=tlast:
-                if t1.month<4 or t1.month>9:
-                    fww   = f'../NRT_ens/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
-                else:
-                    fww   = f'../NRT_ens/42/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
-                fforc = f'{ens:02d}/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
-                #print(f'{forcedir}/{fww}')
-                if os.path.isfile(fww):
-                    ftemp = nc.Dataset(fww, 'r')
-                    if ftemp['time'].size==24:
-                        os.system(f'rm -f {fforc}')
-                        os.system(f'ln -s ../../{fww} {fforc}')
-                        if ens==1:
-                            print(f'{tforc:%Y-%m-%d} is found in West-WRF ensemble #1.')
-                    else:
-                        print(f'{tforc:%Y-%m-%d} is found in West-WRF ensemble #{ens:02d} but has fewer than 24 time steps.')
-                    ftemp.close()
-                else:
-                    if ens==1:
-                        print(f'{tforc:%Y-%m-%d} is not found in West-WRF ensemble #1.')
-                tforc += timedelta(days=1)
-                
-        # link NRT monitor forcing
-        print('Creating links to NRT forcing.')
-        tlast = find_last_time('../nrt/202?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
-        if tlast > tupdate:
-            tlast = tupdate
-        print(f'Use NRT monitor forcing date until: {tlast:%Y-%m-%d}')
-        for ens in range(1, 43):
-            tforc = t1
-            while tforc<=tlast:
-                fww   = f'../nrt/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
-                fforc = f'{ens:02d}/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
-                #print(forcedir+'/'+fww)
-                if os.path.isfile(fww):
+    if tlast > tupdate+timedelta(days=max_lead-1):
+        tlast = tupdate+timedelta(days=max_lead-1)
+    print(f'Last ensemble forecast date is: {tlast:%Y-%m-%d}; forecast update date is {tupdate:%Y-%m-%d}')
+    for ens in range(1, 43):
+        tforc = tupdate
+        #while tforc<t1+timedelta(days=7):
+        while tforc<=tlast:
+            if t1.month<4 or t1.month>9:
+                fww   = f'../NRT_ens/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
+            else:
+                fww   = f'../NRT_ens/42/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
+            fforc = f'{ens:02d}/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            #print(f'{forcedir}/{fww}')
+            if os.path.isfile(fww):
+                ftemp = nc.Dataset(fww, 'r')
+                if ftemp['time'].size==24:
                     os.system(f'rm -f {fforc}')
                     os.system(f'ln -s ../../{fww} {fforc}')
-                tforc += timedelta(days=1)
+                    if ens==1:
+                        print(f'{tforc:%Y-%m-%d} is found in West-WRF ensemble #1.')
+                else:
+                    print(f'{tforc:%Y-%m-%d} is found in West-WRF ensemble #{ens:02d} but has fewer than 24 time steps.')
+                ftemp.close()
+            else:
+                if ens==1:
+                    print(f'{tforc:%Y-%m-%d} is not found in West-WRF ensemble #1.')
+            tforc += timedelta(days=1)
+                
+    # link NRT monitor forcing
+    print('Creating links to NRT forcing.')
+    tlast = find_last_time('../nrt/202?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
+    if tlast > tupdate:
+        tlast = tupdate
+    print(f'Use NRT monitor forcing date until: {tlast:%Y-%m-%d}')
+    for ens in range(1, 43):
+        tforc = t1
+        while tforc<=tlast:
+            fww   = f'../nrt/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            fforc = f'{ens:02d}/{tforc:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            #print(forcedir+'/'+fww)
+            if os.path.isfile(fww):
+                os.system(f'rm -f {fforc}')
+                os.system(f'ln -s ../../{fww} {fforc}')
+            tforc += timedelta(days=1)
         
-        return 1
+    return 0
  
+def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
+
+    '''run WRF-Hydro ensemble simulations'''
+        
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/run'
+    ndays = (t2+timedelta(days=1)-t1).days
+
+    tpn = config['cores_per_node']
+    config_dom = config['wrf_hydro'][domain]
+    minperday = config_dom['minperday']
+    trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
+    trun = f'{trun1.day-1}-{trun1:%H:%M:%S}'
+    nnodes    = config_dom['nnodes']
+    nprocs    = config_dom['nprocs']
+    partition = config_dom['partition']
+    modules   = config['modules']
+    
+    # single shared node case
+    if nprocs<tpn:
+        tpn = nprocs
+
+    if ndays>31:
+        rst_hr = -99999
+        rst_mn = -99999
+    else:
+        rst_hr = 24
+        rst_mn = 1440
+        
     for ens in range(ens1, ens2+1):
 
         os.chdir(f'{workdir}/{ens:02d}')
@@ -204,7 +197,22 @@ def main(argv):
 
     return 0
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
 
-        
+if __name__ == '__main__':
+    
+    argv = sys.argv[1:]
+    
+    domain = argv[0]
+    t1 = datetime.strptime(argv[1], '%Y%m%d')
+    t2 = datetime.strptime(argv[2], '%Y%m%d')
+    t1 = t1.replace(tzinfo=pytz.utc)
+    t2 = t2.replace(tzinfo=pytz.utc)
+    tupdate = datetime.strptime(argv[3], '%Y%m%d')
+    tupdate = tupdate.replace(tzinfo=pytz.utc)
+
+    if len(argv)>4:
+        ens1 = int(argv[4])
+        ens2 = int(argv[5])
+        run_ensemble(domain, t1, t2, tupdate, ens1, ens2)
+    else:
+        setup_links(domain, t1, t2, tupdate)        

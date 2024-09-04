@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
 
@@ -70,13 +71,9 @@ def main(argv):
     
     data *= kafperday
     for m in range(ntimes):
-        mds = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         month = int(tstamps[m].split('-')[1])
         year  = int(tstamps[m].split('-')[0])
-        if year%4==0 and month==2:
-            md = 29
-        else:
-            md = mds[month-1]
+        md = monthrange(year, month)[1] # number of days in the month
         data[:, m] *= md
 
     for i,name in zip(site_list.index, site_list['name']):
