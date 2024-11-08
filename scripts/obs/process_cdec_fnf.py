@@ -26,11 +26,11 @@ def main(argv):
     '''main loop'''
     
     cdec_dir  = f'{config["base_dir"]}/obs/cdec'
-    site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/cnrfc/b-120/site_list_25.csv')
 
     date_0 = datetime(1979, 1, 1)
     
     os.chdir(cdec_dir)
+    site_list = pd.read_csv('site_list_fnf.csv')
 
     yesterday = datetime.today() - timedelta(days=1)
     lastmonth = datetime.today() - relativedelta(months=1)
@@ -85,7 +85,8 @@ def main(argv):
         data2['Flow'] = data2['Flow'].multiply(0.001)
         # fill the last record with values derived from daily data if monthly data not released yet
         if data2.index[-1].month==data3.index[-2].month and np.isnan(data2.iloc[-1]['Flow']):
-            data2.iloc[-1]['Flow'] = data3.iloc[-2]['Flow']
+            #data2.iloc[-1]['Flow'] = data3.iloc[-2]['Flow']
+            data2.loc[data2.index[-1], 'Flow'] = data3.loc[data3.index[-2], 'Flow']
         data2.to_csv(f'fnf/FNF_monthly_{site}.csv', na_rep='NaN', float_format='%g')
 
 
