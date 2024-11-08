@@ -33,8 +33,8 @@ for s,i1 in enumerate(alls):
         print(rank, s, i1, i2)
 
         if p==-1:
-            #cmd = f'ncks -d {dim},{i1},{i2} {retro}.{v} split/{retro}.{v}.s{s:02d}'
-            #print(cmd); os.system(cmd)
+            cmd = f'ncks -d {dim},{i1},{i2} {retro}.{v} split/{retro}.{v}.s{s:02d}'
+            print(cmd); os.system(cmd)
             for o in ['ydrunmin', 'ydrunmax']:
                 cmd = f'cdo -O {o},31 split/{retro}.{v}.s{s:02d} split/{retro}.{v}.{o}.s{s:02d}' 
                 print(cmd); os.system(cmd)

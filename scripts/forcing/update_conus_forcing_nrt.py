@@ -27,6 +27,9 @@ logdir    = f'{config["base_dir"]}/forcing/log'
 stg4_path = f'{config["base_dir"]}/forcing/stage4'                      # path to Stage IV files
 nld2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
 hrrr_path = f'{config["base_dir"]}/forcing/hrrr/analysis'               # path to HRRR analysis
+out_path  = f'{config["base_dir"]}/forcing/nwm/1km'
+
+globus_path = 'm3pan@skyriver.ucsd.edu:Hydro/wrf_hydro/forcing/nwm/conus'
 
 prodtype = 'nrt'
 
@@ -112,6 +115,16 @@ def main(argv):
     ret = subprocess.check_output([cmd], shell=True)
     jid4 = ret.decode().split(' ')[-1].rstrip()
     print(f'Mergetime and subset forcing job ID is: {jid4}')
+
+    # rsync a copy to skyriver for Globus share
+    rcmd = f'rsync -a {out_path}/conus/{prodtype}/{t1:%Y}/{t1:%Y%m}* {globus_path}/{prodtype}/{t1:%Y}/'
+    if t1.year!=t2.year or t1.month!=t2.month:
+        rcmd += f'; rsync -a {out_path}/conus/{prodtype}/{t2:%Y}/{t2:%Y%m}* {globus_path}/{prodtype}/{t2:%Y}/'
+    cmd = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=1 -d afterok:{jid1}:{jid2}:{jid3}:{jid4} -t 02:00:00 -J rsync --wrap="{rcmd}" -o {logdir}/rsync_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid5 = ret.decode().split(' ')[-1].rstrip()
+    print(f'Job ID to rsync NRT forcing to skyriver Globus share is: {jid5}')
     
     return 0
 

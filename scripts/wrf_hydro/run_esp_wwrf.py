@@ -20,7 +20,7 @@ from glob import glob
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
-from utilities import config, find_last_time
+from utilities import config, find_last_time, replace_brackets
 
 yclim1 = 1979
 yclim2 = 2023
@@ -177,10 +177,11 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
 
             f = os.path.basename(ftpl).replace('.tpl', '')
             os.system(f'/bin/cp {ftpl} {f}')
-            os.system(f'sed -i "s/<DOMAIN>/{domain}/g; s/<DOM>/{domain[:2]}/g; s/<STARTYEAR>/{t1.year:d}/g; s/<STARTMONTH>/{t1.month:02d}/g; s/<STARTDAY>/{t1.day:02d}/g; s/<ENDYEAR>/{t2.year:d}/g; s/<NDAYS>/{ndays:d}/g; s/<SBATCHTIME>/{trun}/; s/<RSTHOURS>/{rst_hr:d}/; s/<RSTMINUTES>/{rst_mn:d}/; s/<ENS>/{ens:02d}/g; s/<NNODES>/{nnodes:d}/g; s/<NPROCS>/{nprocs:d}/g; s/<UPDATEYMD>/{tupdate:%Y%m%d}/g; s/<PARTITION>/{partition}/g; s/<TPN>/{tpn:d}/g; s#<MODULES>#{modules}#g" {f}')
-
+            replace_brackets(f, {'DOMAIN': domain, 'DOM': domain[:2], 'STARTYEAR': f'{t1:%Y}', 'STARTMONTH': f'{t1:%m}', 'STARTDAY': f'{t1:%d}', 'ENDYEAR': f'{t2:%Y}', 
+                            'NDAYS':  f'{ndays}', 'RSTHOURS': f'{rst_hr}', 'RSTMINUTES': f'{rst_mn}', 'ENS': f'{ens:02d}', 'SBATCHTIME': trun, 'NNODES': f'{nnodes}', 
+                            'NPROCS': f'{nprocs}', 'UPDATEYMD': f'{tupdate:%Y%m%d}', 'PARTITION': partition, 'TPN': f'{tpn}', 'MODULES': modules})
             if (not config_dom['lake']) and f=='hydro.namelist':
-                os.system(f'sed -i "s#outlake  = 1#outlake  = 0#g; s#route_lake_f#!route_lake_f#g" {f}')
+                replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
 
         cmd = f'sbatch -J espww{ens:02d} run_wrf_hydro.sh'
         ret = subprocess.check_output([cmd], shell=True)

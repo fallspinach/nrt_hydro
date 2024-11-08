@@ -52,7 +52,7 @@ def main(argv):
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
     
     # figure out the water year
-    wy      = curr_day.year if curr_day.month>=10 else curr_day.year-1
+    wy      = curr_day.year if curr_day.month>=13 else curr_day.year-1
     fcst_dir = f'links/NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     

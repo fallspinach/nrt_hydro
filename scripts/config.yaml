@@ -78,7 +78,7 @@ expanse:
             nprocs:    16
             minperday:  2.5
             lake:       False
-
+            climrange:  [1979, 2023]
     obs:
         # products to process
         products:   ['modis']

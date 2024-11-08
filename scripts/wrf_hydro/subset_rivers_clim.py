@@ -71,10 +71,10 @@ def main(argv):
         df = pd.read_csv(fin)
         
         if t2.year%4!=0 or (t2.year%4==0 and t2.month<2):
-            leapday = df[(df['Date']=='2020-02-29')].index
+            leapday = df[(df['Date']==f'{y2}-02-29')].index
             df.drop(leapday, inplace=True)
         
-        df['Date'] = df['Date'].apply(lambda x: x.replace('2020', t1.strftime('%Y')))
+        df['Date'] = df['Date'].apply(lambda x: x.replace(f'{y2}', t1.strftime('%Y')))
         
         if t1.year==t2.year:
             badrange = df[(df['Date']<t1.strftime('%Y-%m-%d')) | (df['Date']>t2.strftime('%Y-%m-%d'))].index

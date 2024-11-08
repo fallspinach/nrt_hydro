@@ -131,7 +131,7 @@ def main(argv):
     
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_rivers_nrt.py'
         flog = f'{workdir}/log/extract_rivers_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=20G -J "exrivnrt" --wrap="{cmd1} {domain}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=30G -J "exrivnrt" --wrap="{cmd1} {domain}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()
