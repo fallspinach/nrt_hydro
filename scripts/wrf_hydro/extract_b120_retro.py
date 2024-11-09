@@ -1,7 +1,7 @@
 ''' Extract flows from WRF-Hydro retro simulation for all B-120 sites
 
 Usage:
-    python extract_b120_retro.py [domain] [yyyy1] [yyyy2]
+    python extract_b120_retro.py [domain] [yyyymm1] [yyyymm2]
 Default values:
     must specify all
 '''
@@ -20,13 +20,8 @@ from dateutil.relativedelta import relativedelta
 from calendar import monthrange
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
+from cdf_match import sparse_cdf_match
 
-from mpi4py import MPI
-
-# MPI setup
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
 
 ## main function
 def main(argv):
@@ -35,75 +30,142 @@ def main(argv):
 
     domain = argv[0]
 
-    t1 = datetime.strptime(argv[1], '%Y')
-    t2 = datetime.strptime(argv[2], '%Y')
+    t1 = datetime.strptime(argv[1], '%Y%m')
+    t2 = datetime.strptime(argv[2], '%Y%m')
     
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output'
     os.chdir(workdir)
-    
+
+    # Units: thousand acre feet for (TAF or KAF) monthly flow and cubic feet per second (CFS) for daily flow
     kafperday = 86400/1233.48/1000
+    cmstocfs  = 35.3147
     
     site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/b-120/site_list_25.csv')
     nsites = site_list.shape[0]
 
-    fnin = f'1km_monthly/{t2:%Y}.CHRTOUT_DOMAIN1.monthly'
-    fin  = nc.Dataset(fnin, 'r')
-    nt  = fin['time'].size
-    fin.close()
+    ntimes_daily   = 0
+    ntimes_monthly = 0
+    tstamps_daily = []
+    tstamps_monthly = []
     
-    ntimes = (t2.year-t1.year)*12 + nt
-    
-    data = np.zeros((nsites, ntimes))
-    tstamps = []
-    mcnt = 0
     t = t1
     while t<=t2:
-        
-        fnin = f'1km_monthly/{t:%Y}.CHRTOUT_DOMAIN1.monthly'
-        fin  = nc.Dataset(fnin, 'r')
-        print(f'Year {t:%Y}')
 
-        nt = fin['time'].size
+        print(f'Extracting {t:%Y-%m}')
         
+        # extract daily data
+        fnin_daily = f'1km_daily/{t:%Y}/{t:%Y%m}.CHRTOUT_DOMAIN1'
+        fin_daily  = nc.Dataset(fnin_daily, 'r')
+        nt_daily   = fin_daily['time'].size
+        ntimes_daily += nt_daily
+        tstamps_daily.extend([nc.num2date(fin_daily['time'][i], fin_daily['time'].units).strftime('%Y-%m-%d') for i in range(nt_daily)])
+        data_tmp = np.zeros((nsites, nt_daily))
         for i,row in zip(site_list.index, site_list['row']):
-            data[i, mcnt:mcnt+nt] = fin['streamflow'][:, row]
-            if t==t1:
-                print(f'{site_list["name"][i]} {site_list["id"][i]} {fin["feature_id"][row]}')
-            
-        tstamps.extend([nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-16') for i in range(nt)])
-        fin.close()
+            data_tmp[i, :] = fin_daily['streamflow'][:, row]
+        if t==t1:
+            data_daily = data_tmp
+        else:
+            data_daily = np.append(data_daily, data_tmp, 1)
+        fin_daily.close()
+        
+        # extract monthly data
+        fnin_monthly = f'1km_monthly/{t:%Y%m}.CHRTOUT_DOMAIN1.monthly'
+        fin_monthly  = nc.Dataset(fnin_monthly, 'r')
+        ntimes_monthly += 1
+        tstamps_monthly.append(t.strftime('%Y-%m-%d'))
+        data_tmp = np.zeros((nsites, 1))
+        for i,row in zip(site_list.index, site_list['row']):
+            data_tmp[i, :] = fin_monthly['streamflow'][:, row]
+        if t==t1:
+            data_monthly = data_tmp
+        else:
+            data_monthly = np.append(data_monthly, data_tmp, 1)
+        fin_monthly.close()
+        
+        t += relativedelta(months=1)
 
-        mcnt += 12
-        t += relativedelta(years=1)
+    # convert units
+    data_daily   *= cmstocfs
+    data_monthly *= kafperday
     
-    data *= kafperday
-    for m in range(ntimes):
-        month = int(tstamps[m].split('-')[1])
-        year  = int(tstamps[m].split('-')[0])
+    for m in range(ntimes_monthly):
+        month = int(tstamps_monthly[m].split('-')[1])
+        year  = int(tstamps_monthly[m].split('-')[0])
         md = monthrange(year, month)[1] # number of days in the month
-        data[:, m] *= md
+        data_monthly[:, m] *= md
 
+    # write raw simulated streamflow, both daily and monthly
+    if not os.path.isdir(f'basins/{t1:%Y%m}-{t2:%Y%m}/simulated'):
+        os.system(f'mkdir -p basins/{t1:%Y%m}-{t2:%Y%m}/simulated')
+    
     for i,name in zip(site_list.index, site_list['name']):
 
         if name=='TRF2':
             continue
-        df = pd.DataFrame({'Date': tstamps})
-        df.set_index('Date', inplace=True, drop=True)
+        
+        df_daily   = pd.DataFrame({'Date': tstamps_daily})
+        df_monthly = pd.DataFrame({'Date': tstamps_monthly})
+        df_daily.set_index('Date', inplace=True, drop=True)
+        df_monthly.set_index('Date', inplace=True, drop=True)
+        
         if name=='TRF1':
-            df['Qsim'] = np.squeeze(data[i, :]) - np.squeeze(data[i+1, :])
+            df_daily['Qsim']   = np.squeeze(data_daily[i, :]) - np.squeeze(data_daily[i+1, :])
+            df_monthly['Qsim'] = np.squeeze(data_monthly[i, :]) - np.squeeze(data_monthly[i+1, :])
         else:
-            df[f'Qsim'] = np.squeeze(data[i, :])
+            df_daily['Qsim']   = np.squeeze(data_daily[i, :])
+            df_monthly['Qsim'] = np.squeeze(data_monthly[i, :])
+            
         if name=='TRF1':
             name = 'TRF'
         
-        os.system(f'mkdir -p basins/{t1:%Y}-{t2:%Y}/simulated')
-        fnout = f'basins/{t1:%Y}-{t2:%Y}/simulated/{name}.csv'
-        df.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
+        fnout_daily   = f'basins/{t1:%Y%m}-{t2:%Y%m}/simulated/{name}_daily.csv'
+        fnout_monthly = f'basins/{t1:%Y%m}-{t2:%Y%m}/simulated/{name}_monthly.csv'
+        df_daily.to_csv(fnout_daily, index=True, float_format='%.3f', date_format='%Y-%m-%d')
+        df_monthly.to_csv(fnout_monthly, index=True, float_format='%.3f', date_format='%Y-%m-%d')
+        
+    # calculate CDF matched streamflow and write it together with the simulated and observed values, monthly only
+    if not os.path.isdir(f'basins/{t1:%Y%m}-{t2:%Y%m}/combined'):
+        os.system(f'mkdir -p basins/{t1:%Y%m}-{t2:%Y%m}/combined')
+    for i,name in zip(site_list.index, site_list['name']):
+
+        if name=='TRF2':
+            continue
+        
+        df_monthly = pd.DataFrame({'Date': tstamps_monthly})
+        df_monthly['Date'] = pd.to_datetime(df_monthly['Date'])
+        df_monthly.set_index('Date', inplace=True, drop=True)
+        
+        if name=='TRF1':
+            df_monthly['Qsim'] = np.squeeze(data_monthly[i, :]) - np.squeeze(data_monthly[i+1, :])
+        else:
+            df_monthly['Qsim'] = np.squeeze(data_monthly[i, :])
+            
+        if name=='TRF1':
+            name = 'TRF'
+
+        # read CDEC monthly data
+        cdec_file = f'{config["base_dir"]}/obs/cdec/fnf/FNF_monthly_{name}.csv'
+        cdec_data = pd.read_csv(cdec_file, index_col='Date', parse_dates=True)
+
+        qmatch = np.zeros(len(df_monthly.index))
+        fnf    = np.zeros(len(df_monthly.index))+np.nan
+        cnt = 0
+        for idx,row in df_monthly.iterrows():
+            [matched, mavg] = sparse_cdf_match(domain, np.array([row['Qsim']]), name, idx.month, idx.year)
+            #print(name, idx.month, idx.year, row['Qsim'], matched[0])
+            qmatch[cnt] = matched[0]
+            qobs = cdec_data[cdec_data.index==idx]
+            if len(qobs)==1:
+                fnf[cnt] = qobs.to_numpy()[0][0]
+            cnt += 1
+
+        df_monthly['FNF']    = fnf
+        df_monthly['Qmatch'] = qmatch
+        fnout_monthly = f'basins/{t1:%Y%m}-{t2:%Y%m}/combined/{name}_monthly.csv'
+        df_monthly.to_csv(fnout_monthly, index=True, float_format='%.3f', date_format='%Y-%m-%d')
         
     return 0
 
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-        
