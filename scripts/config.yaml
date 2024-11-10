@@ -60,18 +60,24 @@ expanse:
             nprocs:   128
             minperday:  5
             lake:       True
+            climrange:  [1979, 2023]
+            lonlatbox:  [-125, -67, 25, 53]
         cnrfc:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    32
             minperday:  2
             lake:       True
+            climrange:  [1979, 2023]
+            lonlatbox:  [-125, -113, 32, 44]
+            mapdpi:    50
         cbrfc:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    64
             minperday:  2
             lake:       False
+            climrange:  [1979, 2023]
         basins24:
             partition: 'cw3e-shared'
             nnodes:     1
@@ -79,6 +85,8 @@ expanse:
             minperday:  2.5
             lake:       False
             climrange:  [1979, 2023]
+            lonlatbox:  [-124, -117, 35, 42]
+            mapdpi:    80
     obs:
         # products to process
         products:   ['modis']

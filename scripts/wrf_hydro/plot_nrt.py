@@ -1,13 +1,11 @@
-''' Plot NRT WRF-Hydro results and forcing
+''' Plot NRT WRF-Hydro results and forcing for web map overlays
+    (pure data pixels only, no other map information)
 
 Usage:
     mpirun -np [# of procs] python plot_nrt.py [domain] [yyyymm1] [yyyymm2] [monthly_flag]
 Default values:
-    [# of procs]: must specify
-    [domain]: "cnrfc"
-    [yyyymm1]: must specify
-    [yyyymm2]: must specify
-    [monthly_flag]: left empty for daily plots or "monthly" for monthly plots
+    [monthly_flag] is optional (left empty for daily plots or "monthly" for monthly plots)
+    others must be specified
 '''
 
 __author__ = 'Ming Pan'
@@ -17,6 +15,7 @@ __status__ = 'Development'
 import sys, os, pytz
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 from mpi4py import MPI
 import netCDF4 as nc
 import numpy as np
@@ -129,9 +128,11 @@ def main(argv):
         alltimes.append(t)
         t += step
 
-    cnrfc = np.array([-125, -113, 32, 44], dtype=float)/180*np.pi
-    lonlim = cnrfc[:2]
-    latlim = np.log(np.tan(cnrfc[2:]/2+np.pi/4))
+    map_bounds = np.array(config['wrf_hydro'][domain]['lonlatbox'], dtype=float)/180*np.pi
+    lonlim = map_bounds[:2]
+    latlim = np.log(np.tan(map_bounds[2:]/2+np.pi/4))
+    figsize = (16, 16)
+    dpi = config['wrf_hydro'][domain]['mapdpi']
 
     plt.ioff()
     
@@ -168,7 +169,7 @@ def main(argv):
                     sdata = np.squeeze(f.variables['SNEQV'][i, :, :])
                     data = np.ma.masked_where(sdata<10, data)
     
-                fig1 = plt.figure(figsize=(16,16))
+                fig1 = plt.figure(figsize=figsize)
                 ax1 = fig1.add_axes([0,0,1,1])
         
                 cmap, norm, ticks = cmap_listed(imvars[j], 0, 100)
@@ -180,16 +181,21 @@ def main(argv):
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
-                fig1.savefig(fout, dpi=50, transparent=True)
-                os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.savefig(fout, dpi=dpi, transparent=True)
+                os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
                 plt.close(fig1)
-                        
+                
         f.close()
                 
         # precipitation and temperature
         os.chdir(f'{nrtdir}/forcing')
         if not monthly_flag:
-            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1 -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+            md = monthrange(t.year, t.month)[1]
+            tn = t + step
+            if t<time2:
+                cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+            else:
+                cmd = f'cdo -O -f nc4 -z zip delete,timestep=1 -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             print(cmd); os.system(cmd)
         else:
             cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
@@ -222,7 +228,7 @@ def main(argv):
                     data -= 273.15
                     cmap, norm, ticks = cmap_listed(imvars[j], -12, 39)
     
-                fig1 = plt.figure(figsize=(16,16))
+                fig1 = plt.figure(figsize=figsize)
                 ax1 = fig1.add_axes([0,0,1,1])
         
                 ax1.pcolormesh(xx, yy, data, shading='auto', cmap=cmap, norm=norm)
@@ -233,12 +239,12 @@ def main(argv):
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
-                fig1.savefig(fout, dpi=50, transparent=True)
-                os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.savefig(fout, dpi=dpi, transparent=True)
+                os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
                 plt.close(fig1)
                 
                 if i==-1 and t==time1:
-                    fig1 = plt.figure(figsize=(16,16))
+                    fig1 = plt.figure(figsize=figsize)
                     ax1 = fig1.add_axes([0.1,0.1,0.8,0.8])
         
                     data = np.ma.masked_where(xland<100000000000, data)
@@ -256,7 +262,7 @@ def main(argv):
                     if not os.path.isdir(dout):
                         os.system(f'mkdir -p {dout}')
                     fig1.savefig(fout, dpi=50, transparent=True)
-                    os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                    os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
                     plt.close(fig1)
 
         f.close()
@@ -280,7 +286,7 @@ def main(argv):
                 
                 cmap, norm, ticks = cmap_listed(imvars[j], 0, 100)
     
-                fig1 = plt.figure(figsize=(16,16))
+                fig1 = plt.figure(figsize=figsize)
                 ax1 = fig1.add_axes([0,0,1,1])
         
                 ax1.pcolormesh(xx, yy, data, shading='auto', cmap=cmap, norm=norm)
@@ -291,12 +297,12 @@ def main(argv):
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
-                fig1.savefig(fout, dpi=50, transparent=True)
-                os.system(f'convert -transparent white {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.savefig(fout, dpi=dpi, transparent=True)
+                os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
                 plt.close(fig1)
                 
                 if i==0 and t==time1:
-                    fig1 = plt.figure(figsize=(16,16))
+                    fig1 = plt.figure(figsize=figsize)
                     ax1 = fig1.add_axes([0.1,0.1,0.8,0.8])
         
                     data = np.ma.masked_where(xland<100000000000, data)
@@ -312,12 +318,11 @@ def main(argv):
                     if not os.path.isdir(dout):
                         os.system(f'mkdir -p {dout}')
                     fig1.savefig(fout, dpi=50, transparent=True)
-                    os.system(f'convert -transparent white -trim {fout} {fout}.png; /bin/mv {fout}.png {fout}')
+                    os.system(f'magick {fout} -transparent white -trim {fout}.png; /bin/mv {fout}.png {fout}')
                     plt.close(fig1)
 
     if rank==0:
         os.chdir(webdir)
-        #os.system('rsync -a -e "ssh -x -i /home/mpan/.ssh/id_rsa_cw3e" imgs/monitor cw3e@cw3e.ucsd.edu:htdocs/wrf_hydro/cnrfc/imgs/')
         
     comm.Barrier()
     return 0
