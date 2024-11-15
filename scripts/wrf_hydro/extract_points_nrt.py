@@ -41,24 +41,26 @@ def main(argv):
 
     # daily output
     fnins = ''
+    tmp_out = f'tmp_out_points_{t1:%Y%m}-{t2:%Y%m}'
     t = t1
     while t<=t2:
         fnins += f' 1km_daily/{t:%Y%m}.LDASOUT_DOMAIN1'
         t += relativedelta(months=1)
-    cmd = f'cdo --sortname -f nc4 -z zip mergetime {fnins} tmp_out.nc'
+    cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_out}'
     print(cmd); os.system(cmd)
     
     # daily forcing
     if flag_include_forcing:
         fnins = ''
+        tmp_for = f'tmp_for_points_{t1:%Y%m}-{t2:%Y%m}'
         t = t1
         while t<=t2:
             fnins += f' ../forcing/1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             t += relativedelta(months=1)
-        cmd = f'cdo --sortname -f nc4 -z zip mergetime {fnins} tmp_for.nc'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_for}'
         print(cmd); os.system(cmd)
 
-    fdata = nc.Dataset('tmp_out.nc', 'r')
+    fdata = nc.Dataset(tmp_out, 'r')
     ntimes = fdata['time'].size
     tstamps = [nc.num2date(t, fdata['time'].units).strftime('%Y-%m-%d') for t in fdata['time'][:]]
 
@@ -79,7 +81,7 @@ def main(argv):
         fnout = f'basins/sites/{row["STA"]}.csv'
         df.to_csv(fnout, index=False, float_format='%.3f', date_format='%Y-%m-%d')
 
-    os.system('rm -f tmp_out.nc')
+    os.system(f'rm -f {tmp_out}')
         
     return 0
 

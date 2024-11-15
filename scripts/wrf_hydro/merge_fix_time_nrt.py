@@ -64,7 +64,7 @@ def main(argv):
         print(cmd); os.system(cmd)
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
-        if config['wrf_hydro'][domain]['lake']:
+        if config['wrf_hydro'][domain]['lake'] or True:
             add_pctl_rank_daily.main([domain, fout])
         cmd = f'cdo -O -f nc4 -z zip add {fout} {xmask} {fout}.nc4; /bin/mv {fout}.nc4 {fout}'
         print(cmd); os.system(cmd)
@@ -76,7 +76,7 @@ def main(argv):
         print(cmd); os.system(cmd)
         cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
         print(cmd); os.system(cmd)
-        if config['wrf_hydro'][domain]['lake']:
+        if config['wrf_hydro'][domain]['lake'] or True:
             add_pctl_rank_monthly.main([domain, fmout])
 
         outtypes = ['CHRTOUT_DOMAIN1']
@@ -140,7 +140,7 @@ def main(argv):
             print(cmd); os.system(cmd)
             cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
             print(cmd); os.system(cmd)
-            if config['wrf_hydro'][domain]['lake']:
+            if config['wrf_hydro'][domain]['lake']  or True:
                 add_pctl_rank_monthly.main([domain, fmout])
 
     return 0

@@ -75,7 +75,7 @@ def main(argv):
     last_scamod   = find_last_time(scamod_path+'/MOD10A1.A202????.nc', 'MOD10A1.A%Y%j.nc')
     
     datastreams = ['Stage-IV Archive', 'Stage-IV Realtime', 'NLDAS-2', 'HRRR Analysis', 'Forcing NRT', 'Forcing PR', 'Forcing Retro',
-                   'WRF-Hydro Reanalysis', 'WRF-Hydro Monitor', 'ESP-WWRF-CCA Forecast', 'WWRF Forecast', 'MODIS Snow', 'Current']
+                   'WRF-Hydro Retro', 'WRF-Hydro NRT', 'ESP-WWRF Fcst', 'WWRF Fcst', 'MODIS Snow', 'Current']
     datastart = [    wy_start,     wy_start,    wy_start,    wy_start,    wy_start,    wy_start,    wy_start,    wy_start,    wy_start, last_whespw1, last_whwwrf1,    wy_start, curr_time]
     dataend   = [last_stage4a, last_stage4r, last_nldas2, last_hrrran, last_fnwmrt, last_fnwmpr, last_fnwmbc, last_whrean, last_whmoni, last_whespw2, last_whwwrf2, last_scamod, curr_time]
     
@@ -109,8 +109,12 @@ def main(argv):
     
     cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
     print(cmd); os.system(cmd)
-    cmd = f'rsync -a {fnstatus} cw3e@cw3e.ucsd.edu:htdocs/wrf_hydro/cnrfc/imgs/monitor/'
-    print(cmd); #os.system(cmd)
+    
+    cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
+    print(cmd); os.system(cmd)
+    
+    #cmd = f'rsync -a {fnstatus} cw3e@cw3e.ucsd.edu:htdocs/wrf_hydro/cnrfc/imgs/monitor/'
+    #print(cmd); os.system(cmd)
     
     if len(argv)>0:
         if argv[0]=='update_gcloud':

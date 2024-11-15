@@ -21,12 +21,6 @@ from calendar import monthrange
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
 
-from mpi4py import MPI
-
-# MPI setup
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
 
 ## main function
 def main(argv):
