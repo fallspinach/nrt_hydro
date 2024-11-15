@@ -22,7 +22,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/ut
 from utilities import config, find_last_time
 
 from mpi4py import MPI
-import add_pctl_rank_daily, add_pctl_rank_monthly
 
 # MPI setup
 comm = MPI.COMM_WORLD
