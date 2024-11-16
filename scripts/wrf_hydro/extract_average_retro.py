@@ -61,7 +61,7 @@ def main(argv):
         while t<=t2:
             fnins += f' 1km_daily/{t:%Y/%Y%m}.LDASOUT_DOMAIN1'
             t += relativedelta(months=1)
-        cmd = f'cdo --sortname -f nc4 -z zip mergetime {fnins} {tmp_out}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_out}'
         print(cmd); os.system(cmd)
     
     if rank==size-1:
@@ -71,7 +71,7 @@ def main(argv):
         while t<=t2:
             fnins += f' ../forcing/1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             t += relativedelta(months=1)
-        cmd = f'cdo --sortname -f nc4 -z zip mergetime {fnins} {tmp_for}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_for}'
         print(cmd); os.system(cmd)
 
     comm.Barrier()    
