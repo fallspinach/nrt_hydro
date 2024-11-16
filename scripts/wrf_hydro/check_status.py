@@ -36,8 +36,6 @@ whespw_path = f'{config["base_dir"]}/wrf_hydro/{domain1}/fcst/esp_wwrf/output'
 scamod_path = f'{config["base_dir"]}/obs/modis/nc'
 
 fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain}/web/imgs/monitor/system_status.csv'
-#fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain1}/web/data/system_status.csv'
-#fnupdate = f'{config["base_dir"]}/wrf_hydro/{domain1}/web/data/esp_wwrf_updates.csv'
 
 ## main function
 def main(argv):
@@ -68,11 +66,6 @@ def main(argv):
     if last_whespw1.month==1:
         last_whespw2 = last_whespw1 + relativedelta(months=7) - timedelta(days=1)
         
-    #espw_updates = [datetime.strptime(os.path.basename(d).split('_')[-1], 'update%Y%m%d') for d in glob(f'{whespw_path}/init202?????_update{last_whespw1:%Y}????')]
-    #espw_updates = [d.strftime('%Y-%m-%d') for d in espw_updates if d>=datetime(2024, 9, 1)]
-    #with open(fnupdate, 'w') as f:
-    #    f.write('\n'.join(espw_updates))
-    
     fcstfiles = glob(f'{whwwrf_path}/????????-????????.CHRTOUT_DOMAIN1')
     fcstfiles.sort()
     lastfcst = os.path.basename(fcstfiles[-1]).split('.')[0]
@@ -116,16 +109,6 @@ def main(argv):
     river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/nrt/rivers'
     cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
     print(cmd); os.system(cmd)
-    
-    #river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain1}/web/data/nrt/rivers'
-    #cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
-    #print(cmd); os.system(cmd)
-    
-    #cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/{domain1}/nrt/output/basins/* {config["base_dir"]}/wrf_hydro/{domain1}/web/data/nrt/'
-    #print(cmd); os.system(cmd)
-    
-    #cmd = f'rsync -a {fnstatus} cw3e@cw3e.ucsd.edu:htdocs/wrf_hydro/cnrfc/imgs/monitor/'
-    #print(cmd); os.system(cmd)
     
     if len(argv)>0:
         if argv[0]=='update_gcloud':
