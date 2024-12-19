@@ -46,13 +46,18 @@ def main(argv):
             site = 'TRF'
         if site=='TRF2':
             continue
+            
+        if site=='SJF':
+            site1 = 'SBF'
+        else:
+            site1 = site
 
         # daily FNF
         if site=='AMF':
             sn = 290
         else:
             sn = 8
-        data = pd.read_csv(f'{query}&dur_code=D&SensorNums={sn:d}&Stations={site}', usecols=['DATE TIME', 'VALUE'], index_col=['DATE TIME'], parse_dates=['DATE TIME'])
+        data = pd.read_csv(f'{query}&dur_code=D&SensorNums={sn:d}&Stations={site1}', usecols=['DATE TIME', 'VALUE'], index_col=['DATE TIME'], parse_dates=['DATE TIME'])
         data.columns=['Flow']; data.index.names=['Date']
         data2 = pd.DataFrame(pd.to_numeric(data['Flow'], errors='coerce').reindex(idx_d, fill_value=pd.NA)).fillna(pd.NA)
         data2.index.names=['Date']
@@ -77,7 +82,7 @@ def main(argv):
 
         # monthly FNF
         sn = 65
-        data = pd.read_csv(f'{query}&dur_code=M&SensorNums={sn:d}&Stations={site}', usecols=['DATE TIME', 'VALUE'], index_col=['DATE TIME'], parse_dates=['DATE TIME'])
+        data = pd.read_csv(f'{query}&dur_code=M&SensorNums={sn:d}&Stations={site1}', usecols=['DATE TIME', 'VALUE'], index_col=['DATE TIME'], parse_dates=['DATE TIME'])
         data.columns=['Flow']; data.index.names=['Date']
         data2 = pd.DataFrame(pd.to_numeric(data['Flow'], errors='coerce').reindex(idx_m, fill_value=pd.NA)).fillna(pd.NA)
         data2.index.names=['Date']

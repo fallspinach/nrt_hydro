@@ -1,7 +1,7 @@
 ''' Merge WRF-Hydro per-day deterministic forecast output files into per-month and make the time dimension compliant to standard format
 
 Usage:
-    mpirun -np [# of procs] python merge_fix_time_wwrf.py [domain] [yyyymm1] [yyyymm2]
+    mpirun -np [# of procs] python merge_fix_time_wwrf.py [domain] [yyyymm1] [yyyymm2] [ens1] [ens2] [fcst_type]
 Default values:
     must specify all
 '''
@@ -36,7 +36,11 @@ def main(argv):
     t2 = datetime.strptime(argv[2], '%Y%m%d')
     ens1 = int(argv[3])
     ens2 = int(argv[4])
-    workdir   = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{argv[5]}/output'
+    if len(argv)>=6:
+        fcst_type = argv[5]
+    else:
+        fcst_type = 'wwrf'
+    workdir   = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{fcst_type}/output'
 
     for ens in range(ens1, ens2+1)[rank::size]:
 

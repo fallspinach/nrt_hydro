@@ -65,6 +65,8 @@ def main(argv):
     last_whespw2 = last_whespw1 + relativedelta(months=6) - timedelta(days=1)
     if last_whespw1.month==1:
         last_whespw2 = last_whespw1 + relativedelta(months=7) - timedelta(days=1)
+    elif last_whespw1.month==12:
+        last_whespw2 = last_whespw1 + relativedelta(months=8) - timedelta(days=1)
         
     fcstfiles = glob(f'{whwwrf_path}/????????-????????.CHRTOUT_DOMAIN1')
     fcstfiles.sort()

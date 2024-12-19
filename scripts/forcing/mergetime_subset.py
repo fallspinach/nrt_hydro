@@ -77,6 +77,8 @@ def main(argv):
 
             if domain=='basins24':
                 fsrc = f'1km/cnrfc/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+            elif domain=='yampa':
+                fsrc = f'1km/cbrfc/{prodtype}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             else:
                 fsrc = fconus
             

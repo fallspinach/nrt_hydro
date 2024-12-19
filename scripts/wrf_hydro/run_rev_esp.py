@@ -1,10 +1,10 @@
-''' Run West-WRF + ESP ensemble forecast
+''' Run Reverse ESP experiment
 
     (1) to set up forcing links:
-        python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update]
+        python run_rev_esp.py [domain] [fcst_start] [fcst_end] [fcst_update]
         
     (2) to run WRF-Hydro ensemble simulations after the forcing links have been set up:
-        python run_esp_wwrf.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2]
+        python run_rev_esp.py [domain] [fcst_start] [fcst_end] [fcst_update] [ens1] [ens2]
         
 Default values:
     must specify all
@@ -32,7 +32,7 @@ def setup_links(domain, t1, t2, tupdate):
     nens = yclim2 - yclim1 + 1
     
     # create forcing links
-    forcedir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/forcing/{t1.year:d}-{t2.year:d}'
+    forcedir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/rev_esp/forcing'
     if not os.path.isdir(forcedir):
 
         print('Creating forcing links ...')
@@ -82,7 +82,7 @@ def setup_links(domain, t1, t2, tupdate):
     # link WestWRF ensemble forecasts
     print('Creating links to West-WRF ensemble forecasts.')
     os.chdir(forcedir)
-    if t1.month<4 or t1.month>12:
+    if t1.month<4 or t1.month>11:
         print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
         tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
         max_lead = 7
@@ -99,7 +99,7 @@ def setup_links(domain, t1, t2, tupdate):
         tforc = tupdate
         #while tforc<t1+timedelta(days=7):
         while tforc<=tlast:
-            if t1.month<4 or t1.month>12:
+            if t1.month<4 or t1.month>11:
                 fww   = f'../NRT_ens/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
             else:
                 fww   = f'../NRT_ens/{nens}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
@@ -143,7 +143,7 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
 
     '''run WRF-Hydro ensemble simulations'''
         
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/esp_wwrf/run'
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/rev_esp/run'
     ndays = (t2+timedelta(days=1)-t1).days
 
     tpn = config['cores_per_node']
@@ -172,9 +172,9 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
         os.chdir(f'{workdir}/{ens:02d}')
 
         # create output dir
-        os.system(f'mkdir -p ../../output/init{t1:%Y%m%d}_update{tupdate:%Y%m%d}/{ens:02d}') 
+        os.system(f'mkdir -p ../../output/{ens:02d}') 
 
-        for ftpl in glob('../../../../../shared/fcst/esp_wwrf/*.tpl'):
+        for ftpl in glob('../../../../../shared/fcst/rev_esp/*.tpl'):
 
             f = os.path.basename(ftpl).replace('.tpl', '')
             os.system(f'/bin/cp {ftpl} {f}')
@@ -184,18 +184,27 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
             if (not config_dom['lake']) and f=='hydro.namelist':
                 replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
 
-        cmd = f'sbatch -J espww{ens:02d} run_wrf_hydro.sh'
+        cmd = f'sbatch -J revesp{ens:02d} run_wrf_hydro.sh'
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()
         print(f'Ensemble #{ens:02d} will run with job ID: {jid}')
 
-        cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 1 python {config["base_dir"]}/scripts/wrf_hydro/merge_fix_time_ens.py'
-        flog = f'{workdir}/log/log_mergefixtime_{t1:%Y%m%d}-{t2:%Y%m%d}_{ens:02d}.txt'
-        cmd = f'sbatch -d afterok:{jid} --nodes=1 --ntasks-per-node=1 --mem=30G -t 01:30:00 -p cw3e-shared -A cwp101 -J pp{ens:02d} --wrap="{cmd1} {domain} {t1:%Y%m%d} {t2:%Y%m%d} {tupdate:%Y%m%d} {ens:d} {ens:d} esp_wwrf" -o {flog}'
-        print(cmd)
-        ret = subprocess.check_output([cmd], shell=True)
-        jid = ret.decode().split(' ')[-1].rstrip()
-        print(f'Mergetime will run for ensemble #{ens:02d} with job ID: {jid}')
+        if t2>tupdate:
+            cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 1 python {config["base_dir"]}/scripts/wrf_hydro/merge_fix_time_wwrf.py'
+            flog = f'{workdir}/log/mergefixtime_{t1:%Y%m%d}_{t2:%Y%m%d}_{ens:02d}.txt'
+            cmd = f'sbatch -d afterok:{jid} --nodes=1 --ntasks-per-node=1 --mem=20G -t 01:00:00 -p cw3e-shared -A cwp101 -J pp{ens:02d} --wrap="{cmd1} {domain} {t1:%Y%m%d} {t2:%Y%m%d} {ens} {ens} rev_esp" -o {flog}'
+            print(cmd)
+            ret = subprocess.check_output([cmd], shell=True)
+            jid = ret.decode().split(' ')[-1].rstrip()
+            print(f'Mergetime will run for ensemble #{ens:02d} with job ID: {jid}')
+
+            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_rivers_wwrf.py'
+            flog = f'{workdir}/log/extract_rivers_{t1:%Y%m}_{t2:%Y%m}_{ens:02d}.txt'
+            cmd = f'sbatch -d afterok:{jid} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 -J "exriwwrf" --wrap="{cmd1} {domain} {t1:%Y%m%d} {t2:%Y%m%d} {ens} {ens} rev_esp" -o {flog}'
+            print(cmd)
+            ret = subprocess.check_output([cmd], shell=True)
+            jid = ret.decode().split(' ')[-1].rstrip()
+            print(f'River extraction will run for ensemble #{ens:02d} with job ID: {jid}')
 
     return 0
 

@@ -31,7 +31,7 @@ while true; do
         
         sleep 60m
     
-    elif  [ $currhour == 10 ]; then
+    elif  [ $currhour == 11 ]; then
     
         # run WRF-Hydro NRT
         for domain in cnrfc basins24; do

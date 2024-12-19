@@ -1,7 +1,7 @@
 ''' Extract flows from West-WRF driven WRF-Hydro forecast for all river reaches in the domain
 
 Usage:
-    python extract_rivers_wwrf.py [domain] [fcst_start] [fcst_end] [ens1] [ens2]
+    python extract_rivers_wwrf.py [domain] [fcst_start] [fcst_end] [ens1] [ens2] [fcst_type]
 Default values:
     [domain]: "cnrfc"
     [fcst_start]: latest West-WRF initialization
@@ -42,7 +42,11 @@ def main(argv):
     else:
         domain = 'cnrfc'
     
-    fcst_type = 'wwrf'
+    if len(argv)>=6:
+        fcst_type = argv[5]
+    else:
+        fcst_type = 'wwrf'
+    
     din  = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{fcst_type}/output'
 
     if len(argv)>=5:

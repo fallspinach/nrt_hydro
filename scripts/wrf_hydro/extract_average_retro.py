@@ -51,8 +51,8 @@ def main(argv):
     tmp_out = f'tmp_out_avg_{t1:%Y%m}-{t2:%Y%m}'
     tmp_for = f'tmp_for_avg_{t1:%Y%m}-{t2:%Y%m}'
 
+    dout = f'basins/{t1:%Y%m}-{t2:%Y%m}/averaged'
     if rank==0:
-        dout = f'basins/{t1:%Y%m}-{t2:%Y%m}/averaged'
         if not os.path.isdir(dout):
             os.system(f'mkdir -p {dout}')
         # daily output
@@ -78,22 +78,22 @@ def main(argv):
     for name in site_names[rank::size]:
         
         fnout = f'{dout}/{name}_SWE.txt'
-        cmd = f'{cdocmd} -mul -selname,SNEQV {tmp_out} ../../domain/masks/{name}.nc > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -selname,SNEQV {tmp_out} > {fnout}'
         os.system(cmd) # print(cmd); os.system(cmd)
         df_swe = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'SWE'], index_col='Date')
         
         fnout = f'{dout}/{name}_SMTOT.txt'
-        cmd = f'{cdocmd} -mul -vertmean -selname,SOIL_M {tmp_out} ../../domain/masks/{name}.nc > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -expr,"SMTOT=sellevel(SOIL_M,1)*0.05+sellevel(SOIL_M,2)*0.15+sellevel(SOIL_M,3)*0.3+sellevel(SOIL_M,4)*0.5" {tmp_out} > {fnout}'
         os.system(cmd) # print(cmd); os.system(cmd)
         df_smtot = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'SMTOT'], index_col='Date')
         
         fnout = f'{dout}/{name}_T2D.txt'
-        cmd = f'{cdocmd} -mul -subc,273.15 -selname,T2D {tmp_for} ../../domain/masks/{name}.nc > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -subc,273.15 -selname,T2D {tmp_for} > {fnout}'
         os.system(cmd) # print(cmd); os.system(cmd)
         df_t2d = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'T2D'], index_col='Date')
         
         fnout = f'{dout}/{name}_PREC.txt'
-        cmd = f'{cdocmd} -mul -mulc,86400 -selname,RAINRATE {tmp_for} ../../domain/masks/{name}.nc > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -mulc,86400 -selname,RAINRATE {tmp_for} > {fnout}'
         os.system(cmd) # print(cmd); os.system(cmd)
         df_prec = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'PREC'], index_col='Date')
         

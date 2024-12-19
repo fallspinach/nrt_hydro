@@ -51,6 +51,9 @@ def main(argv):
         print(cmd); os.system(cmd)
         cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
         print(cmd); os.system(cmd)
+
+    comm.Barrier()
+
     return 0
 
 

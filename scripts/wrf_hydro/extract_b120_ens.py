@@ -1,8 +1,8 @@
-''' Extract monthly flow estimates from WRF-Hydro ensemble for B-120 sites, including Apri-Jul total,
+''' Extract monthly flow estimates from WRF-Hydro ensemble for B-120 sites 
     and calculate some exceedance levels (with and without CDF matching)
 
 Usage:
-    python extract_b120_ens_a2j.py [domain] [fcst_start] [fcst_end] [fcst_update] [fcst_type]
+    python extract_b120_ens.py [domain] [fcst_start] [fcst_end] [fcst_update] [fcst_type]
 Default values:
     must specify all
 '''
@@ -49,13 +49,9 @@ def main(argv):
     fin  = nc.Dataset(fnin, 'r')
     ntimes = fin['time'].size
     tstamps = [nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-01') for i in range(ntimes)]
-    # give April-July sum a special time stamp - July 31
-    tstamps.append( nc.num2date(fin['time'][-1], fin['time'].units).strftime('%Y') + '-07-31' )
-    # find April
-    i_apr = [ts.split('-')[1] for ts in tstamps].index('04')
     fin.close()
 
-    data = np.zeros((nsites, ntimes+1, nens))
+    data = np.zeros((nsites, ntimes, nens))
     for ens in range(1, nens+1):
         
         fnin = f'{ens:02d}/{t1:%Y%m%d}-{t2:%Y%m%d}.CHRTOUT_DOMAIN1.monthly'
@@ -63,7 +59,7 @@ def main(argv):
         print(f'Ens {ens:02d}')
         
         for i,row in zip(site_list.index, site_list['row']):
-            data[i, :ntimes, ens-1] = fin['streamflow'][:, row]
+            data[i, :, ens-1] = fin['streamflow'][:, row]
             
         fin.close()
     
@@ -74,9 +70,6 @@ def main(argv):
         md = monthrange(year, month)[1] # number of days in the month
         data[:, m, :] *= md
 
-    # April-July sum
-    data[:, ntimes, :] = data[:, i_apr:i_apr+4, :].sum(axis=1)
-    
     # calculate exceedance levels
     # AMS formula for exceedance probability with plotting position b is: p = (i-b)/(n+1-2b) and i = (n+1-2b)*p+b
     # using plotting position b=0.4 from Cunnane (1978) for GEV p = (i-0.4)/(n+0.2) and i = (n+0.2)*p+0.4
@@ -111,10 +104,10 @@ def main(argv):
             name = 'TRF'
         
         # calculate exceedance levels
-        ee = np.zeros([probs.size, ntimes+1])        
-        avg = np.zeros(ntimes+1)
+        ee = np.zeros([probs.size, ntimes])        
+        avg = np.zeros(ntimes)
         
-        for m in range(ntimes+1):
+        for m in range(ntimes):
             ensemble = df.iloc[m].to_numpy()
             ensemble.sort()
             ee[:,m] = ensemble[ii_lo]*wt_lo + ensemble[ii_up]*wt_up
@@ -143,22 +136,17 @@ def main(argv):
             name = 'TRF'
         
         # calculate exceedance levels
-        ee = np.zeros([probs.size, ntimes+1])
-        pp = np.zeros([probs.size, ntimes+1])
-        avg = np.zeros(ntimes+1)
+        ee = np.zeros([probs.size, ntimes])
+        pp = np.zeros([probs.size, ntimes])
+        avg = np.zeros(ntimes)
         
-        for m in range(ntimes+1):
+        for m in range(ntimes):
             year  = int(df.index[m].split('-')[0])
             month = int(df.index[m].split('-')[1])
-            # give April-July sum a special month number 0
-            if m==ntimes:
-                month = 0
             [matched, mavg] = sparse_cdf_match(domain, df.iloc[m].to_numpy(), name, month, year)
             df.iloc[m] = matched
             matched.sort()
-
-            if mavg==0:
-                print(f'Zero historical average at location {name} in month {month}')
+            
             ee[:,m] = matched[ii_lo]*wt_lo + matched[ii_up]*wt_up
             pp[:,m] = ee[:,m]/mavg*100
             

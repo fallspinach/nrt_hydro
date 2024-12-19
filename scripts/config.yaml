@@ -51,7 +51,7 @@ expanse:
     
     forcing:
         # domains to subset after conus
-        domains:    ['cnrfc', 'cbrfc', 'basins24']
+        domains:    ['cnrfc', 'cbrfc', 'basins24', 'yampa']
         
     wrf_hydro:
         conus:
@@ -76,9 +76,18 @@ expanse:
             nnodes:     1
             nprocs:    64
             minperday:  2
-            lake:       False
+            lake:       True
             climrange:  [1979, 2023]
         basins24:
+            partition: 'cw3e-shared'
+            nnodes:     1
+            nprocs:    16
+            minperday:  2.5
+            lake:       False
+            climrange:  [1979, 2023]
+            lonlatbox:  [-124, -117, 35, 42]
+            mapdpi:    80
+        yampa:
             partition: 'cw3e-shared'
             nnodes:     1
             nprocs:    16
