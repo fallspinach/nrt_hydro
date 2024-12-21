@@ -99,7 +99,7 @@ def main(argv):
         
         # daily output
         fnout = f'{dout}/{name}_out.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out} | awk \'BEGIN {{print "Date,SNEQV,SMTOT"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out} | awk \'BEGIN {{print "Date,SWE,SMTOT"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
         os.system(cmd)
         df_out = pd.read_csv(fnout, index_col='Date')
         
@@ -116,7 +116,7 @@ def main(argv):
     
         # monthly output
         fnout = f'{dout}/{name}_out.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out_mon} | awk \'BEGIN {{print "Date,SNEQV,SMTOT"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out_mon} | awk \'BEGIN {{print "Date,SWE,SMTOT"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
         os.system(cmd)
         df_out_mon = pd.read_csv(fnout, index_col='Date')
         
@@ -132,14 +132,14 @@ def main(argv):
         df_out_mon['T2D']  = df_for_mon['T2D']
         df_out_mon['PREC'] = df_for_mon['PREC']
         df_out_mon['RAD']  = df_for_mon['RAD']
-        df_out_mon['SNEQV'] = df_out['SNEQV']
+        df_out_mon['SWE'] = df_out['SWE']
         df_out_mon['SMTOT'] = df_out['SMTOT']
         df_out_mon['Qsim'] = df_q['Qsim']
         df_out_mon.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
 
     comm.Barrier()
-    #if rank==0:
-    #    os.system(f'rm -f {tmp_out} {tmp_for} {tmp_out_mon} {tmp_for_mon} {tmp_for_mon}.nc {dout}/*.txt')
+    if rank==0:
+        os.system(f'rm -f {tmp_out} {tmp_for} {tmp_out_mon} {tmp_for_mon} {tmp_for_mon}.nc {dout}/*.txt')
     
     return 0
 
