@@ -41,7 +41,7 @@ def main(argv):
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output'
     os.chdir(workdir)
 
-    cdocmd = 'cdo -s -w -outputtab,date,value -fldmean'
+    cdocmd = 'cdo -s -w -outputtab,date,name,value -fldmean'
     
     site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/b-120/site_list_25.csv')
     site_names = site_list['name'].tolist()
@@ -50,17 +50,28 @@ def main(argv):
     
     tmp_out = f'tmp_out_avg_{t1:%Y%m}-{t2:%Y%m}'
     tmp_for = f'tmp_for_avg_{t1:%Y%m}-{t2:%Y%m}'
+    tmp_out_mon = f'tmp_out_avg_{t1:%Y%m}-{t2:%Y%m}.monthly'
+    tmp_for_mon = f'tmp_for_avg_{t1:%Y%m}-{t2:%Y%m}.monthly'
 
+    dout = 'basins/averaged'
     if rank==0:
-        if not os.path.isdir('basins/averaged'):
-            os.system('mkdir -p basins/averaged')
+        if not os.path.isdir(dout):
+            os.system(f'mkdir -p {dout}')
         # daily output
         fnins = ''
         t = t1
         while t<=t2:
             fnins += f' 1km_daily/{t:%Y%m}.LDASOUT_DOMAIN1'
             t += relativedelta(months=1)
-        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_out}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"SNEQV=SNEQV;SMTOT=sellevel(SOIL_M,1)*0.05+sellevel(SOIL_M,2)*0.15+sellevel(SOIL_M,3)*0.3+sellevel(SOIL_M,4)*0.5" [ {fnins} ] {tmp_out}'
+        print(cmd); os.system(cmd)
+        # monthly output
+        fnins = ''
+        t = t1
+        while t<=t2:
+            fnins += f' 1km_monthly/{t:%Y%m}.LDASOUT_DOMAIN1.monthly'
+            t += relativedelta(months=1)
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"SNEQV=SNEQV;SMTOT=sellevel(SOIL_M,1)*0.05+sellevel(SOIL_M,2)*0.15+sellevel(SOIL_M,3)*0.3+sellevel(SOIL_M,4)*0.5" [ {fnins} ] {tmp_out_mon}'
         print(cmd); os.system(cmd)
 
     if rank==size-1:
@@ -70,41 +81,65 @@ def main(argv):
         while t<=t2:
             fnins += f' ../forcing/1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             t += relativedelta(months=1)
-        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fnins} {tmp_for}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400" [ {fnins} ] {tmp_for}'
+        print(cmd); os.system(cmd)
+        # monthly forcing
+        fnins = ''
+        t = t1
+        while t<=t2:
+            fnins += f' ../forcing/1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
+            t += relativedelta(months=1)
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;RAD=SWDOWN+LWDOWN" [ {fnins} ] {tmp_for_mon}.nc'
+        print(cmd); os.system(cmd)
+        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,RAD {tmp_for_mon}.nc -muldpm -selname,RAINRATE {tmp_for_mon}.nc {tmp_for_mon}'
         print(cmd); os.system(cmd)
 
     comm.Barrier()    
     for name in site_names[rank::size]:
         
-        fnout = f'basins/averaged/{name}_SWE.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -selname,SNEQV {tmp_out} > {fnout}'
-        print(cmd); os.system(cmd)
-        df_swe = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'SWE'], index_col='Date')
+        # daily output
+        fnout = f'{dout}/{name}_out.txt'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out} | awk \'BEGIN {{print "Date,SNEQV,SMTOT"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
+        os.system(cmd)
+        df_out = pd.read_csv(fnout, index_col='Date')
         
-        fnout = f'basins/averaged/{name}_SMTOT.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -expr,"SMTOT=sellevel(SOIL_M,1)*0.05+sellevel(SOIL_M,2)*0.15+sellevel(SOIL_M,3)*0.3+sellevel(SOIL_M,4)*0.5" {tmp_out} > {fnout}'
-        print(cmd); os.system(cmd)
-        df_smtot = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'SMTOT'], index_col='Date')
+        # daily forcing
+        fnout = f'{dout}/{name}_for.txt'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for} | awk \'BEGIN {{print "Date,T2D,PREC"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]}}\' > {fnout}'
+        os.system(cmd)
+        df_for = pd.read_csv(fnout, index_col='Date')
         
-        fnout = f'basins/averaged/{name}_T2D.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -subc,273.15 -selname,T2D {tmp_for} > {fnout}'
-        print(cmd); os.system(cmd)
-        df_t2d = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'T2D'], index_col='Date')
+        fnout = f'{dout}/{name}_daily.csv'
+        df_out['T2D']  = df_for['T2D']
+        df_out['PREC'] = df_for['PREC']
+        df_out.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
+    
+        # monthly output
+        fnout = f'{dout}/{name}_out.txt'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out_mon} | awk \'BEGIN {{print "Date,SNEQV,SMTOT"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
+        os.system(cmd)
+        df_out_mon = pd.read_csv(fnout, index_col='Date')
         
-        fnout = f'basins/averaged/{name}_PREC.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc -mulc,86400 -selname,RAINRATE {tmp_for} > {fnout}'
-        print(cmd); os.system(cmd)
-        df_prec = pd.read_csv(fnout, sep='\s+', skiprows=1, header=None, names=['Date', 'PREC'], index_col='Date')
+        # monthly forcing
+        fnout = f'{dout}/{name}_for.txt'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,RAD"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]}}\' > {fnout}'
+        os.system(cmd)
+        df_for_mon = pd.read_csv(fnout, index_col='Date')
         
-        fnout = f'basins/averaged/{name}_daily.csv'
-        df_swe['SMTOT'] = df_smtot['SMTOT']
-        df_swe['T2D']   = df_t2d['T2D']
-        df_swe['PREC']  = df_prec['PREC']
-        df_swe.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
+        df_q = pd.read_csv(f'basins/simulated/{name}_monthly.csv', index_col='Date')
+        
+        fnout = f'{dout}/{name}_monthly.csv'
+        df_out_mon['T2D']  = df_for_mon['T2D']
+        df_out_mon['PREC'] = df_for_mon['PREC']
+        df_out_mon['RAD']  = df_for_mon['RAD']
+        df_out_mon['SNEQV'] = df_out['SNEQV']
+        df_out_mon['SMTOT'] = df_out['SMTOT']
+        df_out_mon['Qsim'] = df_q['Qsim']
+        df_out_mon.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
 
     comm.Barrier()
-    if rank==0:
-        os.system(f'rm -f {tmp_out} {tmp_for} basins/averaged/*.txt')
+    #if rank==0:
+    #    os.system(f'rm -f {tmp_out} {tmp_for} {tmp_out_mon} {tmp_for_mon} {tmp_for_mon}.nc {dout}/*.txt')
     
     return 0
 

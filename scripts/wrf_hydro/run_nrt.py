@@ -125,7 +125,11 @@ def main(argv):
     cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
-    print(f'Plotting job ID is: {jid}')
+    print(f'Daily plotting job ID is: {jid}')
+    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
+    print(f'Monthly plotting job ID is: {jid}')
     
     if config_dom['lake']:
         
@@ -155,6 +159,13 @@ def main(argv):
         jid3 = ret.decode().split(' ')[-1].rstrip()
         print(f'Snow sites extraction will run with job ID: {jid3}')
 
+        cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_b120_nrt.py'
+        flog = f'{workdir}/log/extract_b120_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=2G -J "ex120nrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
+        #print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid3 = ret.decode().split(' ')[-1].rstrip()
+        print(f'B-120 simulated flow extraction will run with job ID: {jid3}')
 
     return 0
 
