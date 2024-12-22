@@ -127,7 +127,7 @@ def main(argv):
             os.system(cmd)
             if domain=='cnrfc':
                 fd2 = f'{out_dir}/basins24/{t:%Y%m%d}.LDASIN_DOMAIN1'
-                cmd = f'cdo -O -f nc4 -z zip add ../nwm/domain/xmask0_basins24.nc -selindexbox,111,410,381,1130 {fd} {fd2}'
+                cmd = f'cdo -O -f nc4 -z zip add -selindexbox,111,410,381,1130 {fd} ../nwm/domain/xmask0_basins24.nc {fd2}'
                 os.system(cmd)
     
         # delete hourly files older than 2 days

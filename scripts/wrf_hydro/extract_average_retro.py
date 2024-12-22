@@ -41,7 +41,6 @@ def main(argv):
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output'
     os.chdir(workdir)
 
-    #cdocmd = 'cdo -s -w -outputtab,date,value -fldmean'
     cdocmd = 'cdo -s -w -outputtab,date,name,value -fldmean'
     
     site_list = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/b-120/site_list_25.csv')
