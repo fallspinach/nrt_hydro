@@ -101,13 +101,13 @@ def main(argv):
         fnout = f'{dout}/{name}_out.txt'
         cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out} | awk \'BEGIN {{print "Date,SWE,SMTOT"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
         os.system(cmd)
-        df_out = pd.read_csv(fnout, index_col='Date')
+        df_out = pd.read_csv(fnout, index_col='Date', parse_dates=True)
         
         # daily forcing
         fnout = f'{dout}/{name}_for.txt'
         cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for} | awk \'BEGIN {{print "Date,T2D,PREC"}} {{if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]}}\' > {fnout}'
         os.system(cmd)
-        df_for = pd.read_csv(fnout, index_col='Date')
+        df_for = pd.read_csv(fnout, index_col='Date', parse_dates=True)
         
         fnout = f'{dout}/{name}_daily.csv'
         df_out['T2D']  = df_for['T2D']
@@ -118,15 +118,15 @@ def main(argv):
         fnout = f'{dout}/{name}_out.txt'
         cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_out_mon} | awk \'BEGIN {{print "Date,SWE,SMTOT"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["SNEQV"]","a["SMTOT"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["SNEQV"]","a["SMTOT"]}}\' > {fnout}'
         os.system(cmd)
-        df_out_mon = pd.read_csv(fnout, index_col='Date')
+        df_out_mon = pd.read_csv(fnout, index_col='Date', parse_dates=True)
         
         # monthly forcing
         fnout = f'{dout}/{name}_for.txt'
         cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,RAD"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]}}\' > {fnout}'
         os.system(cmd)
-        df_for_mon = pd.read_csv(fnout, index_col='Date')
+        df_for_mon = pd.read_csv(fnout, index_col='Date', parse_dates=True)
         
-        df_q = pd.read_csv(f'basins/simulated/{name}_monthly.csv', index_col='Date')
+        df_q = pd.read_csv(f'basins/simulated/{name}_monthly.csv', index_col='Date', parse_dates=True)
         
         fnout = f'{dout}/{name}_monthly.csv'
         df_out_mon['T2D']  = df_for_mon['T2D']

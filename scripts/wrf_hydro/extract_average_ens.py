@@ -106,6 +106,33 @@ def main(argv):
         cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,RAD {ens_for_mon}.nc -muldpm -selname,RAINRATE {ens_for_mon}.nc {ens_for_mon}'
         print(cmd); os.system(cmd)
 
+        # read streamflow data
+        fnin = f'{ens:02d}/{t1:%Y%m%d}-{t2:%Y%m%d}.CHRTOUT_DOMAIN1.monthly'
+        fin  = nc.Dataset(fnin, 'r')
+        nsites = site_list.shape[0]
+        ntimes = fin['time'].size
+        tstamps = [nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-01') for i in range(ntimes)]
+        data = np.zeros((nsites, ntimes))        
+        for i,row in zip(site_list.index, site_list['row']):
+            data[i, :] = fin['streamflow'][:, row]
+        fin.close()
+        kafperday = 86400/1233.48/1000
+        data *= kafperday
+        for m in range(ntimes):
+            month = int(tstamps[m].split('-')[1])
+            year  = int(tstamps[m].split('-')[0])
+            md = monthrange(year, month)[1] # number of days in the month
+            data[:, m] *= md
+        df_q = pd.DataFrame({'Date': pd.to_datetime(tstamps,format='%Y-%m-%d')})
+        df_q.set_index('Date', inplace=True, drop=True)
+        for i,name in zip(site_list.index, site_list['name']):
+            if name=='TRF2':
+                continue
+            if name=='TRF1':
+                df_q['TRF'] = np.squeeze(data[i, :]) - np.squeeze(data[i+1, :])
+            else:
+                df_q[name] = np.squeeze(data[i, :])
+
         for name in site_names:
 
             # daily output on 1st day of the month
@@ -120,7 +147,8 @@ def main(argv):
             os.system(cmd)
             df_for_mon = pd.read_csv(fnout, index_col='Date', parse_dates=True)
 
-            df_q = pd.read_csv(f'basins/simulated/{name}_{t1:%Y%m%d}-{t2:%Y%m%d}.csv', index_col='Date', parse_dates=True)
+            # read streamflow data
+            #df_q = pd.read_csv(f'basins/simulated/{name}_{t1:%Y%m%d}-{t2:%Y%m%d}.csv', index_col='Date', parse_dates=True)
 
             # read NRT data
             df_nrt_mon = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/basins/averaged/{name}_monthly.csv', index_col='Date', parse_dates=True)
@@ -129,7 +157,8 @@ def main(argv):
             df_out_mon['T2D']  = df_for_mon['T2D']
             df_out_mon['PREC'] = df_for_mon['PREC']
             df_out_mon['RAD']  = df_for_mon['RAD']
-            df_out_mon['Qsim'] = df_q[f'Ens{ens:02d}']
+            #df_out_mon['Qsim'] = df_q[f'Ens{ens:02d}']
+            df_out_mon['Qsim'] = df_q[name]
 
             if t1.month>=10:
                 t0 = datetime(t1.year, 10, 1)
