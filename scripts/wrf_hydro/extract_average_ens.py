@@ -101,9 +101,9 @@ def main(argv):
             ydiff = t.year - tlink.year
             fnins += f' {config["base_dir"]}/wrf_hydro/{domain}/retro/forcing/1km_monthly/{tlink:%Y%m}.LDASIN_DOMAIN1.monthly'
             t += relativedelta(months=1)
-        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;RAD=SWDOWN+LWDOWN" [ {ens_for_mon1} -apply,-shifttime,{ydiff:d}year [ {fnins} ] ] {ens_for_mon}.nc'
+        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;SWDOWN=SWDOWN;LWDOWN=LWDOWN;Q2D=Q2D*1000;WIND=sqrt(U2D*U2D+V2D*V2D)" [ {ens_for_mon1} -apply,-shifttime,{ydiff:d}year [ {fnins} ] ] {ens_for_mon}.nc'
         print(cmd); os.system(cmd)
-        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,RAD {ens_for_mon}.nc -muldpm -selname,RAINRATE {ens_for_mon}.nc {ens_for_mon}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,SWDOWN,LWDOWN,Q2D,WIND {ens_for_mon}.nc -muldpm -selname,RAINRATE {ens_for_mon}.nc {ens_for_mon}'
         print(cmd); os.system(cmd)
 
         # read streamflow data
@@ -143,7 +143,7 @@ def main(argv):
         
             # monthly forcing
             fnout = f'{dout}/{name}_for.txt'
-            cmd = f'{cdocmd} -ifthen ../../../../domain/masks/{name}.nc {ens_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,RAD"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]}}\' > {fnout}'
+            cmd = f'{cdocmd} -ifthen ../../../../domain/masks/{name}.nc {ens_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,SWDOWN,LWDOWN,Q2D,WIND"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["SWDOWN"]","a["LWDOWN"]","a["Q2D"]","a["WIND"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["SWDOWN"]","a["LWDOWN"]","a["Q2D"]","a["WIND"]}}\' > {fnout}'
             os.system(cmd)
             df_for_mon = pd.read_csv(fnout, index_col='Date', parse_dates=True)
 
@@ -154,9 +154,8 @@ def main(argv):
             df_nrt_mon = pd.read_csv(f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/basins/averaged/{name}_monthly.csv', index_col='Date', parse_dates=True)
         
             fnout = f'{dout}/{name}_monthly.csv'
-            df_out_mon['T2D']  = df_for_mon['T2D']
-            df_out_mon['PREC'] = df_for_mon['PREC']
-            df_out_mon['RAD']  = df_for_mon['RAD']
+            for v in ['T2D', 'PREC', 'SWDOWN', 'LWDOWN', 'Q2D', 'WIND']:
+                df_out_mon[v]  = df_for_mon[v]
             #df_out_mon['Qsim'] = df_q[f'Ens{ens:02d}']
             df_out_mon['Qsim'] = df_q[name]
 

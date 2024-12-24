@@ -89,9 +89,9 @@ def main(argv):
         while t<=t2:
             fnins += f' ../forcing/1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
             t += relativedelta(months=1)
-        cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;RAD=SWDOWN+LWDOWN" [ {fnins} ] {tmp_for_mon}.nc'
+        cmd = f'cdo -O --sortname -f nc4 -z zip expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;SWDOWN=SWDOWN;LWDOWN=LWDOWN;Q2D=Q2D*1000;WIND=sqrt(U2D*U2D+V2D*V2D)" -mergetime [ {fnins} ] {tmp_for_mon}.nc'
         print(cmd); os.system(cmd)
-        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,RAD {tmp_for_mon}.nc -muldpm -selname,RAINRATE {tmp_for_mon}.nc {tmp_for_mon}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,SWDOWN,LWDOWN,Q2D,WIND {tmp_for_mon}.nc -muldpm -selname,RAINRATE {tmp_for_mon}.nc {tmp_for_mon}'
         print(cmd); os.system(cmd)
 
     comm.Barrier()    
@@ -122,18 +122,17 @@ def main(argv):
         
         # monthly forcing
         fnout = f'{dout}/{name}_for.txt'
-        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,RAD"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["RAD"]}}\' > {fnout}'
+        cmd = f'{cdocmd} -ifthen ../../domain/masks/{name}.nc {tmp_for_mon} | awk \'BEGIN {{print "Date,T2D,PREC,SWDOWN,LWDOWN,Q2D,WIND"}} {{if (NR>1) sub(/..$/, "01", $1); if (NR>2&&$1!=lastdate) print lastdate","a["T2D"]","a["RAINRATE"]","a["SWDOWN"]","a["LWDOWN"]","a["Q2D"]","a["WIND"]; a[$2]=$3; lastdate=$1}} END {{print lastdate","a["T2D"]","a["RAINRATE"]","a["SWDOWN"]","a["LWDOWN"]","a["Q2D"]","a["WIND"]}}\' > {fnout}'
         os.system(cmd)
         df_for_mon = pd.read_csv(fnout, index_col='Date', parse_dates=True)
 
         df_q = pd.read_csv(f'basins/by_year/{t1:%Y%m}-{t2:%Y%m}/simulated/{name}_monthly.csv', index_col='Date', parse_dates=True)
         
         fnout = f'{dout}/{name}_monthly.csv'
-        df_out_mon['T2D']  = df_for_mon['T2D']
-        df_out_mon['PREC'] = df_for_mon['PREC']
-        df_out_mon['RAD']  = df_for_mon['RAD']
-        df_out_mon['SWE'] = df_out['SWE']
-        df_out_mon['SMTOT'] = df_out['SMTOT']
+        for v in ['T2D', 'PREC', 'SWDOWN', 'LWDOWN', 'Q2D', 'WIND']:
+            df_out_mon[v]  = df_for_mon[v]
+        for v in ['SWE', 'SMTOT']:
+            df_out_mon[v] = df_out[v]
         df_out_mon['Qsim'] = df_q['Qsim']
         df_out_mon.to_csv(fnout, index=True, float_format='%.3f', date_format='%Y-%m-%d')
     
