@@ -111,7 +111,7 @@ def main(argv):
     
     os.chdir(f'{config["base_dir"]}/scripts/wrf_hydro')
     nc_shared   = nmons
-    mem_shared  = 12*nc_shared
+    mem_shared  = 12*nc_shared if domain!='conus' else 25*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_nrt.py'
     flog = f'{workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
@@ -122,16 +122,16 @@ def main(argv):
 
     cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/plot_nrt.py'
     flog = f'{workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
-    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
     print(f'Daily plotting job ID is: {jid}')
-    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmoni --wrap "{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+    cmd = f'sbatch -d afterok:{jid2} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmon --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
     ret = subprocess.check_output([cmd], shell=True)
-    jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
+    jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
     print(f'Monthly plotting job ID is: {jid}')
     
-    if config_dom['lake']:
+    if config_dom['lake'] and domain!='conus':
         
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_rivers_nrt.py'
         flog = f'{workdir}/log/extract_rivers_{t1:%Y%m}_{t2:%Y%m}.txt'
@@ -145,7 +145,7 @@ def main(argv):
 
         cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 6 python {config["base_dir"]}/scripts/wrf_hydro/extract_average_nrt.py'
         flog = f'{workdir}/log/extract_averages_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid2} --nodes=1 --ntasks-per-node=6 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=12G -J "exavgnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=6 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=12G -J "exavgnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid3 = ret.decode().split(' ')[-1].rstrip()

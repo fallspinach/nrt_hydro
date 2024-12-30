@@ -47,7 +47,10 @@ def main(argv):
     for t in alltimes[rank::size]:
         md = monthrange(t.year, t.month)[1]
         tn = t + step
-        cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+        if os.path.isfile(f'1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1'):
+            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+        else:
+            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
         print(cmd); os.system(cmd)
         cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
         print(cmd); os.system(cmd)

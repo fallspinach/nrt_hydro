@@ -24,7 +24,7 @@ while true; do
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 -p cw3e-shared -A cwp101 -J forcnrt -o $flog --wrap="python scripts/forcing/update_conus_forcing_nrt.py"
         
         # collect MODIS SCA
-        flog=wrf_hydro/$domain/nrt/run/log/log_modis_$(date -u +%Y%m%d_%H)z.txt
+        flog=wrf_hydro/cnrfc/nrt/run/log/log_modis_$(date -u +%Y%m%d_%H)z.txt
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 --mem=20G -p cw3e-shared -A cwp101 -J modissca -o $flog --wrap="python scripts/obs/process_modis_sca.py"
         # collect FNF data from CDEC
         python scripts/obs/process_cdec_fnf.py

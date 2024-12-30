@@ -61,7 +61,8 @@ expanse:
             minperday:  5
             lake:       True
             climrange:  [1979, 2023]
-            lonlatbox:  [-125, -67, 25, 53]
+            lonlatbox:  [-125, -67, 25, 50]
+            mapdpi:    80
         cnrfc:
             partition: 'cw3e-shared'
             nnodes:     1
@@ -78,6 +79,7 @@ expanse:
             minperday:  2
             lake:       True
             climrange:  [1979, 2023]
+            mapdpi:    50
         basins24:
             partition: 'cw3e-shared'
             nnodes:     1

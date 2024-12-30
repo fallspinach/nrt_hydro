@@ -70,15 +70,11 @@ def main(argv):
     print(f'Last NLDAS-2 data:      {last_nld2:%Y-%m-%dT%H}')
     print(f'Last HRRR analysis:     {last_hrrr:%Y-%m-%dT%H}')
     
-    #cmd0 = 'sbatch -p shared -n 12'
-    #cmd1 = 'sbatch -p compute -N 1'
     cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
     cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=8 --mem=120G'
     cmd2 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 8 python mergetime_subset.py'
-    #cmd2 = 'mpirun -np 12 python create_conus_forcing.py'
-    #cmd3 = 'mpirun -np 8 python mergetime_subset.py'
-    
+        
     # NLDAS-2 + Stage-IV archive update
     if len(argv)==0:
         t1 = last_st4a - timedelta(hours=47)
@@ -116,6 +112,17 @@ def main(argv):
     jid4 = ret.decode().split(' ')[-1].rstrip()
     print(f'Mergetime and subset forcing job ID is: {jid4}')
 
+    # aggregate hourly forcing data to daily and monthly and subset them
+    nmons = 1 if t1.month==t2.month else 2
+    nmem  = 25*nmons
+    cmd5 = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
+    cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing_nrt.py'
+    cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J mergesub --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m}"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid5 = ret.decode().split(' ')[-1].rstrip()
+    print(f'Aggregate forcing job ID is: {jid5}')
+
     # rsync a copy to skyriver for Globus share
     rcmd = f'rsync -a {out_path}/conus/{prodtype}/{t1:%Y}/{t1:%Y%m}* {globus_path}/{prodtype}/{t1:%Y}/'
     if t1.year!=t2.year or t1.month!=t2.month:
@@ -123,8 +130,8 @@ def main(argv):
     cmd = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=1 -d afterok:{jid1}:{jid2}:{jid3}:{jid4} -t 02:00:00 -J rsync --wrap="{rcmd}" -o {logdir}/rsync_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
-    jid5 = ret.decode().split(' ')[-1].rstrip()
-    print(f'Job ID to rsync NRT forcing to skyriver Globus share is: {jid5}')
+    jid6 = ret.decode().split(' ')[-1].rstrip()
+    print(f'Job ID to rsync NRT forcing to skyriver Globus share is: {jid6}')
     
     return 0
 

@@ -36,7 +36,7 @@ def main(argv):
     '''main loop'''
     
     # update PRISM data first
-    process_prism.main('')
+    #process_prism.main('')
     
     os.chdir(workdir)
 

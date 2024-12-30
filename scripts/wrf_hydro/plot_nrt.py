@@ -144,6 +144,17 @@ def main(argv):
     xland = np.squeeze(fdom.variables['XLAND'][:])
     xx = lons
     yy = np.log(np.tan(lats/2+np.pi/4))
+    fdom.close()
+
+    if domain=='conus':
+        fnmask = f'{nrtdir}/../domain/xmask0_us.nc'
+        fmask = nc.Dataset(fnmask, 'r')
+        xmask = np.squeeze(fmask.variables['XLAND'][:])
+        print('CONUS pixel count before masking: %d' % (xland<1.5).sum())
+        xland[xmask.mask] = 2
+        print('CONUS pixel count after  masking: %d' % (xland<1.5).sum())
+        fmask.close()
+        figsize = (16, 12)
 
     for t in alltimes[rank::size]:
         
@@ -164,6 +175,7 @@ def main(argv):
             for j,v in enumerate(ncvars):
 
                 data = np.squeeze(f.variables[v][i, :, :])
+                data = np.ma.masked_where(xland>1.5, data)
                 
                 if v=='SNEQV_r':
                     sdata = np.squeeze(f.variables['SNEQV'][i, :, :])
@@ -183,21 +195,24 @@ def main(argv):
                     os.system(f'mkdir -p {dout}')
                 fig1.savefig(fout, dpi=dpi, transparent=True)
                 os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.clf()
                 plt.close(fig1)
                 
         f.close()
                 
         # precipitation and temperature
         os.chdir(f'{nrtdir}/forcing')
-        if not monthly_flag:
+        #if not monthly_flag:
+        if False:
             md = monthrange(t.year, t.month)[1]
             tn = t + step
-            if t<time2:
+            if os.path.isfile(f'1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1'):
                 cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             else:
                 cmd = f'cdo -O -f nc4 -z zip delete,timestep=1 -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
             print(cmd); os.system(cmd)
-        else:
+        #else:
+        if False:
             cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
             print(cmd); os.system(cmd)
             add_pctl_rank_monthly.main([domain, f'1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'])
@@ -241,6 +256,7 @@ def main(argv):
                     os.system(f'mkdir -p {dout}')
                 fig1.savefig(fout, dpi=dpi, transparent=True)
                 os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.clf()
                 plt.close(fig1)
                 
                 if i==-1 and t==time1:
@@ -263,6 +279,7 @@ def main(argv):
                         os.system(f'mkdir -p {dout}')
                     fig1.savefig(fout, dpi=50, transparent=True)
                     os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
+                    fig1.clf()
                     plt.close(fig1)
 
         f.close()
@@ -299,6 +316,7 @@ def main(argv):
                     os.system(f'mkdir -p {dout}')
                 fig1.savefig(fout, dpi=dpi, transparent=True)
                 os.system(f'magick {fout} -transparent white {fout}.png; /bin/mv {fout}.png {fout}')
+                fig1.clf()
                 plt.close(fig1)
                 
                 if i==0 and t==time1:
@@ -319,6 +337,7 @@ def main(argv):
                         os.system(f'mkdir -p {dout}')
                     fig1.savefig(fout, dpi=50, transparent=True)
                     os.system(f'magick {fout} -transparent white -trim {fout}.png; /bin/mv {fout}.png {fout}')
+                    fig1.clf()
                     plt.close(fig1)
 
     if rank==0:
