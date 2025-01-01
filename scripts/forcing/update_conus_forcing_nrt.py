@@ -117,7 +117,7 @@ def main(argv):
     nmem  = 25*nmons
     cmd5 = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
     cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing_nrt.py'
-    cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J mergesub --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m}"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J aggreg --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m}"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid5 = ret.decode().split(' ')[-1].rstrip()

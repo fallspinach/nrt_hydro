@@ -103,7 +103,7 @@ def main(argv):
             t += relativedelta(months=1)
         cmd = f'cdo -O --sortname -f nc4 -z zip mergetime -apply,-expr,"T2D=T2D-273.15;RAINRATE=RAINRATE*86400;SWDOWN=SWDOWN;LWDOWN=LWDOWN;Q2D=Q2D*1000;WIND=sqrt(U2D*U2D+V2D*V2D)" [ {ens_for_mon1} -apply,-shifttime,{ydiff:d}year [ {fnins} ] ] {ens_for_mon}.nc'
         print(cmd); os.system(cmd)
-        cmd = f'cdo -O --sortname -f nc4 -z zip merge -selname,T2D,SWDOWN,LWDOWN,Q2D,WIND {ens_for_mon}.nc -muldpm -selname,RAINRATE {ens_for_mon}.nc {ens_for_mon}'
+        cmd = f'cdo -O --sortname -f nc4 -z zip setrtomiss,-10e20,-1000 -setrtomiss,10e6,10e20 -merge -selname,T2D,SWDOWN,LWDOWN,Q2D,WIND {ens_for_mon}.nc -muldpm -selname,RAINRATE {ens_for_mon}.nc {ens_for_mon}'
         print(cmd); os.system(cmd)
 
         # read streamflow data

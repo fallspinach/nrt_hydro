@@ -82,7 +82,7 @@ def setup_links(domain, t1, t2, tupdate):
     # link WestWRF ensemble forecasts
     print('Creating links to West-WRF ensemble forecasts.')
     os.chdir(forcedir)
-    if t1.month<4 or t1.month>12:
+    if t1.month<1 or t1.month>12:
         print('  Oct 1 to Mar 31 season, using WWRF ensemble forecast')
         tlast = find_last_time(f'../NRT_ens/[012]?/202?????.LDASIN_DOMAIN1', '%Y%m%d.LDASIN_DOMAIN1') - timedelta(days=1)
         max_lead = 7
@@ -99,7 +99,7 @@ def setup_links(domain, t1, t2, tupdate):
         tforc = tupdate
         #while tforc<t1+timedelta(days=7):
         while tforc<=tlast:
-            if t1.month<4 or t1.month>12:
+            if t1.month<1 or t1.month>12:
                 fww   = f'../NRT_ens/{ens:02d}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
             else:
                 fww   = f'../NRT_ens/{nens}/{tforc:%Y%m%d}.LDASIN_DOMAIN1'
