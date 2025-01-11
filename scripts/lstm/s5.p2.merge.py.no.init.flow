@@ -1,0 +1,82 @@
+import sys
+import os
+import numpy as np
+import pandas as pd
+
+################################################
+################# Header Ends ##################
+################################################
+
+##### output time index
+year  = sys.argv[1]
+datep = sys.argv[2]
+stmon = sys.argv[3]
+
+index = [year+'-'+str(mon).zfill(2)+'-'+'16' for mon in range(1,8)]
+index.append(year+'-07-31')
+index = pd.to_datetime(index)
+
+index2 = ['2025'+'-'+str(mon).zfill(2)+'-'+'16' for mon in range(1,8)]
+index2.append('2025'+'-07-31')
+index2 = pd.to_datetime(index2)
+
+##### pre-defined inputs
+nams  = pd.read_csv('./inputs.lstm/stn.names.24.txt', names=['nums','ids','nams'])
+#flowd = "/home/mxiao/proj/b120.lstm.postpro/s5.gen.flow/flow.out/"
+flowd = "./tmp/"
+outd  = "./z.final.output/"+year+datep+"/"
+obsd  = "./inputs.lstm/csv_cdec/"
+
+os.makedirs(outd, exist_ok=True)
+
+
+##### header for csv output
+nens   = 45
+header = ['Ens'+str(x).zfill(2) for x in range(1,nens+1)]
+for x in ['Exc10','Exc50','Exc90','Pav10','Pav50','Pav90','Avg']:
+    header.append(x)
+
+##### loop over stns
+for i in range(24):
+    numi = i+1
+    idi  = nams['ids'].iloc[i]
+    print(numi, idi)
+
+    #### cal obs long-term avg 1979-2020
+    fnf       = pd.read_csv(obsd+idi+'.csv')
+    fnf.index = pd.to_datetime(fnf['Date'])
+    fnf       = fnf['1979':'2020']
+    flowavg   = fnf['FNF'].groupby(fnf.index.month).mean()
+    flowuse   = np.array(flowavg.iloc[0:7])
+    #print(flowuse)
+    #print(flowavg)
+    
+
+    mcol = 52
+    rec  = np.zeros((8,mcol))-999.
+
+    #### record ensemble members
+    nens = 45
+    for ens in range(nens):
+        flw = pd.read_csv(flowd+'/'+str(ens+1).zfill(2)+\
+            '/'+str(numi)+'.predicted-flow.20210801-20250731.csv')
+        flw.index = pd.to_datetime(flw['date'])
+        rec[0:7,ens] = np.array(flw['flow'].loc['20250101':'20250731'])
+        rec[7,ens]   = np.sum(np.array(flw['flow'].loc['20250401':'20250731']))
+
+    #### calculate p10, p50, p90, avg
+    rec[:,nens]   = np.quantile(rec[:,0:nens], 0.9, axis=1)
+    rec[:,nens+1]   = np.quantile(rec[:,0:nens], 0.5, axis=1)
+    rec[:,nens+2]   = np.quantile(rec[:,0:nens], 0.1, axis=1)
+    rec[0:7,mcol-1] = flowuse[:]
+    print(flowuse)
+    rec[7,mcol-1]   = np.sum(flowuse[3:7])
+    rec[:,nens+3]   = np.divide(rec[:,nens],   rec[:,mcol-1])*100 ## percentage of avg
+    rec[:,nens+4]   = np.divide(rec[:,nens+1], rec[:,mcol-1])*100
+    rec[:,nens+5]   = np.divide(rec[:,nens+2], rec[:,mcol-1])*100
+    dout = pd.DataFrame(rec, columns=header)
+    dout.index = pd.to_datetime(index2)
+    dout = dout['20250101':'20250731']
+    dout.to_csv(outd+idi+'_2025'+stmon+'01-'+'20250731.csv',\
+         float_format="%.3f", index_label='Date')
+

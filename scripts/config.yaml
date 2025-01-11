@@ -62,7 +62,7 @@ expanse:
             lake:       True
             climrange:  [1979, 2023]
             lonlatbox:  [-125, -67, 25, 50]
-            mapdpi:    80
+            mapdpi:   200
         cnrfc:
             partition: 'cw3e-shared'
             nnodes:     1

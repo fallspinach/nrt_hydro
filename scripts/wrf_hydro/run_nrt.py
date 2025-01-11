@@ -138,6 +138,7 @@ def main(argv):
 
     nldas2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
     last_nldas2 = find_last_time(f'{nldas2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
+    last_nldas2 -= timedelta(hours=last_nldas2.hour)
 
     if domain=='conus' and t2>=last_nldas2:
         print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) earlier than {t2:%Y-%m-%d}. Split the simulation into two separate ones.')

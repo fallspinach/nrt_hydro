@@ -43,7 +43,8 @@ def retrieve_cdec(netname, vname, vnum, freq):
         idx = pd.date_range(f'{date_0:%Y-%m-%d}', f'{yesterday:%Y-%m-%d}', freq='D')
         dcode = 'D'
     else:
-        idx = pd.date_range(f'{date_0:%Y-%m-%d}', f'{lastmonth:%Y-%m}-01', freq='MS')
+        #idx = pd.date_range(f'{date_0:%Y-%m-%d}', f'{lastmonth:%Y-%m}-01', freq='MS')
+        idx = pd.date_range(f'{date_0:%Y-%m-%d}', f'{yesterday:%Y-%m}-01', freq='MS')
         dcode = 'M'
 
     query = f'https://cdec.water.ca.gov/dynamicapp/req/CSVDataServlet?Start={date_0:%Y-%m-%d}&End={yesterday:%Y-%m-%d}'

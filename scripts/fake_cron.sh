@@ -34,18 +34,18 @@ while true; do
     elif  [ $currhour == 11 ]; then
     
         # run WRF-Hydro NRT
-        for domain in cnrfc basins24; do
+        for domain in cnrfc basins24 conus; do
             flog=wrf_hydro/$domain/nrt/run/log/log_nrt_$(date -u +%Y%m%d_%H)z.txt
             python scripts/wrf_hydro/run_nrt.py $domain > $flog 2>&1
         done
-        sleep 30m
+        sleep 150m
 
         # run WRF-Hydro + WWRF deterministic forecast
         for domain in cnrfc; do
             flog=wrf_hydro/$domain/fcst/wwrf/run/log/log_wwrf_$(date -u +%Y%m%d_%H)z.txt
             python scripts/wrf_hydro/run_wwrf.py $domain > $flog 2>&1
         done
-        sleep 30m
+        #sleep 30m
 
         # update system status
         flog=wrf_hydro/$domain/fcst/wwrf/run/log/log_status_$(date -u +%Y%m%d_%H)z.txt
