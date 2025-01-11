@@ -142,19 +142,34 @@ def main(argv):
         os.system(f'mkdir -p {dout}')
 
     print('Writing data')
-    for j in range(huc_ids.size):
-
-        huc_id = huc_ids[j]
+    huc2_ids = np.unique(np.round(huc_ids, -6)/1000000).astype(int)
+    
+    for k in range(huc2_ids.size):
+        huc2_id = huc2_ids[k]
+        print(f'  processing HUC2={huc2_id:02d}')
         
-        # daily
-        df_daily = pd.DataFrame({'Date': pd.to_datetime(tstamps, format='%Y-%m-%d')})
-        df_daily['SWE']   = huc_means_swe[:, j]
-        df_daily['SMTOT'] = huc_means_sm[:, j]
-        df_daily['T2D']   = huc_means_t[:, j]
-        df_daily['PREC']  = huc_means_p[:, j]
+        cnt = 0
+        for j in range(huc_ids.size):
+            huc_id = huc_ids[j]
+            
+            if np.round(huc_id, -6)/1000000==huc2_id:
+                #print(f'    HUC8={huc_id:08d}')
+                # daily
+                df_daily = pd.DataFrame({'Date': pd.to_datetime(tstamps, format='%Y-%m-%d')})
+                df_daily['HUC8']  = f'{huc_id:08d}'
+                df_daily['SWE']   = huc_means_swe[:, j]
+                df_daily['SMTOT'] = huc_means_sm[:, j]
+                df_daily['T2D']   = huc_means_t[:, j]
+                df_daily['PREC']  = huc_means_p[:, j]
+                
+                if cnt==0:
+                    df_daily_all = df_daily.copy()
+                else:
+                    df_daily_all = pd.concat([df_daily_all, df_daily])
+                cnt += 1
         
-        fnout = f'{dout}/{huc_id:08d}_daily.csv'
-        df_daily.to_csv(fnout, index=False, float_format='%.4f', date_format='%Y-%m-%d')
+        fnout = f'{dout}/{huc2_id:02d}_daily.csv.gz'
+        df_daily_all.to_csv(fnout, compression='gzip', index=False, float_format='%.4f', date_format='%Y-%m-%d')
         
         # monthly
         fnout = f'{dout}/{huc_id}_monthly.csv'
