@@ -53,6 +53,8 @@ def main(argv):
     
     # figure out the water year
     wy      = curr_day.year if curr_day.month>=13 else curr_day.year-1
+    # temporary freeze for 2025 due to AWARE testing
+    wy = 2023
     fcst_dir = f'links/NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     

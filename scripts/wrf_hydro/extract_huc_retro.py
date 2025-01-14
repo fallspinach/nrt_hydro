@@ -1,7 +1,7 @@
 ''' Extract HUC basin averaged quantities from WRF-Hydro NRT simulation
 
 Usage:
-    python extract_huc_nrt.py [domain] [yyyymm1] [yyyymm2]
+    python extract_huc_retro.py [domain] [yyyymm1] [yyyymm2]
 Default values:
     must specify all
 '''
@@ -46,7 +46,7 @@ def main(argv):
     huc_data = fhuc[f'huc{huclev}'][:]
     fhuc.close()
     
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output'
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output'
     os.chdir(workdir)
 
     t = t1
@@ -56,7 +56,7 @@ def main(argv):
 
         # daily output
         print('  daily output')
-        fin = nc.Dataset(f'1km_daily/{t:%Y%m}.LDASOUT_DOMAIN1', 'r')
+        fin = nc.Dataset(f'1km_daily/{t:%Y/%Y%m}.LDASOUT_DOMAIN1', 'r')
         ntimes = fin['time'].size
         if t==t1:
             tstamps = [nc.num2date(fin['time'][i], fin['time'].units).strftime('%Y-%m-%d') for i in range(ntimes)]
@@ -127,21 +127,9 @@ def main(argv):
     huc_means_sm  = np.atleast_2d(huc_means_sm);  huc_means_sm_mon  = np.atleast_2d(huc_means_sm_mon)
     huc_means_p   = np.atleast_2d(huc_means_p);   huc_means_p_mon   = np.atleast_2d(huc_means_p_mon)
     huc_means_t   = np.atleast_2d(huc_means_t);   huc_means_t_mon   = np.atleast_2d(huc_means_t_mon)
-    
-    # print some results
-    if False:
-        print(len(tstamps), huc_ids.size, huc_means_p.shape, huc_means_t.shape, huc_means_swe.shape, huc_means_sm.shape)
-        print(len(tstamps), huc_ids.size, huc_means_p_mon.shape, huc_means_t_mon.shape, huc_means_swe_mon.shape, huc_means_sm_mon.shape)
-        for j in range(5):
-            print(f'{huc_ids[j]:0{huclev}d}:')
-            print('  daily:')
-            for i in range(3 if ntimes>3 else ntimes):
-                print(f'{tstamps[i]},{huc_means_p[i,j]:.4f},{huc_means_t[i,j]:.3f},{huc_means_swe[i,j]:.4f},{huc_means_sm[i,j]:.5f}')
-            print('  monthly:')
-            print(f'{tstamps_mon[0]},{huc_means_p_mon[0,j]:.4f},{huc_means_t_mon[0,j]:.3f},{huc_means_swe_mon[0,j]:.4f},{huc_means_sm_mon[0,j]:.5f}')
-        
+            
     # output dir
-    dout = f'basins/huc{huclev}'
+    dout = f'basins/{t1:%Y%m}-{t2:%Y%m}/huc{huclev}'
     if not os.path.isdir(dout):
         os.system(f'mkdir -p {dout}')
 
@@ -150,7 +138,7 @@ def main(argv):
     
     for k in range(huc2_ids.size):
         huc2_id = huc2_ids[k]
-        print(f'  processing HUC{lablev}={huc2_id:0{lablev}d}')
+        #print(f'  processing HUC{lablev}={huc2_id:0{lablev}d}')
         
         cnt = 0
         for j in range(huc_ids.size):
