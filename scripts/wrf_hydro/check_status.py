@@ -20,6 +20,7 @@ from utilities import config, find_last_time, find_last_time2
 ## some setups
 domain = 'cnrfc'
 domain1 = 'basins24'
+domain2 = 'conus'
 stage4_path = f'{config["base_dir"]}/forcing/stage4'  # path to Stage IV files
 nldas2_path = f'{config["base_dir"]}/forcing/nldas2/NLDAS_FORA0125_H.2.0' # path to NLDAS-2 archive folder
 hrrran_path = f'{config["base_dir"]}/forcing/hrrr/analysis' # path to HRRR analysis
@@ -117,7 +118,9 @@ def main(argv):
             os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web')
             os.system('gcloud storage rsync imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
             os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain1}/web/dash')
-            os.system('gcloud app deploy -q')
+            os.system('gcloud app deploy -q --project-cw3e-water-panel')
+            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain2}/web/dash')
+            os.system('gcloud app deploy -q --project=cw3e-water-supply')
     
     return 0
 

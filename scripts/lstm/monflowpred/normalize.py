@@ -1,4 +1,3 @@
-#!/home/mxiao/usr.local/miniforge3/bin/python3
 import numpy  as np
 import pandas as pd
 import xarray as xr
@@ -13,7 +12,7 @@ https://doi.org/10.1029/2019WR026793
 
 def norm_dyn(data_ori, config, t_train, t_out):
     data = data_ori.copy(deep=True)
-    log_list   = list(config['TEST_PARA']['log_var_list'].split(','))
+    log_list   = config['TEST_PARA']['log_var_list']
     inputs  = data.sel(time=slice(t_train[0], t_train[1]))
     outputs = data.sel(time=slice(t_out[0]  , t_out[1]))
     for vari in inputs.keys(): ### loop over all variables
@@ -34,7 +33,7 @@ def norm_dyn(data_ori, config, t_train, t_out):
 
 def norm_stc(data_ori, config):
     inputs = data_ori.to_xarray()
-    log_list   = list(config['TEST_PARA']['log_var_list'].split(','))
+    log_list   = config['TEST_PARA']['log_var_list']
     for vari in inputs.keys(): ### loop over all variables
         if vari != 'id':
             xtmp = inputs[vari]
@@ -50,7 +49,7 @@ def norm_stc(data_ori, config):
 
 
 def trans_to_flow(y_in, data_ori, config, t_train):
-    target = config['TEST_PARA']['target_var']
+    target = config['TEST_PARA']['target_var'][0]
     y_out = y_in.detach().numpy()
 
     xtmp = data_ori[target].sel(time=slice(t_train[0], t_train[1]))

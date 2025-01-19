@@ -144,15 +144,30 @@ def main(argv):
     dout = f'basins/huc{huclev}'
     if not os.path.isdir(dout):
         os.system(f'mkdir -p {dout}')
+    
+    # input dir for recennt retro results
+    t1_retro = datetime(t1.year, 1, 1)
+    t2_retro = t1 - relativedelta(months=1)
+    din = f'../../retro/output/basins/by_year/{t1_retro:%Y%m}-{t2_retro:%Y%m}/huc{huclev}'
 
     huc2_ids = np.unique(np.round(huc_ids, lablev-huclev)/pow(10, huclev-lablev)).astype(int)
     print(f'Writing data: data HUC level={huclev} (total={huc_ids.size}), file labeled at HUC level={lablev} (total={huc2_ids.size})')
-    
+
     for k in range(huc2_ids.size):
         huc2_id = huc2_ids[k]
-        print(f'  processing HUC{lablev}={huc2_id:0{lablev}d}')
+        #print(f'  processing HUC{lablev}={huc2_id:0{lablev}d}')
+
+        fnin = f'{din}/{huc2_id:0{lablev}d}_daily.csv.gz'
+        if os.path.isfile(fnin):
+            df_daily_all = pd.read_csv(fnin, dtype={f'HUC{huclev}': str})
+        else:
+            df_daily_all = pd.DataFrame()
+        fnin = f'{din}/{huc2_id:0{lablev}d}_monthly.csv.gz'
+        if os.path.isfile(fnin):
+            df_monthly_all = pd.read_csv(fnin, dtype={f'HUC{huclev}': str})
+        else:
+            df_monthly_all = pd.DataFrame()
         
-        cnt = 0
         for j in range(huc_ids.size):
             huc_id = huc_ids[j]
             
@@ -160,6 +175,7 @@ def main(argv):
                 #print(f'    HUC{huclev}={huc_id:0{huclev}d}')
                 # daily
                 df_daily = pd.DataFrame({'Date': pd.to_datetime(tstamps, format='%Y-%m-%d')})
+                df_daily['Date'] = pd.to_datetime(df_daily['Date']).dt.date
                 df_daily[f'HUC{huclev}']  = f'{huc_id:0{huclev}d}'
                 df_daily['SWE']   = huc_means_swe[:, j]
                 df_daily['SMTOT'] = huc_means_sm[:, j]
@@ -168,19 +184,15 @@ def main(argv):
 
                 # monthly
                 df_monthly = pd.DataFrame({'Date': pd.to_datetime(tstamps_mon, format='%Y-%m-%d')})
+                df_monthly['Date'] = pd.to_datetime(df_monthly['Date']).dt.date
                 df_monthly[f'HUC{huclev}']  = f'{huc_id:0{huclev}d}'
                 df_monthly['SWE']   = huc_means_swe_mon[:, j]
                 df_monthly['SMTOT'] = huc_means_sm_mon[:, j]
                 df_monthly['T2D']   = huc_means_t_mon[:, j]
                 df_monthly['PREC']  = huc_means_p_mon[:, j]
                 
-                if cnt==0:
-                    df_daily_all   = df_daily.copy()
-                    df_monthly_all = df_monthly.copy()
-                else:
-                    df_daily_all   = pd.concat([df_daily_all, df_daily])
-                    df_monthly_all = pd.concat([df_monthly_all, df_monthly])
-                cnt += 1
+                df_daily_all   = pd.concat([df_daily_all, df_daily], ignore_index=True)
+                df_monthly_all = pd.concat([df_monthly_all, df_monthly], ignore_index=True)
         
         fnout = f'{dout}/{huc2_id:0{lablev}d}_daily.csv.gz'
         df_daily_all.to_csv(fnout, compression='gzip', index=False, float_format='%.4f', date_format='%Y-%m-%d')

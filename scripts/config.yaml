@@ -89,6 +89,21 @@ expanse:
             climrange:  [1979, 2023]
             lonlatbox:  [-124, -117, 35, 42]
             mapdpi:    80
+            lstm:
+                TEST_PARA:
+                    Ttrain:       ['19791001', '20190930']
+                    Tvalid:       ['20210801', '20250731']
+                    Tpredc:       ['20210801', '20250731']  # Forecast period
+                    dyn_var_list: ['PREC', 'T2D', 'SWDOWN', 'LWDOWN', 'SMTOT', 'SWE', 'Qsim'] ## variables used as predictors
+                    target_var:   ['FNF']
+                    log_var_list: ['FNF', 'prec', 'Qsim', 'p_mean']  ## p and flow need log-transform
+                    stc_var_list: ['elev', 'sand', 'slope', 'size', 'p_mean']
+                HYPER_PARA:
+                    nepoch:       400
+                    batch_size:    24
+                    rho:           48
+                    hidden_size:   64
+                    EPOCHsave:      5   # save model for every save step
         yampa:
             partition: 'cw3e-shared'
             nnodes:     1

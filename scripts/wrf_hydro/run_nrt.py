@@ -205,6 +205,16 @@ def main(argv):
         jid3 = ret.decode().split(' ')[-1].rstrip()
         print(f'B-120 simulated flow extraction will run with job ID: {jid3}')
 
+    elif domain in ['conus']:
+
+        cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_huc_nrt.py'
+        flog = f'{workdir}/log/extract_huc_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 01:20:00 -p cw3e-shared -A cwp101 --mem=3G -J "exhucnrt" --wrap="{cmd1} {domain} 202410 {t2:%Y%m}" -o {flog}'
+        #print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid3 = ret.decode().split(' ')[-1].rstrip()
+        print(f'HUC basin averages extraction will run with job ID: {jid3}')
+
     return 0
 
 if __name__ == '__main__':

@@ -1,22 +1,13 @@
-#!/home/mxiao/usr.local/miniforge3/bin/python3
-from configparser import ConfigParser, ExtendedInterpolation
 import numpy  as np
 import pandas as pd
 import xarray as xr
-
-def read_config(config_file):
-    config = ConfigParser(interpolation=ExtendedInterpolation(),\
-            inline_comment_prefixes="#")
-    config.read(config_file)
-    return config
-
 
 
 def read_stc_inputs(config):
     df_static  = pd.read_csv(config['INPUT']['static_inputs'], index_col=0) 
     #### remove unnecessary variables
     stc_raw_ls = list(df_static)
-    stc_list   = list(config['TEST_PARA']['stc_var_list'].split(','))
+    stc_list   = config['TEST_PARA']['stc_var_list']
     for varf in stc_raw_ls:
         if varf in stc_list:
             continue
@@ -37,7 +28,7 @@ def read_dyn_inputs(config):
         dindex = pd.to_datetime(tmpd['indx'])
         #### remove unnecessary variables
         dyn_raw_ls = list(tmpd)
-        dyn_list   = list(config['TEST_PARA']['dyn_var_list'].split(','))
+        dyn_list   = config['TEST_PARA']['dyn_var_list']
         for varf in dyn_raw_ls:
             if varf not in dyn_list:
                 tmpd.drop(columns=[varf], inplace=True)
@@ -60,7 +51,7 @@ def read_dyn_inputs1(config):
         dindex = pd.to_datetime(tmpd['indx'])
         #### remove unnecessary variables
         dyn_raw_ls = list(tmpd)
-        dyn_list   = list(config['TEST_PARA']['dyn_var_list1'].split(','))
+        dyn_list   = config['TEST_PARA']['dyn_var_list1']
         for varf in dyn_raw_ls:
             if varf not in dyn_list:
                 tmpd.drop(columns=[varf], inplace=True)
@@ -84,7 +75,7 @@ def read_flow_obs(config):
         dindex = pd.to_datetime(tmpd['indx'])
         #### remove unnecessary variables
         dyn_raw_ls = list(tmpd)
-        dyn_list   = list(config['TEST_PARA']['target_var'].split(','))
+        dyn_list   = config['TEST_PARA']['target_var']
         for varf in dyn_raw_ls:
             if varf not in dyn_list:
                 tmpd.drop(columns=[varf], inplace=True)
