@@ -118,7 +118,7 @@ def main(argv):
             os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web')
             os.system('gcloud storage rsync imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
             os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain1}/web/dash')
-            os.system('gcloud app deploy -q --project-cw3e-water-panel')
+            os.system('gcloud app deploy -q --project=cw3e-water-panel')
             os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain2}/web/dash')
             os.system('gcloud app deploy -q --project=cw3e-water-supply')
     

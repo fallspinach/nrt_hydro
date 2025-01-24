@@ -207,13 +207,36 @@ def main(argv):
 
     elif domain in ['conus']:
 
-        cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_huc_nrt.py'
-        flog = f'{workdir}/log/extract_huc_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 01:20:00 -p cw3e-shared -A cwp101 --mem=3G -J "exhucnrt" --wrap="{cmd1} {domain} 202410 {t2:%Y%m}" -o {flog}'
-        #print(cmd)
-        ret = subprocess.check_output([cmd], shell=True)
-        jid3 = ret.decode().split(' ')[-1].rstrip()
-        print(f'HUC basin averages extraction will run with job ID: {jid3}')
+        for huclev in [8, 10]:
+            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_huc_nrt.py'
+            flog = f'{workdir}/log/extract_huc{huclev}_{t1:%Y%m}_{t2:%Y%m}.txt'
+            cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 01:20:00 -p cw3e-shared -A cwp101 --mem=5G -J "exhucnrt" --wrap="{cmd1} {domain} 202410 {t2:%Y%m} {huclev}" -o {flog}'
+            #print(cmd)
+            ret = subprocess.check_output([cmd], shell=True)
+            jid4 = ret.decode().split(' ')[-1].rstrip()
+            print(f'HUC{huclev} basin averages extraction will run with job ID: {jid4}')
+
+        for subdomain in ['cbrfc']:
+            
+            # subset subdomain from conus
+            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/subset_output.py'
+            flog = f'{workdir}/log/subset_{subdomain}_{t1:%Y%m}_{t2:%Y%m}.txt'
+            cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101 --mem=5G -J subset{subdomain} --wrap="{cmd1} {subdomain} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
+            ret = subprocess.check_output([cmd], shell=True)
+            jid5 = ret.decode().split(' ')[-1].rstrip()
+            print(f'Subsetting {subdomain} job ID is: {jid5}')
+
+            # plot subdomain
+            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/plot_nrt.py'
+            flog = f'{workdir}/log/plot_{subdomain}_{t1:%Y%m}_{t2:%Y%m}.txt'
+            cmd = f'sbatch -d afterok:{jid5} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=6G -J plotday --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+            ret = subprocess.check_output([cmd], shell=True)
+            jid6 = ret.decode().split(' ')[-1].rstrip()
+            print(f'Daily plotting for subdomain {subdomain} job ID is: {jid6}')
+            cmd = f'sbatch -d afterok:{jid5} -t 00:10:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=6G -J plotmon --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+            ret = subprocess.check_output([cmd], shell=True)
+            jid7 = ret.decode().split(' ')[-1].rstrip()
+            print(f'Monthly plotting for subdomain {subdomain} job ID is: {jid7}')
 
     return 0
 

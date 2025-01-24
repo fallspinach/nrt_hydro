@@ -40,6 +40,7 @@ def main(argv):
     fcstdir  = f'{workdir}/basins/averaged'
     tmpdir   = f'{workdir}/basins/lstm_tmp'
     obsdir   = f'{inputdir}/csv_cdec'
+    outdir   = f'{workdir}/basins/lstm'
 
     namls = pd.read_csv(f'{inputdir}/stn.names.24.txt', header=None, names=['num', 'id', 'name'], dtype={'num': int, 'id': str, 'name': str})
     #print(namls)
@@ -50,6 +51,8 @@ def main(argv):
     if not os.path.isdir(f'{tmpdir}/01'):
         allens = ' '.join([f'{tmpdir}/{e:02d}' for e in range(1, nens+1)])
         os.system(f'mkdir -p {allens}')
+    if not os.path.isdir(outdir):
+        os.system(f'mkdir -p {outdir}')
 
     # concatennate historical and ensemble forecast data
     print('Concatennate historical and ensemble forecast data...')
@@ -121,7 +124,7 @@ def main(argv):
         dout = pd.DataFrame(rec, columns=header)
         dout.index = pd.to_datetime(index2)
         dout = dout[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}']
-        dout.to_csv(f'{tmpdir}/{id}_{t1:%Y%m%d}-{t2:%Y%m%d}.csv',float_format="%.3f", index_label='Date')
+        dout.to_csv(f'{outdir}/{id}_{t1:%Y%m%d}-{t2:%Y%m%d}.csv',float_format="%.3f", index_label='Date')
 
     return 0
 
