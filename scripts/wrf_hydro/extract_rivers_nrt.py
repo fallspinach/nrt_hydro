@@ -121,6 +121,9 @@ def main(argv):
         conn = sqlite3.connect(fnout)
         df.T.to_sql('streamflow', conn, if_exists='replace')
         conn.close()
+
+        #df.reset_index(inplace=True, drop=False)
+        df.T.to_csv(fnout.replace('db', 't.csv.gz'), header=True, index=True, float_format='%.3f', date_format='%Y-%m-%d', compression='gzip')
         
     return 0
 

@@ -36,8 +36,10 @@ fcst_length = 7
 
 enss = [ 'ecm%03d' % i for i in [4, 5, 6, 7, 24, 25, 26, 27, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 
                                  64, 65, 66, 67, 84, 85, 86, 87, 104, 105, 106, 107]]
+enss = [ 'ecm%03d' % i for i in [4, 5, 6, 7, 24, 25, 26, 27, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 
+                                 64, 65, 66, 67, 84, 85, 86, 87, 104, 105, 106, 107, 116, 117, 118, 119]]
 
-tmpdir = f'/scratch/{os.getenv("USER")}/{os.getenv("SLURM_JOBID")}'
+tmpdir = f'/scratch/{os.getenv("USER")}/job_{os.getenv("SLURM_JOBID")}'
 
 ## main function
 def main(argv):
@@ -78,9 +80,12 @@ def main(argv):
     
     #sys.exit("here")
 
-    for domain in config['forcing']['domains']:
+    for domain in ['cnrfc', 'cbrfc']: #config['forcing']['domains']:
         
-        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
+        if latest_day.year==2025:
+            cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m,U2D,v_10m,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m,v_10m'
+        else:
+            cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
         ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/10800" '
         ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
@@ -89,7 +94,10 @@ def main(argv):
         allsteps = []
         alldays  = []
         while t <= last_day:
-            fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/ecm004/wrfcf_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
+            if latest_day.year>=2025:
+                fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/ecm004/wrfcf_hydro_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
+            else:
+                fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/ecm004/wrfcf_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
             fnwm = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
             if os.path.isfile(fww): # and not os.path.isfile(fnwm):
                 allsteps.append(t)
@@ -107,7 +115,10 @@ def main(argv):
         
                 #print(t.strftime('Processing %Y-%m-%d %H:00'))
 
-                fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/{ens}/wrfcf_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
+                if latest_day.year>=2025:
+                    fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/{ens}/wrfcf_hydro_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
+                else:
+                    fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/{ens}/wrfcf_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
                 ftmp = f'{tmpdir}/{ens}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
                 ftmp2 = f'{ftmp}.nc'
                 dtmp = os.path.dirname(ftmp)
@@ -148,10 +159,26 @@ def main(argv):
                     fh4 = f'{out_dir}/{domain}/{ens}/{t:%Y%m%d}0[369].LDASIN_DOMAIN1'
                     cmd = f'rm -f {fh4}'
                     os.system(cmd)
+
+                # subsetting
+                if domain=='cnrfc':
+                    fd2 = f'{out_dir}/basins24/{ens}/{t:%Y%m%d}.LDASIN_DOMAIN1'
+                    dd2 = os.path.dirname(fd2)
+                    if not os.path.isdir(dd2):
+                        os.system(f'mkdir -p {dd2}')
+                    cmd = f'cdo -O -f nc4 -z zip add -selindexbox,111,410,381,1130 {fd} ../nwm/domain/xmask0_basins24.nc {fd2}'
+                    os.system(cmd)
+                if domain=='cbrfc':
+                    fd2 = f'{out_dir}/yampa/{ens}/{t:%Y%m%d}.LDASIN_DOMAIN1'
+                    dd2 = os.path.dirname(fd2)
+                    if not os.path.isdir(dd2):
+                        os.system(f'mkdir -p {dd2}')
+                    cmd = f'cdo -O -f nc4 -z zip add -selindexbox,579,948,962,1401 {fd} ../nwm/domain/xmask0_yampa.nc {fd2}'
+                    os.system(cmd)
     
-        # delete hourly files older than 2 days
+        # delete hourly files older than 5 days
         if rank==0:
-            old_day = latest_day - timedelta(days=2)
+            old_day = latest_day - timedelta(days=5)
             for ens in enss:
                 cmd = f'/bin/rm -f {out_dir}/{domain}/{ens}/{old_day:%Y%m%d}??.LDASIN_DOMAIN1'
                 os.system(cmd)

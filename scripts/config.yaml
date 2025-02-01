@@ -112,7 +112,7 @@ expanse:
             minperday:  2.5
             lake:       False
             climrange:  [1979, 2023]
-            lonlatbox:  [-124, -117, 35, 42]
+            lonlatbox:  [-112, -106, 39, 44]
             mapdpi:    80
     obs:
         # products to process

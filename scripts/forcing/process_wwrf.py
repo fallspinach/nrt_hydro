@@ -52,9 +52,9 @@ def main(argv):
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
     
     # figure out the water year
-    wy      = curr_day.year if curr_day.month>=13 else curr_day.year-1
+    wy      = curr_day.year if curr_day.month>=10 else curr_day.year-1
     # temporary freeze for 2025 due to AWARE testing
-    wy = 2023
+    #wy = 2023
     fcst_dir = f'links/NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     
@@ -79,7 +79,7 @@ def main(argv):
     ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
     ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
     
-    for domain in ['cnrfc']: #config['forcing']['domains']:
+    for domain in ['cnrfc', 'cbrfc']: #config['forcing']['domains']:
         
         cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
     
@@ -130,6 +130,10 @@ def main(argv):
             if domain=='cnrfc':
                 fd2 = f'{out_dir}/basins24/{t:%Y%m%d}.LDASIN_DOMAIN1'
                 cmd = f'cdo -O -f nc4 -z zip add -selindexbox,111,410,381,1130 {fd} ../nwm/domain/xmask0_basins24.nc {fd2}'
+                os.system(cmd)
+            if domain=='cbrfc':
+                fd2 = f'{out_dir}/yampa/{t:%Y%m%d}.LDASIN_DOMAIN1'
+                cmd = f'cdo -O -f nc4 -z zip add -selindexbox,579,948,962,1401 {fd} ../nwm/domain/xmask0_yampa.nc {fd2}'
                 os.system(cmd)
     
         # delete hourly files older than 2 days

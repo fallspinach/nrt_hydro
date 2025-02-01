@@ -90,6 +90,7 @@ def main(argv):
         df.drop_duplicates(subset=['Date'], inplace=True)
         
         df.to_csv(fnout, index=False, float_format='%.3f', date_format='%Y-%m-%d', compression='gzip')
+        df.T.to_csv(fnout.replace('csv', 't.csv'), header=False, index=True, float_format='%.3f', date_format='%Y-%m-%d', compression='gzip')
         df = pd.read_csv(fnout, index_col='Date')
         conn = sqlite3.connect(fnout.replace('csv.gz', 'db'))
         df.T.to_sql('streamflow', conn, if_exists='replace')

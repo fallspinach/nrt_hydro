@@ -34,7 +34,7 @@ while true; do
     elif  [ $currhour == 11 ]; then
     
         # run WRF-Hydro NRT
-        for domain in cnrfc basins24 conus; do
+        for domain in cnrfc basins24 conus yampa; do
             flog=wrf_hydro/$domain/nrt/run/log/log_nrt_$(date -u +%Y%m%d_%H)z.txt
             python scripts/wrf_hydro/run_nrt.py $domain > $flog 2>&1
         done
