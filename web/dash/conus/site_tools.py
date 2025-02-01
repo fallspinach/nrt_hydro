@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from glob import glob
 import os
 
-from config import base_url, fnf_stations, fnf_id_names, graph_config, tabtitle_style, tabtitle_selected_style, popup_ts_style
+from config import base_url, cloud_url, fnf_stations, fnf_id_names, graph_config, tabtitle_style, tabtitle_selected_style, popup_ts_style
 
 # flow retro figure
 def draw_retro(staid):
@@ -154,7 +154,7 @@ def draw_table_all(fcst_type, fcst_t1, fcst_t2, fcst_update):
 
 def get_site_tools():
 
-    df_system_status = pd.read_csv(f'{base_url}/data/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
     
     fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
     fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()

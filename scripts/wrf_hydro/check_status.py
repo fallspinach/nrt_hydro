@@ -36,7 +36,8 @@ whwwrf_path = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/wwrf/output/41'
 whespw_path = f'{config["base_dir"]}/wrf_hydro/{domain1}/fcst/esp_wwrf/output'
 scamod_path = f'{config["base_dir"]}/obs/modis/nc'
 
-fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain}/web/imgs/monitor/system_status.csv'
+#fnstatus = f'{config["base_dir"]}/wrf_hydro/{domain}/web/imgs/monitor/system_status.csv'
+fnstatus = f'{config["base_dir"]}/web/data/system_status.csv'
 
 ## main function
 def main(argv):
@@ -101,26 +102,57 @@ def main(argv):
             swriter.writeheader()
             for i,d in enumerate(datastreams):
                 swriter.writerow({'ID': i, 'Data Stream': d, 'Start': f'{datastart[i]:{dtfmt}}', 'End': f'{datastart[i]:{dtfmt}}'})
-    
-    if last_whmoni.month>=10:
-        last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni:%Y}01-{last_whmoni:%Y%m}.daily.db'
-    else:
-        last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni.year-1:d}10-{last_whmoni:%Y%m}.daily.db'
+
+    ## sync data to web app folders
+
+    # old separated dash apps
+    if False:
+        if last_whmoni.month>=10:
+            last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni:%Y}01-{last_whmoni:%Y%m}.daily.db'
+        else:
+            last_riv_moni = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output/rivers/CHRTOUT_{last_whmoni.year-1:d}10-{last_whmoni:%Y%m}.daily.db'
         
-    last_riv_fcst = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/wwrf/output/41/CHRTOUT_{last_whwwrf1:%Y%m%d}-{last_whwwrf2:%Y%m%d}.daily.db'
+        last_riv_fcst = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/wwrf/output/41/CHRTOUT_{last_whwwrf1:%Y%m%d}-{last_whwwrf2:%Y%m%d}.daily.db'
     
-    river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/nrt/rivers'
-    cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
+        river_data_dir = f'{config["base_dir"]}/wrf_hydro/{domain}/web/cw3e-water-panel-gcloud/data/nrt/rivers'
+        cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {river_data_dir}/'
+        print(cmd); os.system(cmd)
+
+    # new centralized web apps
+    
+    # cnrfc
+    cmd = f'rsync -a {config["base_dir"]}/obs/cdec/fnf {config["base_dir"]}/obs/cdec/snow_* {config["base_dir"]}/web/data/cnrfc/cdec/'
     print(cmd); os.system(cmd)
+    cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/basins24/nrt/output/basins/*ed {config["base_dir"]}/wrf_hydro/basins24/nrt/output/basins/sites {config["base_dir"]}/web/data/cnrfc/nrt/'
+    print(cmd); os.system(cmd)
+    if last_whmoni.month>=10:
+        last_riv_moni = f'{config["base_dir"]}/wrf_hydro/cnrfc/nrt/output/rivers/CHRTOUT_{last_whmoni:%Y}01-{last_whmoni:%Y%m}.daily.t.csv.gz'
+    else:
+        last_riv_moni = f'{config["base_dir"]}/wrf_hydro/cnrfc/nrt/output/rivers/CHRTOUT_{last_whmoni.year-1:d}10-{last_whmoni:%Y%m}.daily.t.csv.gz'
+    last_riv_fcst = f'{config["base_dir"]}/wrf_hydro/cnrfc/fcst/wwrf/output/41/CHRTOUT_{last_whwwrf1:%Y%m%d}-{last_whwwrf2:%Y%m%d}.daily.t.csv.gz'
+    cmd = f'rsync -a {last_riv_moni} {last_riv_fcst} {config["base_dir"]}/web/data/cnrfc/nrt/rivers/'
+    print(cmd); os.system(cmd)
+    
+    # conus
+    cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/conus/nrt/output/basins/huc* {config["base_dir"]}/web/data/conus/nrt/'
+    print(cmd); os.system(cmd)
+    
+    # cbrfc
+    for h in ['huc8', 'huc10']:
+        cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/conus/nrt/output/basins/{h}/1[45]*  {config["base_dir"]}/wrf_hydro/conus/nrt/output/basins/{h}/160[123]* {config["base_dir"]}/web/data/cbrfc/nrt/{h}/'
+        print(cmd); os.system(cmd)
     
     if len(argv)>0:
         if argv[0]=='update_gcloud':
-            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web')
+            #os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain}/web')
+            os.chdir(f'{config["base_dir"]}/web')
             os.system('gcloud storage rsync imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
-            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain1}/web/dash')
-            os.system('gcloud app deploy -q --project=cw3e-water-panel')
-            os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain2}/web/dash')
-            os.system('gcloud app deploy -q --project=cw3e-water-supply')
+            os.system('gcloud storage rsync data gs://cw3e-water-panel.appspot.com/data --recursive')
+            if False:
+                os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain1}/web/dash')
+                os.system('gcloud app deploy -q --project=cw3e-water-panel')
+                os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain2}/web/dash')
+                os.system('gcloud app deploy -q --project=cw3e-water-supply')
     
     return 0
 

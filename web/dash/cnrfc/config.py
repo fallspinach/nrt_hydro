@@ -10,7 +10,7 @@ import json
 
 # system status
 cloud_url = 'https://storage.googleapis.com/cw3e-water-panel.appspot.com'
-fcsv = f'{cloud_url}/imgs/monitor/system_status.csv'
+fcsv = f'{cloud_url}/data/system_status.csv'
 df_system_status = pd.read_csv(fcsv, parse_dates=True)
 
 df_riverids = pd.read_csv(f'{cloud_url}/data/cnrfc/riverids.csv')
@@ -48,8 +48,8 @@ map_tiles = [
 ]
 
 ## data variables
-output_url  = f'{cloud_url}/imgs/monitor/output'
-forcing_url = f'{cloud_url}/imgs/monitor/forcing'
+output_url  = f'{cloud_url}/imgs/cnrfc/output'
+forcing_url = f'{cloud_url}/imgs/cnrfc/forcing'
 data_vars = [
     {'label': 'SWE Percentile (daily)',    'name': 'swe_r',    'cat': 'hydro', 'url': f'{output_url}/%Y/swe_r_%Y%m%d.png',   'cbar': f'{output_url}/swe_r_cbar.png'},
     {'label': '2-m SM Percentile (daily)', 'name': 'smtot_r',  'cat': 'hydro', 'url': f'{output_url}/%Y/smtot_r_%Y%m%d.png', 'cbar': f'{output_url}/smtot_r_cbar.png'},

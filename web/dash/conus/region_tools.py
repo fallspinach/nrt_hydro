@@ -13,7 +13,7 @@ from docs_links   import get_docs_links
 
 def get_region_tools():
     
-    df_system_status = pd.read_csv(f'{cloud_url}/imgs/monitor/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
  
     last_whnrt = datetime.fromisoformat(df_system_status['WRF-Hydro NRT'][1]).date()
     #last_whnrt = datetime.fromisoformat(df_system_status['WRF-Hydro Monitor'][1]).date()

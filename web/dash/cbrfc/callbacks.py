@@ -87,7 +87,7 @@ app.clientside_callback(
 @app.callback(Output(component_id='datepicker', component_property='max_date_allowed'),
               Input('interval-check_system', 'n_intervals'))
 def update_system_status(basin):
-    df_status = pd.read_csv(f'{cloud_url}/imgs/monitor/system_status.csv', parse_dates=True)
+    df_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
     return datetime.fromisoformat(df_status['WRF-Hydro NRT'][1]).date()
 
 # callback to switch HUC sources according to zoom level

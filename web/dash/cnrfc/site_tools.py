@@ -183,7 +183,7 @@ def draw_map(fcst_type, fcst_t1, fcst_t2, fcst_update):
 
 def get_site_tools():
 
-    df_system_status = pd.read_csv(f'{cloud_url}/imgs/monitor/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
     
     fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
     fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()

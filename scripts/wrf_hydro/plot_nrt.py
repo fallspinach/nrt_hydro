@@ -112,10 +112,10 @@ def main(argv):
     time2 = time2.replace(tzinfo=pytz.utc)
     step  = relativedelta(months=1)
 
-    webdir = f'{config["base_dir"]}/wrf_hydro/{domain}/web'
+    webdir = f'{config["base_dir"]}/web/imgs/{domain}'
     nrtdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt'
     
-    os.chdir(webdir)
+    os.chdir(nrtdir)
    
     if len(argv)>3: 
         monthly_flag = True
@@ -189,7 +189,7 @@ def main(argv):
                 ax1.set_xlim(lonlim)
                 ax1.set_ylim(latlim)
                 ax1.axis('off')
-                fout = f'{webdir}/imgs/monitor/output/{dd:%Y}/{imvars[j]}_{dd:%Y%m%d}.png'
+                fout = f'{webdir}/output/{dd:%Y}/{imvars[j]}_{dd:%Y%m%d}.png'
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
@@ -250,7 +250,7 @@ def main(argv):
                 ax1.set_xlim(lonlim)
                 ax1.set_ylim(latlim)
                 ax1.axis('off')
-                fout = f'{webdir}/imgs/monitor/forcing/{dd:%Y}/{imvars[j]}_{dd:%Y%m%d}.png'
+                fout = f'{webdir}/forcing/{dd:%Y}/{imvars[j]}_{dd:%Y%m%d}.png'
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
@@ -273,7 +273,7 @@ def main(argv):
                     cbar.ax.tick_params(labelsize=20)
                     if v=='RAINRATE':
                         cbar.ax.set_yticklabels(['0', '1', '2.5', '5', '7.5', '10', '15', '20', '30', '40', '50', '70', '100', '150', '200', '250', '300', '400', '500', '600', '750', '900'])
-                    fout = f'{webdir}/imgs/monitor/forcing/{imvars[j]}_cbar.png'
+                    fout = f'{webdir}/forcing/{imvars[j]}_cbar.png'
                     dout = os.path.dirname(fout)
                     if not os.path.isdir(dout):
                         os.system(f'mkdir -p {dout}')
@@ -310,7 +310,7 @@ def main(argv):
                 ax1.set_xlim(lonlim)
                 ax1.set_ylim(latlim)
                 ax1.axis('off')
-                fout = f'{webdir}/imgs/monitor/forcing/{dd:%Y}/{imvars[j]}_{dd:%Y%m}.png'
+                fout = f'{webdir}/forcing/{dd:%Y}/{imvars[j]}_{dd:%Y%m}.png'
                 dout = os.path.dirname(fout)
                 if not os.path.isdir(dout):
                     os.system(f'mkdir -p {dout}')
@@ -331,7 +331,7 @@ def main(argv):
                     cbar = plt.colorbar(cs, orientation='vertical', fraction=0.03, pad=0.02, ticks=ticks)
                     cbar.set_label(nmvars[j], fontsize=24)
                     cbar.ax.tick_params(labelsize=20)
-                    fout = f'{webdir}/imgs/monitor/forcing/{imvars[j]}_cbar.png'
+                    fout = f'{webdir}/forcing/{imvars[j]}_cbar.png'
                     dout = os.path.dirname(fout)
                     if not os.path.isdir(dout):
                         os.system(f'mkdir -p {dout}')
@@ -340,9 +340,6 @@ def main(argv):
                     fig1.clf()
                     plt.close(fig1)
 
-    if rank==0:
-        os.chdir(webdir)
-        
     comm.Barrier()
     return 0
 

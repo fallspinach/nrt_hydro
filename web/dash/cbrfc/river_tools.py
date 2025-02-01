@@ -12,13 +12,13 @@ import numpy as np
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-from config import base_url, graph_config, tabtitle_style, tabtitle_selected_style, popup_ts_style
+from config import base_url, cloud_url, graph_config, tabtitle_style, tabtitle_selected_style, popup_ts_style
 
     
 # flow monitor/forecast figure
 def draw_mofor_river_db(rivid):
     
-    df_system_status = pd.read_csv(f'{base_url}/data/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
     
     moni_t2 = datetime.fromisoformat(df_system_status['WRF-Hydro NRT'][1]).date()
     if moni_t2.month>=10:

@@ -10,7 +10,7 @@ from datetime import datetime
 # system status
 cloud_url = 'https://storage.googleapis.com/cw3e-water-panel.appspot.com'
 base_url = '.'
-fcsv = f'{cloud_url}/imgs/monitor/system_status.csv'
+fcsv = f'{cloud_url}/data/system_status.csv'
 df_system_status = pd.read_csv(fcsv, parse_dates=True)
 
 # map domain setup
