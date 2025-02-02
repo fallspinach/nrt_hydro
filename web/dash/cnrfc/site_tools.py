@@ -40,7 +40,7 @@ def draw_retro(staid):
 def draw_mofor(staid, fcst_type, fcst_t1, fcst_t2, fcst_update):
     nens = 45
     if staid in fnf_stations:
-        fcsv = f'{cloud_url}/data/cnrfc/fcst/init{fcst_t1:%Y%m%d}_update{fcst_update:%Y%m%d}/basins/{fcst_type}/{staid}_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.csv'
+        fcsv = f'{cloud_url}/data/cnrfc/fcst/init{fcst_t1:%Y%m%d}_update{fcst_update:%Y%m%d}/basins/{fcst_type}/{staid}_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.csv' #; print(fcsv)
         df = pd.read_csv(fcsv, parse_dates=True, index_col='Date', usecols = ['Date']+['Ens%02d' % (i+1) for i in range(nens)]+['Avg', 'Exc50', 'Exc90', 'Exc10'])
         if fcst_t2.month>=7:
             df.drop(index=df.index[-1], axis=0, inplace=True)
@@ -208,6 +208,7 @@ def get_site_tools():
     ## pop-up window and its tabs/graphs/tables
 
     fig_retro = draw_retro(staid0)
+    
     fig_mofor = draw_mofor(staid0, fcst_type0, fcst_t1, fcst_t2, tup_latest)
 
     table_fcst = draw_table(staid0, staname0, fcst_type0, fcst_t1, fcst_t2, tup_latest)

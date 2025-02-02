@@ -50,7 +50,7 @@ while true; do
         # update system status
         flog=wrf_hydro/$domain/fcst/wwrf/run/log/log_status_$(date -u +%Y%m%d_%H)z.txt
         python scripts/wrf_hydro/check_status.py update_gcloud > $flog 2>&1
-        sleep 60m
+        sleep 120m
 
         # update system status
         flog=wrf_hydro/$domain/fcst/wwrf/run/log/log_status_$(date -u +%Y%m%d_%H)z.txt

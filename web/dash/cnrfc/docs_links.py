@@ -42,7 +42,7 @@ def get_docs_links():
         dbc.Col(['Web app source code on GitHub (open in a new tab/window).'])
     ], className='g-0', style={'font-size': 'small', 'margin-top': '5px'})
 
-    docs = dbc.Stack([gdoc_row, fdoc_row, scode_row, wcode_row])
+    docs = dbc.Stack([gdoc_row, fdoc_row, scode_row]) #, wcode_row])
     
     tab_style = tool_style.copy()
     tab_style.update({'min-height': '180px', 'padding-top': '20px', 'text-align': 'center'})
