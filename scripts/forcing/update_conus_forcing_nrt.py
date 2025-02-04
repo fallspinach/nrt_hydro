@@ -70,10 +70,10 @@ def main(argv):
     print(f'Last NLDAS-2 data:      {last_nld2:%Y-%m-%dT%H}')
     print(f'Last HRRR analysis:     {last_hrrr:%Y-%m-%dT%H}')
     
-    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
-    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=8 --mem=60G'
+    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=30G'
+    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=6 --mem=32G'
     cmd2 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 12 python create_conus_forcing.py'
-    cmd3 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 8 python mergetime_subset.py'
+    cmd3 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 6 python mergetime_subset.py'
         
     # NLDAS-2 + Stage-IV archive update
     if len(argv)==0:

@@ -33,7 +33,10 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
     tpn = config['cores_per_node']
     config_dom = config['wrf_hydro'][domain]
     minperday = config_dom['minperday']
-    trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
+    if domain=='conus':
+        trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+50)
+    else:
+        trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
     trun = f'{trun1.day-1}-{trun1:%H:%M:%S}'
     nnodes    = config_dom['nnodes']
     nprocs    = config_dom['nprocs']
