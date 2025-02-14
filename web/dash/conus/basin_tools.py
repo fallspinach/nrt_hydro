@@ -44,6 +44,10 @@ def draw_basin_ts(staid, ptype, btype, freq):
         df = df_all[df_all[btype.upper()]==staid]
         #print(df_all.head())
         #print(df.head())
+        if ptype=='nrt' and freq=='daily':
+            diff = df.loc['2024-10-01']['SMTOT'] - df.loc['2024-09-30']['SMTOT']
+            if abs(diff)>0.001:
+                df.loc[df.index<'2024-10-01', 'SMTOT'] += diff
         fig_nrt = go.Figure()
         fig_nrt.add_trace(go.Bar(x=df.index, y=df['PREC'], name='Precipitation'))
         fig_nrt.add_trace(go.Scatter(x=df.index, y=df['T2D'], name='Air Temperature', mode='markers', line=go.scatter.Line(color='orange'), yaxis='y2'))

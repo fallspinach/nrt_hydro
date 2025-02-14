@@ -23,7 +23,7 @@ def get_region_tools():
     locator = dl.LocateControl(locateOptions={'enableHighAccuracy': True})
 
     # FNF stations and forecast points
-    fnf_sites = dl.GeoJSON(url='assets/fnf_stations_tooltip.pbf', format='geobuf', id='fnf-sites',
+    fnf_sites = dl.GeoJSON(url='assets/fnf_stations_info.pbf', format='geobuf', id='fnf-sites',
                            options=dict(pointToLayer=ns('b120_ptl')), cluster=False, superClusterOptions=dict(radius=5),
                            hoverStyle=arrow_function(dict(weight=5, color='red', fillColor='red', dashArray='')),
                            hideout=dict(circleOptions=dict(fillOpacity=1, color='black', weight=2, radius=5), colorscale=['cyan'], colorProp='area', min=0, max=100))

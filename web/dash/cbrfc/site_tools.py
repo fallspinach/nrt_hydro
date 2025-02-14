@@ -24,7 +24,7 @@ def draw_retro(staid):
         fig_retro = go.Figure()
         fig_retro.add_trace(go.Scatter(x=df.index, y=df['FNF'],    name='Full Natural Flow', mode='lines+markers', line=go.scatter.Line(color='black', dash='dot')))
         fig_retro.add_trace(go.Scatter(x=df.index, y=df['Qsim'],   name='Model-Simulated',   mode='lines', line=go.scatter.Line(color=px.colors.qualitative.Plotly[0])))
-        #fig_retro.add_trace(go.Scatter(x=df.index, y=df['Qmatch'], name='CDF-matched',    mode='lines', line=go.scatter.Line(color=px.colors.qualitative.Prism[7])))
+        fig_retro.add_trace(go.Scatter(x=df.index, y=df['Qsimbc'], name='CDF-matched',    mode='lines', line=go.scatter.Line(color=px.colors.qualitative.Prism[7])))
     else:
         fig_retro = px.line(x=[2018, 2023], y=[0, 0], labels={'x': 'Data not available.', 'y': 'Flow (kaf/mon)'})
     fig_retro.update_layout(margin=dict(l=15, r=15, t=15, b=5),

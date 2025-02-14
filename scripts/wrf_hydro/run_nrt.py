@@ -57,22 +57,39 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
         rst_hr = 24
         rst_mn = 1440
 
+    if domain=='conus':
+        frun = f'run_wrf_hydro_{xland}.sh'
+        fnml = f'namelist.hrldas.{xland}'
+        fhyd = f'hydro.namelist.{xland}'
+    else:
+        frun = 'run_wrf_hydro.sh'
+    
     for ftpl in glob('../../../shared/nrt/*.tpl'):
 
         f = os.path.basename(ftpl).replace('.tpl', '')
+        if domain=='conus':
+            if f=='run_wrf_hydro.sh':
+                f = frun
+            elif f=='namelist.hrldas':
+                f = fnml
+            elif f=='hydro.namelist':
+                f = fhyd
+                
         os.system(f'/bin/cp {ftpl} {f}')
         replace_brackets(f, {'DOMAIN': domain,        'DOM': domain[:2],         'STARTYEAR': f'{t1:%Y}',     'STARTMONTH': f'{t1:%m}', 'STARTDAY': f'{t1:%d}',
                              'NDAYS':  f'{ndays:d}',  'RSTHOURS': f'{rst_hr:d}', 'RSTMINUTES': f'{rst_mn:d}', 'SBATCHTIME': trun,       'NNODES': f'{nnodes:d}',
                              'NPROCS': f'{nprocs:d}', 'PARTITION': partition,    'TPN': f'{tpn:d}',           'MODULES': modules})
         
-        if (not config_dom['lake']) and f=='hydro.namelist':
+        if (not config_dom['lake']) and f[:14]=='hydro.namelist':
             replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
 
-        if domain=='conus' and f=='run_wrf_hydro.sh':
-            print(f'Adding cmd to run_wrf_hydro.sh to set XLAND to xland={xland}.')
+        if domain=='conus' and f==frun:
+            print(f'Adding cmd to {frun} to set XLAND to xland={xland}.')
             target = f'{config["base_dir"]}/wrf_hydro/{domain}/domain/wrfinput_conus.nc'
-            cmd = f'ln -nfs wrfinput_{xland}_trim.nc {target}'
-            replace_brackets(f, {'module list': cmd}, False)
+            cmd1 = f'ln -nfs wrfinput_{xland}_trim.nc {target}'
+            cmd2 = f'ln -nfs {fnml} namelist.hrldas'
+            cmd3 = f'ln -nfs {fhyd} hydro.namelist'
+            replace_brackets(f, {'module list': f'{cmd1}; {cmd2}; {cmd3}'}, False)
 
     # check restart files
     frestart = f'../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
@@ -94,9 +111,9 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
         t += timedelta(days=1)
 
     if dep==-1:
-        ret = subprocess.check_output([f'sbatch run_wrf_hydro.sh'], shell=True)
+        ret = subprocess.check_output([f'sbatch {frun}'], shell=True)
     else:
-        ret = subprocess.check_output([f'sbatch -d afterok:{dep} run_wrf_hydro.sh'], shell=True)
+        ret = subprocess.check_output([f'sbatch -d afterok:{dep} {frun}'], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'WRF-Hydro job ID is: {jid}')
 
@@ -143,10 +160,18 @@ def main(argv):
     last_nldas2 = find_last_time(f'{nldas2_path}/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
     last_nldas2 -= timedelta(hours=last_nldas2.hour)
 
-    if domain=='conus' and t2>=last_nldas2:
-        print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) earlier than {t2:%Y-%m-%d}. Split the simulation into two separate ones.')
-        jid = run_wrf_hydro(domain, t1,          last_nldas2-timedelta(days=1), xland='rfcs')
-        jid = run_wrf_hydro(domain, last_nldas2, t2,                            xland='hrrr', dep=jid)
+    if domain=='conus':
+        if t1<last_nldas2:
+            if t2>=last_nldas2:
+                print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) between t1={t1:%Y-%m-%d} and t2={t2:%Y-%m-%d}. Split the simulation into two separate ones.')
+                jid = run_wrf_hydro(domain, t1,          last_nldas2-timedelta(days=1), xland='rfcs')
+                jid = run_wrf_hydro(domain, last_nldas2, t2,                            xland='hrrr', dep=jid)
+            else:
+                print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) later than t2={t2:%Y-%m-%d}. RFCS mask for entire period.')
+                jid = run_wrf_hydro(domain, t1, t2, xland='rfcs')
+        else:
+            print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) earlier than t1={t1:%Y-%m-%d}. HRRR mask for entire period.')
+            jid = run_wrf_hydro(domain, t1, t2, xland='hrrr')
     else:
         jid = run_wrf_hydro(domain, t1, t2)
     
