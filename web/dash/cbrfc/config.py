@@ -27,7 +27,7 @@ tool_style = {'min-height': '312px', 'background-color': 'white', 'font-size': '
 tabtitle_style = {'padding': '2px', 'height': '28px', 'font-size': 'small'}
 tabtitle_selected_style = tabtitle_style.copy()
 tabtitle_selected_style.update ({'font-weight': 'bold'})
-popup_ts_style = {'opacity': '1', 'width': '90%', 'min-width': '1000px', 'min-height': '540px', 'margin-top': '150px', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': 'smaller'}
+popup_ts_style = {'opacity': '1', 'width': '90%', 'min-width': '1000px', 'min-height': '600px', 'margin-top': '150px', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': 'smaller'}
 fig_ts_style = {'height': '400px', 'padding-top': '40px'}
 
 ## maps
@@ -62,6 +62,8 @@ data_vars = [
 fcsv = f'{cloud_url}/data/cbrfc/fnf_stations.csv'
 df_fnf = pd.read_csv(fcsv, dtype={'station_id': str})
 fnf_stations = df_fnf['station_id'].to_list()
+names = df_fnf['name'].to_list()
+all_stations = dict(zip(fnf_stations, names))
 
 snow_pillow_stations = ['ADM', 'AGP', 'ALP', 'BCB', 'BCH', 'BFL', 'BGP', 'BIM', 'BKL', 'BLA', 'BLC', 'BLD', 'BLK', 'BLS', 'BMW', 'BNK', 'BSH', 'BSK', 'CAP', 'CBT', 'CDP', 'CHM', 'CHP', 'CRL', 'CSL', 'CSV', 'CWD', 'CWF', 'CXS', 'DAN', 'DDM', 'DPO', 'DSS', 'EBB', 'EP5', 'FDC', 'FLL', 'FOR', 'FRN', 'FRW', 'GEM', 'GIN', 'GKS', 'GNF', 'GNL', 'GOL', 'GRM', 'GRV', 'GRZ', 'HGM', 'HHM', 'HIG', 'HMB', 'HNT', 'HOR', 'HRK', 'HRS', 'HVN', 'HYS', 'IDC', 'IDP', 'INN', 'KIB', 'KSP', 'KTL', 'KUB', 'KUP', 'LBD', 'LLP', 'LOS', 'LVM', 'LVT', 'MB3', 'MDW', 'MED', 'MHP', 'MNT', 'MRL', 'MSK', 'MTM', 'MUM', 'NLS', 'PDS', 'PET', 'PLP', 'PSC', 'PSN', 'PSR', 'QUA', 'RBB', 'RBP', 'RCC', 'RCK', 'REL', 'RP2', 'RRM', 'RTL', 'SCN', 'SCT', 'SDF', 'SDW', 'SHM', 'SIL', 'SLI', 'SLK', 'SLM', 'SLT', 'SNM', 'SPS', 'SPT', 'SQV', 'SSM', 'STL', 'STM', 'STR', 'SWM', 'TCC', 'TK2', 'TMR', 'TNY', 'TUM', 'TUN', 'UBC', 'UTY', 'VLC', 'VRG', 'VVL', 'WC3', 'WHW', 'WTM', 'WWC']
 

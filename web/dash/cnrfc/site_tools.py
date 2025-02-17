@@ -102,7 +102,7 @@ def draw_table(staid, staname, fcst_type, fcst_t1, fcst_t2, fcst_update):
                      merge_duplicate_headers=True,
                      )
 
-    table_note = html.Div('  [Note] 50%, 90%, 10%: exceedance levels within the forecast ensemble. AVG: month of year average during 1979-2020. %AVG: percentage of AVG. KAF: kilo-acre-feet.', id='table-note', style={'font-size': 'small'})
+    table_note = html.Div('  [Note] 50%, 90%, 10%: exceedance levels within the forecast ensemble. AVG: month of year average during 1979-2023. %AVG: percentage of AVG. KAF: kilo-acre-feet.', id='table-note', style={'font-size': 'small'})
     return [table_fcst, table_note]
 
 # forecast tables over all FNF stations

@@ -161,6 +161,7 @@ def main(argv):
     last_nldas2 -= timedelta(hours=last_nldas2.hour)
 
     if domain=='conus':
+        #last_nldas2 = t2 + timedelta(days=10)
         if t1<last_nldas2:
             if t2>=last_nldas2:
                 print(f'CONUS domain and NLDAS-2 ends (on {last_nldas2:%Y-%m-%d}) between t1={t1:%Y-%m-%d} and t2={t2:%Y-%m-%d}. Split the simulation into two separate ones.')

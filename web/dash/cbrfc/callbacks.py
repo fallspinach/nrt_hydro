@@ -2,13 +2,14 @@ from main import app
 
 from dash.dependencies import ClientsideFunction, Input, Output, State
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 
-from site_tools import draw_retro
+from site_tools import draw_retro, draw_mofor, draw_table
 from basin_tools import draw_basin_ts
 from snow_tools import draw_course, draw_pillow
 from river_tools import draw_mofor_river_db, draw_rev_esp
-from config import cloud_url
+from config import cloud_url, all_stations
 ## Callbacks from here on
 
 # callback to update data var in the title section
@@ -171,17 +172,40 @@ def update_basin(basin):
 
 # create/update historic time series graph in popup
 @app.callback(Output(component_id='graph-retro', component_property='figure'),
+              Output(component_id='graph-mofor', component_property='figure'),
+              Output(component_id='div-table', component_property='children'),
               Output('popup-plots', 'is_open'),
               Output('popup-plots', 'title'),
-              Input('fnf-sites', 'clickData'))
-def update_flows(fcst_point):
+              Input('fnf-sites', 'clickData'),
+              Input('slider_updates', 'value'),
+              Input('radio_pp', 'value'))
+def update_flows(fcst_point, yday_update, pp):
+    
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
+    fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
+    fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()
+    if fcst_t1.month>=10:
+        fcst_update = datetime(fcst_t1.year, 12, 1) + timedelta(days=yday_update)
+    else:
+        fcst_update = datetime(fcst_t1.year-1, 12, 1) + timedelta(days=yday_update)
+    # re-derive fcst_t1 and fcst_t2 from fcst_update
+    fcst_t1 = datetime(fcst_update.year, fcst_update.month, 1)
+    fcst_t2 = fcst_t1 + relativedelta(months=6) - timedelta(days=1)
+    if fcst_t1.month==1:
+        fcst_t2 = fcst_t1 + relativedelta(months=7) - timedelta(days=1)
+    elif fcst_t1.month==12:
+        fcst_t2 = fcst_t1 + relativedelta(months=8) - timedelta(days=1)
+        
     if fcst_point==None:
-        staid = 'FTO'
-        stain = 'FTO: Feather River at Oroville'
+        staid = '09236000'
+        stain = '09236000, Yampa River At Deerlodge, 7931 mi^2'
     else:
         staid = fcst_point['properties']['station_id']
         stain = fcst_point['properties']['tooltip']
     fig_retro = draw_retro(staid)
+    fcst_type = f'{pp}'
+    fig_mofor = draw_mofor(staid, fcst_type, fcst_t1, fcst_t2, fcst_update)
+    table_fcst = draw_table(staid, all_stations[staid], fcst_type, fcst_t1, fcst_t2, fcst_update)
 
-    return [fig_retro, True, stain]
+    return [fig_retro, fig_mofor, table_fcst, True, stain]
 
