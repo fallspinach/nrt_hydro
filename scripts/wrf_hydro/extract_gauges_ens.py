@@ -61,9 +61,10 @@ def main(argv):
         fnin = f'{ens:02d}/{t1:%Y%m%d}-{t2:%Y%m%d}.CHRTOUT_DOMAIN1.monthly'
         fin  = nc.Dataset(fnin, 'r')
         print(f'Ens {ens:02d}')
-        
+
+        streamflow = fin['streamflow']
         for i,row in zip(site_list.index, site_list['row']):
-            data[i, :, ens-1] = fin['streamflow'][:, row]
+            data[i, :, ens-1] = streamflow[:, row]
             
         fin.close()
     

@@ -44,7 +44,7 @@ def draw_mofor(staid, fcst_type, fcst_t1, fcst_t2, fcst_update):
         df = pd.read_csv(fcsv, parse_dates=True, index_col='Date', usecols = ['Date']+['Ens%02d' % (i+1) for i in range(nens)]+['Avg', 'Exc50', 'Exc90', 'Exc10'])
         if fcst_t2.month>=7:
             df.drop(index=df.index[-1], axis=0, inplace=True)
-        fcsv2 = f'{cloud_url}/data/cnrfc/nrt/combined/{staid}_monthly.csv'
+        fcsv2 = f'{cloud_url}/data/cnrfc/nrt/combined/{staid}_monthly.csv?update=now'
         df2 = pd.read_csv(fcsv2, parse_dates=True, index_col='Date', usecols=['Date', 'FNF', 'Qsim', 'Qmatch'])
         fig_mofor = go.Figure()
         for e in range(1, nens+1):
@@ -183,7 +183,7 @@ def draw_map(fcst_type, fcst_t1, fcst_t2, fcst_update):
 
 def get_site_tools():
 
-    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
     
     fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
     fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()

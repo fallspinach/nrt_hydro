@@ -63,8 +63,9 @@ def main(argv):
         ntimes_daily += nt_daily
         tstamps_daily.extend([nc.num2date(fin_daily['time'][i], fin_daily['time'].units).strftime('%Y-%m-%d') for i in range(nt_daily)])
         data_tmp = np.zeros((nsites, nt_daily))
+        streamflow = fin_daily['streamflow'][:]
         for i,row in zip(site_list.index, site_list['row']):
-            data_tmp[i, :] = fin_daily['streamflow'][:, row]
+            data_tmp[i, :] = streamflow[:, row]
         if t==t1:
             data_daily = data_tmp
         else:
@@ -77,8 +78,9 @@ def main(argv):
         ntimes_monthly += 1
         tstamps_monthly.append(t.strftime('%Y-%m-%d'))
         data_tmp = np.zeros((nsites, 1))
+        streamflow = fin_monthly['streamflow'][:]
         for i,row in zip(site_list.index, site_list['row']):
-            data_tmp[i, :] = fin_monthly['streamflow'][:, row]
+            data_tmp[i, :] = streamflow[:, row]
         if t==t1:
             data_monthly = data_tmp
         else:

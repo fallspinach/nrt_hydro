@@ -77,3 +77,8 @@ fcsv = f'{cloud_url}/data/conus/huc8_conus_list.csv'
 df_huc8 = pd.read_csv(fcsv, dtype={'HUC8': str})
 huc8_basins = df_huc8['HUC8'].to_list()
 
+# usgs stations
+fcsv = f'{cloud_url}/data/conus/feature_gage_row_us_clean.csv'
+df_usgs = pd.read_csv(fcsv, dtype={'gage_id': str}).sort_values(by='gage_id')
+usgs_gages = df_usgs['gage_id'].to_list()
+

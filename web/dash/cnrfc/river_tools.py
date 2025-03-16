@@ -18,7 +18,7 @@ from config import cloud_url, riverids, graph_config, tabtitle_style, tabtitle_s
 # flow monitor/forecast figure
 def draw_mofor_river(rivid):
     
-    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
     
     moni_t2 = datetime.fromisoformat(df_system_status['WRF-Hydro NRT'][1]).date()
     if moni_t2.month>=10:
@@ -43,8 +43,7 @@ def draw_mofor_river(rivid):
         else:
             clim_t1 = date(clim_t2.year-1, 10, 1)
         for i,pctl in enumerate([95, 90, 80, 50, 20, 10, 5]):
-            fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{clim_t1:%Y%m}-{clim_t2:%Y%m}.daily.pctl{pctl:02d}.t.csv.gz'
-            #print(fcsv)
+            fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{clim_t1:%Y%m}-{clim_t2:%Y%m}.daily.pctl{pctl:02d}.t.csv.gz' #; print(fcsv)
             df = pd.read_csv(fcsv, parse_dates=True, compression='gzip', skiprows=[i for i in range(n_riv+1) if i not in [0, ind+1]]).T
             df.drop(index=df.index[0], axis=0, inplace=True)
             num = df._get_numeric_data(); num[num<0] = 0
@@ -60,7 +59,7 @@ def draw_mofor_river(rivid):
         #fig_mofor.add_trace(go.Scatter(x=df['Date'], y=df['Flow'], name='Monitor', line=dict(color='blue'), mode='lines+markers'))
         df2 = df.tail(1)
         
-        fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.daily.t.csv.gz'#; print(fcsv)
+        fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.daily.t.csv.gz'; print(fcsv)
         dff = pd.read_csv(fcsv, parse_dates=True, compression='gzip', skiprows=[i for i in range(n_riv+1) if i not in [0, ind+1]]).T
         dff.drop(index=dff.index[0], axis=0, inplace=True)
         num = dff._get_numeric_data(); num[num<0] = 0

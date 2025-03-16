@@ -23,7 +23,6 @@ import s5_p1_predict
 
 t1_hist = datetime(1979, 10, 1)
 t2_hist = datetime(2024, 9, 30)
-t1_pred = datetime(2021, 8, 1)
 
 ## main function
 def main(argv):
@@ -74,8 +73,19 @@ def main(argv):
                                 'bs_name_ls':    f'{inputdir}/stn.names.24.txt',
                                 'output_dir':    f'{tmpdir}/{ens:02d}/',
                                 'savemodel_dir': f'{inputdir}/'}
+        # shift Tpredc to a new 48-month period that ends at t2
+        t1_pred = datetime.strptime(config_lstm['TEST_PARA']['Tpredc'][0], '%Y%m%d')
+        t2_pred = datetime.strptime(config_lstm['TEST_PARA']['Tpredc'][1], '%Y%m%d')
+        monoff  = round((t2-t2_pred).days/30)
+        t2_pred = t2
+        t1_pred += relativedelta(months=monoff)
+        config_lstm['TEST_PARA']['Tpredc'][0] = f'{t1_pred:%Y%m%d}'
+        config_lstm['TEST_PARA']['Tpredc'][1] = f'{t2_pred:%Y%m%d}'
         s5_p1_predict.main([config_lstm])
 
+    # force the end date to the preset tvalid period
+    # t2 = datetime.strptime(config_lstm['TEST_PARA']['Tpredc'][1], '%Y%m%d')
+    
     # merge ensembles and calculate percentiles
     index2 = []; t = t1; nmons = 0
     while t<t2:
@@ -109,7 +119,7 @@ def main(argv):
             flw = pd.read_csv(f'{tmpdir}/{ens+1:02d}/{num}.predicted-flow.{t1_pred:%Y%m%d}-{t2:%Y%m%d}.csv')
             flw.index = pd.to_datetime(flw['date'])
             rec[0:nmons,ens] = np.array(flw['flow'].loc[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}'])
-            rec[nmons,ens]   = np.sum(np.array(flw['flow'].loc[f'{t2:%Y}0401':f'{t2:%Y%m%d}']))
+            rec[nmons,ens]   = np.sum(np.array(flw['flow'].loc[f'{t2:%Y}0401':f'{t2:%Y}0731']))
 
         #### calculate p10, p50, p90, avg
         rec[:,nens]   = np.quantile(rec[:,0:nens], 0.9, axis=1)
@@ -123,7 +133,8 @@ def main(argv):
         rec[:,nens+5]   = np.divide(rec[:,nens+2], rec[:,mcol-1])*100
         dout = pd.DataFrame(rec, columns=header)
         dout.index = pd.to_datetime(index2)
-        dout = dout[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}']
+        #dout = dout[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}']
+        dout = dout[f'{t1:%Y%m%d}':]
         dout.to_csv(f'{outdir}/{id}_{t1:%Y%m%d}-{t2:%Y%m%d}.csv',float_format="%.3f", index_label='Date')
 
     return 0

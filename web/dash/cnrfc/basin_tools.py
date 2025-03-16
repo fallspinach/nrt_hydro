@@ -15,7 +15,7 @@ ns = Namespace('dashExtensions', 'default')
 
 # draw system status chart
 def draw_system_status():
-    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
     fig_system_status = go.Figure()
     i = 1
     for datastream,datatime in df_system_status.items():

@@ -97,7 +97,12 @@ def main(argv):
         t = t1 + relativedelta(months=1)
         while t<=t2:
             flink = f'{forcdir}/{ens:02d}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
-            tlink = datetime.strptime(os.path.basename(os.readlink(flink)).split('.')[0], '%Y%m%d')
+            if 'retro' in os.readlink(flink):
+                tlink = datetime.strptime(os.path.basename(os.readlink(flink)).split('.')[0], '%Y%m%d')
+            else:
+                t10 = t + timedelta(days=10)
+                flink10 = f'{forcdir}/{ens:02d}/{t10:%Y/%Y%m%d}.LDASIN_DOMAIN1'
+                tlink = datetime.strptime(os.path.basename(os.readlink(flink10)).split('.')[0], '%Y%m%d') - timedelta(days=10)
             ydiff = t.year - tlink.year
             fnins += f' {config["base_dir"]}/wrf_hydro/{domain}/retro/forcing/1km_monthly/{tlink:%Y%m}.LDASIN_DOMAIN1.monthly'
             t += relativedelta(months=1)

@@ -148,13 +148,8 @@ class LSTMmodel(nn.Module):
         ntstep     = x.shape[0]
         output     = torch.zeros(ntstep, batch_size, self.ny)
         for ti in range(ntstep):
-            h0 = torch.zeros(1, batch_size, \
-                self.hiddensize).requires_grad_()
-            c0 = torch.zeros(1, batch_size, \
-                self.hiddensize).requires_grad_()
-            #h0 = None
-            #c0 = None
-
+            h0 = torch.zeros(1, batch_size, self.hiddensize).requires_grad_()
+            c0 = torch.zeros(1, batch_size, self.hiddensize).requires_grad_()
             xt = torch.unsqueeze(x[ti,:,:],0)
             x0 = Funct.relu(self.linearIn(xt.to(torch.float32)))
             x1, (h1, c1) = self.lstm(x0, (h0, c0) )

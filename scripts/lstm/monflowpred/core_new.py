@@ -1,4 +1,3 @@
-#!/home/mxiao/usr.local/miniforge3/bin/python3
 import numpy as np
 import torch
 import torch.nn as nn
@@ -27,7 +26,7 @@ class RMSE_high_Loss(nn.Module):
         super().__init__()
 
     def forward(self, output, target):
-        weights  = [0.2, 1.25, 1.75]  ## tentative weights
+        weights  = [0.2, 1.75]    ## tentative weights
         # high_pct = 0.10        ## tentative high value threshold
         # med_pct  = 0.35        ## tentative medium value threshold
         ny = target.shape[2]
@@ -39,27 +38,58 @@ class RMSE_high_Loss(nn.Module):
             p0 = output[:, :, k]
             t0 = target[:, :, k]
             dif = p0-t0
-            #print(t0)
-            #print(dif)
+            ## print(t0[:,0])
+            ## print(dif[:,0])
             for bi in range(nb):
-                yr_st = int(bi)/12
-                yr_ed = yr_st+1
-                b_thv =  int(np.floor(12*high_pct))
-                d_des =  np.sort(t0[:,bi])[::-1]
-                v_lar =  d_des[b_thv]
                 for ti in range(nt):
-                    if t0[ti,bi]>=v_lar :
+                    monind = ti%12
+                    if monind>=6 and monind<=9 :  ## manually select Mar-Jul
                         dif[ti,bi] = dif[ti,bi]*weights[1]
                     else:
                         dif[ti,bi] = dif[ti,bi]*weights[0]
-            #print(dif.size(), nb, nt, b_thv, v_lar, d_des)
-            #print(dif)
+            ## print(dif.size(), nb, nt)
+            ## print(dif[:,0])
             temp1 = torch.sqrt(((p0 - t0) ** 2).mean())
             temp = torch.sqrt((dif ** 2).mean())
             #print(temp1, temp)
             loss = loss + temp
         return loss
 
+class RMSE_only_Loss(nn.Module): 
+    ### create loss func, weight on high values
+    ### to create better prediction for Apr-May forecast
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, output, target):
+        weights  = [0.05, 2.]    ## tentative weights
+        # high_pct = 0.10        ## tentative high value threshold
+        # med_pct  = 0.35        ## tentative medium value threshold
+        ny = target.shape[2]
+        nb = target.shape[1]  ## number of basin
+        nt = target.shape[0]  ## number of time step
+        #print(output.size(), target.size())
+        loss = 0
+        for k in range(ny):
+            p0 = output[:, :, k]
+            t0 = target[:, :, k]
+            dif = p0-t0
+            ## print(t0[:,0])
+            ## print(dif[:,0])
+            for bi in range(nb):
+                for ti in range(nt):
+                    monind = ti%12
+                    if monind>=6 and monind<=9 :  ## manually select Mar-Jul
+                        dif[ti,bi] = dif[ti,bi]*weights[1]
+                    else:
+                        dif[ti,bi] = dif[ti,bi]*weights[0]
+            ## print(dif.size(), nb, nt)
+            ## print(dif[:,0])
+            temp1 = torch.sqrt(((p0 - t0) ** 2).mean())
+            temp = torch.sqrt((dif ** 2).mean())
+            #print(temp1, temp)
+            loss = loss + temp
+        return loss
 
 ############ CLASS: dataset section
 class seqDataset(TorchData):
@@ -117,18 +147,13 @@ class LSTMmodel(nn.Module):
         batch_size = x.shape[1]
         ntstep     = x.shape[0]
         output     = torch.zeros(ntstep, batch_size, self.ny)
+        h0 = torch.zeros(1, batch_size, self.hiddensize).requires_grad_()
+        c0 = torch.zeros(1, batch_size, self.hiddensize).requires_grad_()
         for ti in range(ntstep):
-            h0 = torch.zeros(1, batch_size, \
-                self.hiddensize).requires_grad_()
-            c0 = torch.zeros(1, batch_size, \
-                self.hiddensize).requires_grad_()
-            #h0 = None
-            #c0 = None
-
             xt = torch.unsqueeze(x[ti,:,:],0)
             x0 = Funct.relu(self.linearIn(xt.to(torch.float32)))
-            x1, (h1, c1) = self.lstm(x0, (h0, c0) )
-            yi  = self.linearOut(h1)
+            x1, (h0, c0) = self.lstm(x0, (h0, c0) )
+            yi  = self.linearOut(h0)
             output[ti,:,:] = yi
         return output
 

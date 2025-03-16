@@ -10,7 +10,7 @@ import json
 
 # system status
 cloud_url = 'https://storage.googleapis.com/cw3e-water-panel.appspot.com'
-fcsv = f'{cloud_url}/data/system_status.csv'
+fcsv = f'{cloud_url}/data/system_status.csv?update=now'
 df_system_status = pd.read_csv(fcsv, parse_dates=True)
 
 df_riverids = pd.read_csv(f'{cloud_url}/data/cnrfc/riverids.csv')

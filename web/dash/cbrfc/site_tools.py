@@ -110,8 +110,8 @@ def get_site_tools():
 
     df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
     
-    fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
-    fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()
+    fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).replace(month=3, day=1).date()
+    fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).replace(month=9, day=30).date()
     
     fcst_type0 = 'cdfm'
     staid0     = '09236000'

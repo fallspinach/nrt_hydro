@@ -88,14 +88,14 @@ def main(argv):
 
     # NLDAS-2 + Stage-IV realtime until end of NLDAS-2
     t1 = last_st4a + timedelta(hours=1); t2 = last_nld2
-    cmd = f'{cmd0} -t 00:40:00 -J nld2st4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
+    cmd = f'{cmd0} -t 01:00:00 -J nld2st4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/nld2st4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid2 = ret.decode().split(' ')[-1].rstrip()
     print(f'NLDAS-2 + StageIV realtime forcing job ID is: {jid2}')
 
     # HRRR + Stage-IV until end of HRRR analysis
     t1 = last_nld2 + timedelta(hours=1); t2 = last_hrrr
-    cmd = f'{cmd0} -t 00:40:00 -J hrrrst4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/hrrrst4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
+    cmd = f'{cmd0} -t 01:00:00 -J hrrrst4r --wrap="{cmd2} {t1:%Y%m%d%H} {t2:%Y%m%d%H} {prodtype}" -o {logdir}/hrrrst4r_{t1:%Y%m%d%H}_{t2:%Y%m%d%H}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid3 = ret.decode().split(' ')[-1].rstrip()
     print(f'HRRR + StageIV realtime forcing job ID is: {jid3}')

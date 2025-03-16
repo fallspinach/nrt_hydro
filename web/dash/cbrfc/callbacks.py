@@ -182,19 +182,19 @@ def update_basin(basin):
 def update_flows(fcst_point, yday_update, pp):
     
     df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv', parse_dates=True)
-    fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
-    fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()
+    fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).replace(month=3, day=1).date()
+    fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).replace(month=9, day=30).date()
     if fcst_t1.month>=10:
         fcst_update = datetime(fcst_t1.year, 12, 1) + timedelta(days=yday_update)
     else:
         fcst_update = datetime(fcst_t1.year-1, 12, 1) + timedelta(days=yday_update)
     # re-derive fcst_t1 and fcst_t2 from fcst_update
     fcst_t1 = datetime(fcst_update.year, fcst_update.month, 1)
-    fcst_t2 = fcst_t1 + relativedelta(months=6) - timedelta(days=1)
+    fcst_t2 = fcst_t1 + relativedelta(months=7) - timedelta(days=1)
     if fcst_t1.month==1:
-        fcst_t2 = fcst_t1 + relativedelta(months=7) - timedelta(days=1)
-    elif fcst_t1.month==12:
         fcst_t2 = fcst_t1 + relativedelta(months=8) - timedelta(days=1)
+    elif fcst_t1.month==12:
+        fcst_t2 = fcst_t1 + relativedelta(months=9) - timedelta(days=1)
         
     if fcst_point==None:
         staid = '09236000'
