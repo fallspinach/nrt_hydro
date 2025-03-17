@@ -1,7 +1,7 @@
-''' Extract flows from WRF-Hydro retro simulation for streamflow gauging sites
+''' Extract flows from WRF-Hydro NRT simulation for streamflow gauging sites
 
 Usage:
-    python extract_gauges_retro_conus.py [domain] [yyyymm1] [yyyymm2]
+    python extract_gauges_nrt_conus.py [domain] [yyyymm1] [yyyymm2]
 Default values:
     must specify all
 '''
@@ -37,7 +37,7 @@ def main(argv):
 
     flag_monthly = False
     
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/retro/output'
+    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/nrt/output'
     os.chdir(workdir)
 
     # Units: thousand acre feet for (TAF or KAF) monthly flow and cubic feet per second (CFS) for daily flow
@@ -59,11 +59,11 @@ def main(argv):
         print(f'Extracting {t:%Y-%m}')
         
         # extract daily data
-        fnin_daily = f'1km_daily/{t:%Y}/{t:%Y%m}.CHRTOUT_DOMAIN1'
+        fnin_daily = f'1km_daily/{t:%Y%m}.CHRTOUT_DOMAIN1'
         fin_daily  = nc.Dataset(fnin_daily, 'r')
         nt_daily   = fin_daily['time'].size
         ntimes_daily += nt_daily
-        tstamps_daily.extend([nc.num2date(fin_daily['time'][i], fin_daily['time'].units).strftime('%Y-%m-%d') for i in range(nt_daily)])
+        tstamps_daily.extend([nc.num2date(fin_daily['time'][:].data[i], fin_daily['time'].units).strftime('%Y-%m-%d') for i in range(nt_daily)])
         data_tmp = np.zeros((nsites, nt_daily))
         streamflow = fin_daily['streamflow'][:]
         for i,row in zip(site_list.index, site_list['row']):
@@ -103,8 +103,8 @@ def main(argv):
             data_monthly[:, m] *= md
 
     # write raw simulated streamflow, both daily and monthly
-    if not os.path.isdir(f'basins/{t1:%Y%m}-{t2:%Y%m}/combined'):
-        os.system(f'mkdir -p basins/{t1:%Y%m}-{t2:%Y%m}/combined')
+    if not os.path.isdir(f'basins/combined'):
+        os.system(f'mkdir -p basins/combined')
     
     for i,name in zip(site_list.index, site_list[id_field]):
 
@@ -126,7 +126,7 @@ def main(argv):
         else:
             df_daily_all   = pd.concat([df_daily_all, df_daily])
         if i%sites_per_file==sites_per_file-1 or i==nsites-1:
-            fnout_daily   = f'basins/{t1:%Y%m}-{t2:%Y%m}/combined/{fileno}_daily.csv.gz'
+            fnout_daily   = f'basins/combined/{fileno}_daily.csv.gz'
             if int(i/sites_per_file)%10==0:
                 print(fnout_daily)
             df_daily_all.to_csv(fnout_daily, index=False, compression='gzip', float_format='%.3f', date_format='%Y-%m-%d')
@@ -141,7 +141,7 @@ def main(argv):
             else:
                 df_monthly_all = pd.concat([df_monthly_all, df_monthly])
             if i%sites_per_file==sites_per_file-1 or i==nsites-1:
-                fnout_monthly = f'basins/{t1:%Y%m}-{t2:%Y%m}/combined/{fileno}_monthly.csv.gz'
+                fnout_monthly = f'basins/combined/{fileno}_monthly.csv.gz'
                 df_monthly_all.to_csv(fnout_monthly, index=False, compression='gzip', float_format='%.4f', date_format='%Y-%m-%d')
             
     return 0

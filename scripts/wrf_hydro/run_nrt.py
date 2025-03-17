@@ -243,6 +243,14 @@ def main(argv):
             ret = subprocess.check_output([cmd], shell=True)
             jid4 = ret.decode().split(' ')[-1].rstrip()
             print(f'HUC{huclev} basin averages extraction will run with job ID: {jid4}')
+            
+        cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/wrf_hydro/extract_gauges_nrt_conus.py'
+        flog = f'{workdir}/log/extract_gauges_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 00:30:00 -p cw3e-shared -A cwp101 --mem=5G -J "extgage" --wrap="{cmd1} {domain} 202410 {t2:%Y%m}" -o {flog}'
+        #print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid4 = ret.decode().split(' ')[-1].rstrip()
+        print(f'USGS gage time series extraction will run with job ID: {jid4}')
 
         for subdomain in ['cbrfc']:
             

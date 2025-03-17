@@ -134,7 +134,7 @@ def main(argv):
     print(cmd); os.system(cmd)
     
     # conus
-    cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/conus/nrt/output/basins/huc* {config["base_dir"]}/web/data/conus/nrt/'
+    cmd = f'rsync -a {config["base_dir"]}/wrf_hydro/conus/nrt/output/basins/* {config["base_dir"]}/web/data/conus/nrt/'
     print(cmd); os.system(cmd)
     
     # cbrfc

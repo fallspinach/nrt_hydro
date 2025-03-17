@@ -16,28 +16,33 @@ import os
 from config import base_url, cloud_url, usgs_gages, graph_config, tabtitle_style, tabtitle_selected_style, popup_ts_style
 
 # flow retro figure
-def draw_retro(staid):
+def draw_gage(staid, ptype):
     sites_per_file = 20
     if staid in usgs_gages:
         ind = [i for i, value in enumerate(usgs_gages) if value == staid][0]
         fileno = '%03d' % (int(ind/sites_per_file))
-        fcsv = f'{cloud_url}/data/conus/retro/combined/{fileno}_daily.csv.gz' #; print(fcsv)
+        fcsv = f'{cloud_url}/data/conus/{ptype}/combined/{fileno}_daily.csv.gz' #; print(fcsv)
         df_all = pd.read_csv(fcsv, parse_dates=True, compression='gzip', index_col='Date', dtype={'gage_id': str})
         df = df_all[df_all['gage_id']==staid]
         df.loc[df['Qsim'] < 0, 'Qsim'] = np.nan
-        fig_retro = go.Figure()
-        fig_retro.add_trace(go.Scatter(x=df.index, y=df['Qobs'],   name='USGS Flow', mode='lines+markers', line=go.scatter.Line(color='black', dash='dot')))
-        fig_retro.add_trace(go.Scatter(x=df.index, y=df['Qsim'],   name='Model-Simulated',   mode='lines', line=go.scatter.Line(color=px.colors.qualitative.Plotly[0])))
+        df.loc[df['Qobs'] < 0, 'Qobs'] = np.nan
+        fig_gage = go.Figure()
+        fig_gage.add_trace(go.Scatter(x=df.index, y=df['Qobs'],   name='USGS Flow', mode='lines+markers', line=go.scatter.Line(color='black', dash='dot')))
+        fig_gage.add_trace(go.Scatter(x=df.index, y=df['Qsim'],   name='Model-Simulated',   mode='lines', line=go.scatter.Line(color=px.colors.qualitative.Plotly[0])))
+        if ptype=='retro':
+            xrange = [df.index[0].to_pydatetime()-timedelta(days=150), df.index[-1].to_pydatetime()+timedelta(days=150)]
+        else:
+            xrange = [df.index[0].to_pydatetime()-timedelta(days=5), df.index[-1].to_pydatetime()+timedelta(days=5)]
     else:
-        fig_retro = px.line(x=[2018, 2023], y=[0, 0], labels={'x': 'Data not available.', 'y': 'Flow (cfs)'})
-    fig_retro.update_layout(margin=dict(l=15, r=15, t=15, b=5),
+        fig_gage = px.line(x=[2018, 2023], y=[0, 0], labels={'x': 'Data not available.', 'y': 'Flow (cfs)'})
+        xrange = [datetime(2018, 1, 1), datetime(2023, 12, 31)]
+    fig_gage.update_layout(margin=dict(l=15, r=15, t=15, b=5), xaxis_range=xrange,
                             plot_bgcolor='#eeeeee',
                             legend=dict(title='', bgcolor='rgba(255,255,255,0.7)', yanchor='top', y=0.99, xanchor='right', x=0.99),
                             hovermode='x unified') #, font=dict(size=20))
-    fig_retro.update_xaxes(range=['1979-10-01', '2024-09-30'])
-    fig_retro.update_yaxes(title='Flow (cfs)')
-    fig_retro.update_traces(hovertemplate=None)
-    return fig_retro
+    fig_gage.update_yaxes(title='Flow (cfs)')
+    fig_gage.update_traces(hovertemplate=None)
+    return fig_gage
     
 # flow monitor/forecast figure
 def draw_mofor(staid, fcst_type, fcst_t1, fcst_t2, fcst_update):
@@ -79,16 +84,16 @@ def get_site_tools():
 
     ## pop-up window and its tabs/graphs/tables
 
-    fig_retro = draw_retro(staid0)
-    #fig_mofor = draw_mofor(staid0, fcst_type0, fcst_t1, fcst_t2, tup_latest)
+    fig_retro = draw_gage(staid0, 'retro')
+    fig_mofor = draw_gage(staid0, 'nrt')
 
     graph_retro = dcc.Graph(id='graph-retro', figure=fig_retro, style={'height': '360px'}, config=graph_config)
-    #graph_mofor = dcc.Graph(id='graph-mofor', figure=fig_mofor, style={'height': '360px'}, config=graph_config)
+    graph_mofor = dcc.Graph(id='graph-mofor', figure=fig_mofor, style={'height': '360px'}, config=graph_config)
 
     tab_retro = dcc.Tab(label='Retrospective',   value='retro', children=[dcc.Loading(id='loading-retro', children=graph_retro)], style=tabtitle_style, selected_style=tabtitle_selected_style)
-    #tab_mofor = dcc.Tab(label='NRT Monitor/Forecast',value='mofor', children=[dcc.Loading(id='loading-mofor', children=graph_mofor)], style=tabtitle_style, selected_style=tabtitle_selected_style)
+    tab_mofor = dcc.Tab(label='NRT Monitor',value='mofor', children=[dcc.Loading(id='loading-mofor', children=graph_mofor)], style=tabtitle_style, selected_style=tabtitle_selected_style)
 
-    popup_tabs = dcc.Tabs([tab_retro], id='popup-tabs', value='retro')
+    popup_tabs = dcc.Tabs([tab_mofor, tab_retro], id='popup-tabs', value='retro')
 
     popup_plots = dbc.Offcanvas([popup_tabs],
         title='USGS Gage', placement='top', is_open=False, scrollable=True, id='popup-plots', style=popup_ts_style

@@ -5,7 +5,7 @@ from dash.dependencies import ClientsideFunction, Input, Output, State
 from datetime import datetime, timedelta
 import pandas as pd
 
-from site_tools import draw_retro, draw_mofor
+from site_tools import draw_gage, draw_mofor
 from basin_tools import draw_basin_ts
 from snow_tools import draw_course, draw_pillow
 from river_tools import draw_mofor_river_db, draw_rev_esp
@@ -148,6 +148,7 @@ def update_basin(basin):
 
 # create/update historic time series graph in popup
 @app.callback(Output(component_id='graph-retro', component_property='figure'),
+              Output(component_id='graph-mofor', component_property='figure'),
               Output('popup-plots', 'is_open'),
               Output('popup-plots', 'title'),
               Input('usgs-gages', 'clickData'))
@@ -159,7 +160,8 @@ def update_flows(fcst_point):
     else:
         staid = fcst_point['properties']['site_no']
         stain = fcst_point['properties']['tooltip']
-    fig_retro = draw_retro(staid)
+    fig_retro = draw_gage(staid, 'retro')
+    fig_mofor = draw_gage(staid, 'nrt')
 
-    return [fig_retro, True, stain]
+    return [fig_retro, fig_mofor, True, stain]
 
