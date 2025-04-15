@@ -189,7 +189,6 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
         jid = ret.decode().split(' ')[-1].rstrip()
         print(f'Ensemble #{ens:02d} will run with job ID: {jid}')
 
-        #cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 1 python {config["base_dir"]}/scripts/wrf_hydro/merge_fix_time_ens.py'
         cmd1 = f'python {config["base_dir"]}/scripts/wrf_hydro/merge_fix_time_ens.py  {domain} {t1:%Y%m%d} {t2:%Y%m%d} {tupdate:%Y%m%d} {ens:d} {ens:d} esp_wwrf'
         cmd2 = f'python {config["base_dir"]}/scripts/wrf_hydro/extract_average_ens.py {domain} {t1:%Y%m%d} {t2:%Y%m%d} {tupdate:%Y%m%d} {ens:d} {ens:d} esp_wwrf'
         if domain=='basins24':
@@ -198,6 +197,7 @@ def run_ensemble(domain, t1, t2, tupdate, ens1, ens2):
             cmd12 = cmd1
         flog = f'{workdir}/log/log_mergefixtime_{t1:%Y%m%d}-{t2:%Y%m%d}_{ens:02d}.txt'
         cmd = f'sbatch -d afterok:{jid} --nodes=1 --ntasks-per-node=2 --mem=30G -t 01:30:00 -p cw3e-shared -A cwp101 -J pp{ens:02d} --wrap="{cmd12}" -o {flog}'
+        #cmd = f'sbatch --nodes=1 --ntasks-per-node=2 --mem=30G -t 01:30:00 -p cw3e-shared -A cwp101 -J pp{ens:02d} --wrap="{cmd2}" -o {flog}'
         print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()

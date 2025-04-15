@@ -13,6 +13,7 @@ __status__ = 'Development'
 import sys, os, math, pytz
 from glob import glob
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from mpi4py import MPI
 
 
@@ -64,8 +65,17 @@ def main(argv):
     t2 = ntimes-1 if t2>ntimes-1 else t2
 
     if t1<ntimes:
+        
         tg1 = alltimes[t1].strftime('%Hz%d%b%Y')
-        tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
+        
+        if argv[0] == 'hourly':
+            tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
+        elif argv[0] == 'daily':
+            tg2 = (alltimes[t2]+timedelta(days=1)-timedelta(hours=1)).strftime('%Hz%d%b%Y')
+        elif argv[0] == 'monthly':
+            tg2 = (alltimes[t2]+relativedelta(months=1)-timedelta(hours=1)).strftime('%Hz%d%b%Y')
+        elif argv[0] == 'yearly' or argv[0] == 'annual' or argv[0] == 'annually':
+            tg2 = (alltimes[t2]+relativedelta(years=1)-timedelta(hours=1)).strftime('%Hz%d%b%Y')
 
         cmd = f'opengrads -lbc "{gs} {tg1} {tg2}"'
         print(cmd); os.system(cmd)

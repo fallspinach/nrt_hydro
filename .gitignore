@@ -7,5 +7,6 @@ __pycache__
 /log
 /obs
 /wrf_hydro
+/global
 /web/data
 /web/imgs

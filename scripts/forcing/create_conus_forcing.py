@@ -42,6 +42,11 @@ def main(argv):
     time1 = time1.replace(tzinfo=pytz.utc)
     time2 = time2.replace(tzinfo=pytz.utc)
     prodtype = argv[2]
+
+    gs = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs'
+    if len(argv)>3:
+        if argv[3]=='lstm':
+            gs = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}_lstm.gs'
     
     step  = timedelta(hours=1)
 
@@ -73,7 +78,7 @@ def main(argv):
             arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
             arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'
 
-            cmd = f'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs {tg1} {tg2} {arg3} {arg4}"'
+            cmd = f'opengrads -lbc "{gs} {tg1} {tg2} {arg3} {arg4}"'
             
         else:
             
@@ -92,7 +97,7 @@ def main(argv):
             else:
                 arg3 = 'provisional'
                 
-            cmd = f'opengrads -lbc "../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs {tg1} {tg2} {arg3}"'
+            cmd = f'opengrads -lbc "{gs} {tg1} {tg2} {arg3}"'
             
         print(cmd); os.system(cmd)
 

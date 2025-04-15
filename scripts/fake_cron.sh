@@ -28,6 +28,8 @@ while true; do
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 --mem=20G -p cw3e-shared -A cwp101 -J modissca -o $flog --wrap="python scripts/obs/process_modis_sca.py"
         # collect FNF data from CDEC
         python scripts/obs/process_cdec_fnf.py
+        flog=wrf_hydro/conus/nrt/run/log/log_snow_$(date -u +%Y%m%d_%H)z.txt
+        sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 -p cw3e-shared -A cwp101 -J snow -o $flog --wrap="python scripts/obs/process_cdec_snow.py"
         flog=wrf_hydro/conus/nrt/run/log/log_usgs_$(date -u +%Y%m%d_%H)z.txt
         sbatch -t 2:00:00 --nodes=1 --ntasks-per-node=1 -p cw3e-shared -A cwp101 -J usgs -o $flog --wrap="python scripts/obs/process_usgs_streamflow.py"
         

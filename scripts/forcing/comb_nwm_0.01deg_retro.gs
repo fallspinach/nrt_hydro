@@ -89,8 +89,12 @@ say "Lores configuration: "relo
 year=substr(time1, strlen(time1)-3, 4)
 
 * NLDAS-2 as the backbone
-if (year<2024)
-    'xdfopen 'basedir'/nldas2/nldas2_retro.ctl'
+if (year<2025)
+    if (year>2023)
+        'xdfopen 'basedir'/nldas2/nldas2_retro.ctl'
+    else
+        'xdfopen 'basedir'/nldas2/nldas2_retro_002.ctl'
+    endif
 else
     'xdfopen 'basedir'/nldas2/nldas2_nrt.ctl'
 endif

@@ -59,7 +59,7 @@ def draw_mofor_river(rivid):
         #fig_mofor.add_trace(go.Scatter(x=df['Date'], y=df['Flow'], name='Monitor', line=dict(color='blue'), mode='lines+markers'))
         df2 = df.tail(1)
         
-        fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.daily.t.csv.gz'; print(fcsv)
+        fcsv = f'{cloud_url}/data/cnrfc/nrt/rivers/CHRTOUT_{fcst_t1:%Y%m%d}-{fcst_t2:%Y%m%d}.daily.t.csv.gz'# ; print(fcsv)
         dff = pd.read_csv(fcsv, parse_dates=True, compression='gzip', skiprows=[i for i in range(n_riv+1) if i not in [0, ind+1]]).T
         dff.drop(index=dff.index[0], axis=0, inplace=True)
         num = dff._get_numeric_data(); num[num<0] = 0

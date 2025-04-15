@@ -89,7 +89,7 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
             cmd1 = f'ln -nfs wrfinput_{xland}_trim.nc {target}'
             cmd2 = f'ln -nfs {fnml} namelist.hrldas'
             cmd3 = f'ln -nfs {fhyd} hydro.namelist'
-            replace_brackets(f, {'module list': f'{cmd1}; {cmd2}; {cmd3}'}, False)
+            replace_brackets(f, {'module list': f'{cmd1}; {cmd2}; {cmd3}', '.out': f'_{xland}.out'}, False)
 
     # check restart files
     frestart = f'../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
