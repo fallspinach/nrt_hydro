@@ -1,7 +1,7 @@
 ''' Merge per-hour lat/lon forcing data into per-day, reproject to NWM grid, and subset it for domains of interest
 
 Usage:
-    python mergetime_subset.py [yyyymmdd1] [yyyymmdd2]
+    python mergetime_subset.py [yyyymmdd1] [yyyymmdd2] [retro|nrt]
 Default values:
     must specify all
 '''

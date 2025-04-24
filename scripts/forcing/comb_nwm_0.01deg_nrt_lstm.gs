@@ -355,7 +355,7 @@ while (t<=t2)
     'define precipd=precipd+pcphi'
     'define swdownd=swdownd+dswhi'
     'define windd=windd+sqrt(wsuhi*wsuhi+wsvhi*wsvhi)'
-
+    
     if (currhour=23)
 
         'define tmeand=tmeand/24'

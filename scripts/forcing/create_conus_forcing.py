@@ -42,13 +42,21 @@ def main(argv):
     time1 = time1.replace(tzinfo=pytz.utc)
     time2 = time2.replace(tzinfo=pytz.utc)
     prodtype = argv[2]
-
-    gs = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs'
+    
+    flag_lstm = False
     if len(argv)>3:
         if argv[3]=='lstm':
-            gs = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}_lstm.gs'
+            flag_lstm = True
     
-    step  = timedelta(hours=1)
+    step = timedelta(hours=1)
+    gs   = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}.gs'
+    
+    if flag_lstm:
+        time1 = time1.replace(hour=0)
+        time2 = time2.replace(hour=23)
+        step = timedelta(days=1)
+        gs   = f'../../scripts/forcing/comb_nwm_0.01deg_{prodtype}_lstm.gs'
+    
 
     alltimes = []
     t = time1
@@ -66,17 +74,22 @@ def main(argv):
     t2 = ntimes-1 if t2>ntimes-1 else t2
 
     if t1<ntimes:
-        tg1 = alltimes[t1].strftime('%Hz%d%b%Y')
-        tg2 = alltimes[t2].strftime('%Hz%d%b%Y')
+        tt1 = alltimes[t1]
+        tt2 = alltimes[t2]
+        if flag_lstm:
+            tt1 = tt1.replace(hour= 0)
+            tt2 = tt2.replace(hour=23)
+        tg1 = tt1.strftime('%Hz%d%b%Y')
+        tg2 = tt2.strftime('%Hz%d%b%Y')
         #print('Rank = %d, t1 = %d, t2 = %d, time1 = %s, time2 = %s' % (rank, t1, t2, tg1, tg2))
 
         if prodtype == 'nrt':
             
             last_stg4 = find_last_time(stg4_path+'/20??/ST4.20??????', 'ST4.%Y%m%d')
             last_nld2 = find_last_time(nld2_path+'/202?/???/*.nc', 'NLDAS_FORA0125_H.A%Y%m%d.%H00.020.nc')
-        
-            arg3 = 'realtime' if alltimes[t2]>last_stg4 else 'archive'
-            arg4 = 'hrrr'     if alltimes[t2]>last_nld2 else 'nldas2'
+
+            arg3 = 'realtime' if tt2>last_stg4 else 'archive'
+            arg4 = 'hrrr'     if tt2>last_nld2 else 'nldas2'
 
             cmd = f'opengrads -lbc "{gs} {tg1} {tg2} {arg3} {arg4}"'
             

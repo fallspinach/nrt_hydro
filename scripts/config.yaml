@@ -52,6 +52,8 @@ expanse:
     forcing:
         # domains to subset after conus
         domains:    ['cnrfc', 'cbrfc', 'basins24', 'yampa']
+        # flag to produce daily forcing data for LSTM modeling
+        lstm:       True
         
     wrf_hydro:
         conus:

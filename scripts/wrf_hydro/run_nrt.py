@@ -92,14 +92,11 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
             replace_brackets(f, {'module list': f'{cmd1}; {cmd2}; {cmd3}', '.out': f'_{xland}.out'}, False)
 
     # check restart files
-    frestart = f'../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
-    if not os.path.isfile(frestart):
-        print(f'{frestart} not found, quitting now.')
-        return 1
-    frestart = f'../restart/HYDRO_RST.{t1:%Y-%m-%d}_00:00_DOMAIN1'
-    if not os.path.isfile(frestart):
-        print(f'{frestart} not found, quitting now.')
-        return 1
+    for frestart in [f'../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1', f'../restart/HYDRO_RST.{t1:%Y-%m-%d}_00:00_DOMAIN1']:
+        if not os.path.isfile(frestart):
+            print(f'{frestart} not found, quitting now.')
+            if xland!='hrrr':
+                return 1
     
     # check forcing files
     t = t1

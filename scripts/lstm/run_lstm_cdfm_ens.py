@@ -135,10 +135,11 @@ def main(argv):
             ajsum1 = matched
             ajsum2 = np.sum(rec[mapr:mjul+1,ens])
 
-            if ajsum1<ajsum2: # flag_cdfm_a2j:
-                rec[nmons,ens] = ajsum1
-            else:
-                rec[nmons,ens] = ajsum2
+            rec[nmons,ens] = ajsum1 if ajsum1<ajsum2 else ajsum2
+            #if id=='FTO':
+            #    rec[nmons,ens] = (ajsum1+ajsum2)/2.0
+            #rec[nmons,ens] = ajsum1
+            #rec[nmons,ens] = ajsum2
 
         #### calculate p10, p50, p90, avg
         rec[:,nens]   = np.quantile(rec[:,0:nens], 0.9, axis=1)
