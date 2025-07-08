@@ -7,6 +7,7 @@
 import { formatLatLng, showModal, loadJson } from './utils.js';
 import { setupLayerControl, restoreLayerVisibility, getVisibleLayerIds } from './layer-control.js';
 import { loadLayerCnrfc } from './load-layer-cnrfc.js';
+import { loadLayerCnrfcBasins } from './load-layer-cnrfc-basins.js';
 import { loadLayerNwmRivers } from './load-layer-nwm-rivers.js';
 import { loadLayerDwrPoints } from './load-layer-dwr-points.js';
 import { loadLayerSnowNetwork } from './load-layer-snow-network.js';
@@ -28,6 +29,7 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
   const visibleLayers = [
     { id: 'dataoverlay', name: 'Data Overlay',          load: loadLayerOverlay,     initialVisibility: true,  legendSymbol: '&#9632;',  legendColor: 'tomato' },
     { id: 'cnrfc',       name: 'CNRFC',                 load: loadLayerCnrfc,       initialVisibility: true,  legendSymbol: '&#9634;',  legendColor: 'gray' },
+    { id: 'cnbasins',    name: 'CNRFC Fcst Basins',     load: loadLayerCnrfcBasins, initialVisibility: true,  legendSymbol: '&#9634;',  legendColor: 'blue' },
     { id: 'nwmrivers',   name: 'NWM Rivers (v2.1)',     load: loadLayerNwmRivers,   initialVisibility: true,  legendSymbol: '&#65374;', legendColor: 'darkcyan' },
     { id: 'dwrofficial', name: 'Official Points',       load: loadLayerDwrPoints,   initialVisibility: true,  legendSymbol: '&#9679;',  legendColor: 'magenta' },
     { id: 'dwrreservoir',name: 'Reservoir Points',      load: loadLayerDwrPoints,   initialVisibility: true,  legendSymbol: '&#9679;',  legendColor: 'blue' },
@@ -108,15 +110,6 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
         terrainEnabled = (terrain==1) ? true : false;
         applyTerrainStatus(terrainEnabled);
         
-        layerStates.forEach(({ id, visible }) => {
-          map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
-          const extras = ['highlight', 'labels', 'casing'];
-          extras.forEach(extra => {
-            if (map.getLayer(id+'-'+extra)) {
-              map.setLayoutProperty(id+'-'+extra, 'visibility', visible ? 'visible' : 'none');
-            }
-          });
-        });
         setupLayerControl(map, visibleLayers);
         waitForLayerMenuAndSync(layerStates);
       

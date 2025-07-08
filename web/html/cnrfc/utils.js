@@ -74,7 +74,8 @@ export async function loadDwrPoints(csvUrl) {
       properties: {
         ID: row.ID,
         Location: row.Location,
-        River: row.River
+        River: row.River,
+        ReachID: row.ReachID
       },
       geometry: {
         type: 'Point',

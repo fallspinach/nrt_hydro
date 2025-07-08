@@ -149,7 +149,7 @@ function createLayerOption(map, layerId, label, initialVisibility, legendSymbol,
     const layers1 = getVisibleLayerIds()
         .map(({ id, visible }) => `${encodeURIComponent(id)}:${visible}`)
         .join(',');
-    const date = $('#datepicker').datepicker('getDate');
+    const date = $('#datepicker').datepicker('getDate').toISOString().slice(0, 10);
     const variable = document.getElementById('variable-selector').value;
 
     var style = 'carto';

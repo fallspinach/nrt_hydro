@@ -86,10 +86,12 @@ export async function loadLayerDwrPoints(map, id, initialVisibility=false, legen
     const id = feature.properties[idField];
 
     map.setFilter(layerName+'-highlight', ['==', idField, id]);
+    map.setFilter('cnbasins', ['==', 'Basin', id]);
 
     var popuptext = `<strong>ID: ${feature.properties.ID}</strong><br/>`;
     popuptext += `River: ${feature.properties.River}<br/>`;
-    popuptext += `Location: ${feature.properties.Location.split(" - ")[1]}`;
+    popuptext += `Location: ${feature.properties.Location.split(" - ")[1]}<br/>`;
+    popuptext += `Matching NWM Reach: ${feature.properties.ReachID}`;
 
     popupHover.setLngLat(e.lngLat)
         .setHTML(popuptext)
@@ -99,6 +101,7 @@ export async function loadLayerDwrPoints(map, id, initialVisibility=false, legen
   map.on('mouseleave', layerName, () => {
     map.getCanvas().style.cursor = '';
     map.setFilter(layerName+'-highlight', ['==', idField, '']);
+    map.setFilter('cnbasins', ['==', 'Basin', '']);
     popupHover.remove();
   });
     

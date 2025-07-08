@@ -1,103 +1,103 @@
-Location,ID,Latitude,Longitude,River
-Santa Ana River - Prado Reservoir,ADOC1,33.89056,-117.63639,Santa Ana River
-Alamitos Creek - Almaden Reservoir,ALRC1,37.165,-121.8275,Alamitos Creek
-Coyote Creek - Anderson Reservoir,ANDC1,37.16556,-121.62833,Coyote Creek
-San Antonio Creek - San Antonio Reservoir,ANOC1,37.57,-121.84861,San Antonio Creek
-Indian Creek - Antelope Lake,ANTC1,40.18,-120.60694,Indian Creek
-Little Truckee River - Below Boca Dam,BCAC1,39.38694,-120.09444,Little Truckee River
-Bear Creek - Bear Reservoir,BCKC1,37.36694,-120.21694,Bear Creek
-Sacramento River - Bend Bridge Local Flow,BDBC1,40.28861,-122.18556,Sacramento River
-Chowchilla River - Eastman Lake,BHNC1,37.21333,-119.97,Chowchilla River
-Stony Creek - Black Butte Reservoir,BLBC1,39.80806,-122.32889,Stony Creek
-Burns Creek - Burns Reservoir,BNCC1,37.37667,-120.275,Burns Creek
-East Walker River - Bridgeport Reservoir,BPRC1,38.32778,-119.21389,East Walker River
-Cottonwood Creek - Barrett Lake,BRTC1,32.68056,-116.66944,Cottonwood Creek
-Big Tujunga Creek - Big Tujunga Reservoir,BTJC1,34.29444,-118.18722,Big Tujunga Creek
-Canyon Creek - Bowman Reservoir,BWKC1,39.45028,-120.6525,Canyon Creek
-Calero Creek - Calero Reservoir,CADC1,37.18333,-121.79111,Calero Creek
-Llagas Creek - Chesbro Reservoir,CBRC1,37.11667,-121.69278,Llagas Creek
-Santa Ynez River - Lake Cachuma,CCHC1,34.57917,-119.9775,Santa Ynez River
-Trinity River - Trinity Lake,CEGC1,40.80139,-122.76222,Trinity River
-Bear River - Camp Far West,CFWC1,39.05028,-121.31472,Bear River
-Cherry Creek - Cherry Lake,CHVC1,37.97472,-119.91611,Cherry Creek
-Lost River - Clear Lake Reservoir,CKEC1,41.92639,-121.07528,Lost River
-Clear Lake - Lakeport,CLKC1,39.03906,-122.91333,Clear Lake
-Mokelumne River - Pardee Reservoir,CMPC1,38.25694,-120.84972,Mokelumne River
-Coyote Creek - Coyote Reservoir,COYC1,37.08861,-121.53806,Coyote Creek
-Castaic Creek - Castaic Lake,CSKC1,34.52278,-118.61195,Castaic Creek
-Arroyo Hondo - Calaveras Reservoir,CVQC1,37.4925,-121.81973,Arroyo Hondo
-Dry Creek - Merle Collins Lake,DMCC1,39.3375,-121.32723,Dry Creek
-Donner Creek - Donner Lake,DNRC1,39.325,-120.28139,Donner Creek
-Arroyo Valle - Del Valle Reservoir,DVAC1,37.61389,-121.745,Arroyo Valle
-Big Grizzly Creek - Lake Davis,DVSC1,39.88389,-120.47528,Big Grizzly Creek
-Castaic Creek - Elderberry Forebay,EFBC1,34.56278,-118.63277,Castaic Creek
-San Diego River - El Capitan Reservoir,ELPC1,32.88222,-116.80695,San Diego River
-Little Stony Creek - East Park Reservoir,EPRC1,39.35917,-122.51778,Little Stony Creek
-Merced River - Exchequer Reservoir,EXQC1,37.585,-120.26722,Merced River
-Little Last Chance Creek - Frenchman Lake,FHDC1,39.89389,-120.19028,Little Last Chance Creek
-Fordyce Creek - Fordyce Lake,FOCC1,39.37889,-120.49445,Fordyce Creek
-American River - Folsom Lake,FOLC1,38.7,-121.16694,American River
-San Joaquin River - Millerton Lake,FRAC1,36.995,-119.69167,San Joaquin River
-Littlejohns Creek - Farmington Reservoir,FRGC1,37.915,-120.935,Littlejohns Creek
-Miller Creek - Gerber Reservoir,GERO3,42.20111,-121.13028,Miller Creek
-Guadalupe Creek - Guadalupe Reservoir,GUAC1,37.19917,-121.87833,Guadalupe Creek
-Tujunga Wash - Hansen Dam,HANC1,34.26028,-118.38417,Tujunga Wash
-Tuolumne River - Hetch Hetchy Reservoir,HETC1,37.94778,-119.78694,Tuolumne River
-Fresno River - Hensley Lake,HIDC1,37.10167,-119.88,Fresno River
-Yuba River - Englebright Lake,HLEC1,39.23944,-121.26667,Yuba River
-San Dieguito River - Lake Hodges,HODC1,33.06639,-117.10583,San Dieguito River
-Independence Creek - Independence Lake,ILAC1,39.45194,-120.28972,Independence Creek
-North Fork Cache Creek - Indian Valley Reservoir,INVC1,39.08,-122.53361,North Fork Cache Creek
-Kern River - Lake Isabella,ISAC1,35.64667,-118.47889,Kern River
-Middle Yuba River - Jackson Meadows Reservoir,JKRC1,39.50917,-120.55222,Middle Yuba River
-Upper Klamath Lake - Klamath Falls,KLAO3,42.25,-121.81528,Upper Klamath Lake
-Stanislaus River - Goodwin Dam,KNFC1,37.85167,-120.63778,Stanislaus River
-Sacramento River - Keswick Reservoir,KWKC1,40.61167,-122.44333,Sacramento River
-East Fork Russian River - Lake Mendocino,LAMC1,39.20028,-123.18639,East Fork Russian River
-Los Banos Creek - Los Banos Creek Reservoir,LBDC1,36.99361,-120.92972,Los Banos Creek
-Putah Creek - Lake Berryessa,LBEC1,38.513,-122.104,Putah Creek
-Los Gatos Creek - Lake Elsman,LESC1,37.1298,-121.9296,Los Gatos Creek
-Los Gatos Creek - Lexington Reservoir,LEXC1,37.20167,-121.98806,Los Gatos Creek
-Santa Clara River - Lake Piru,LKPC1,34.46139,-118.75056,Santa Clara River
-Eleanor Creek - Lake Eleanor,LNRC1,37.97417,-119.88,Eleanor Creek
-Steamboat Creek - Little Washoe Lake,LWON2,39.3317,-119.8,Steamboat Creek
-Mariposa Creek - Mariposa Reservoir,MPAC1,37.29194,-120.14694,Mariposa Creek
-Martis Creek - Martis Creek Lake,MTSC1,39.32722,-120.11333,Martis Creek
-Mojave River - Mojave River Forks Reservoir,MVDC1,34.3425,-117.235,Mojave River
-Nacimiento River - Lake Nacimiento,NACC1,35.75583,-120.89111,Nacimiento River
-North Fork Yuba River - New Bullards Bar Reservoir,NBBC1,39.39278,-121.14028,North Fork Yuba River
-Tuolumne River - Don Pedro Lake,NDPC1,37.70167,-120.42111,Tuolumne River
-N Fork Stanislaus River - Diversion Dam,NDVC1,38.43833,-120.01667,N Fork Stanislaus River
-Calaveras River - New Hogan Lake,NHGC1,38.155,-120.81389,Calaveras River
-American River - Lake Natoma,NIMC1,38.63667,-121.22333,American River
-Stanislaus River - New Melones Lake,NMSC1,37.95,-120.53694,Stanislaus River
-Highland Creek - New Spicer Meadows Reservoir,NSWC1,38.39306,-119.99806,Highland Creek
-Feather River - Lake Oroville,ORDC1,39.53306,-121.51694,Feather River
-Middle Fork Yuba River - Below Our House Dam,OURC1,39.41167,-120.99694,Middle Fork Yuba River
-Owens Creek - Owens Reservoir,OWCC1,37.31528,-120.18694,Owens Creek
-Kings River - Pine Flat Lake,PFTC1,36.83194,-119.32361,Kings River
-Eel River - Lake Pillsbury,PLBC1,39.40833,-122.95834,Eel River
-North Fork Feather River - Prattville,PLLC1,40.20917,-121.15694,North Fork Feather River
-Prosser Creek - Prosser Creek Reservoir,PSRC1,39.37944,-120.13667,Prosser Creek
-Piru Creek - Pyramid Lake,PYMC1,34.64472,-118.76305,Piru Creek
-Bear River - Rollins Lake,ROLC1,39.13556,-120.94917,Bear River
-Tule River - Lake Success,SCSC1,36.06111,-118.92194,Tule River
-Stony Creek - Stony Gorge Reservoir,SGEC1,39.58306,-122.53306,Stony Creek
-Sacramento River - Shasta Lake,SHDC1,40.71417,-122.41611,Sacramento River
-San Antonio River - Lake San Antonio,SNRC1,35.79667,-120.88556,San Antonio River
-Deer Creek - Scotts Flat Reservoir,SOVC1,39.27361,-120.93111,Deer Creek
-Santa Ana River - Mentone,SRWC1,34.10834,-117.10059,Santa Ana River
-Stevens Creek - Stevens Creek Reservoir,STDC1,37.29861,-122.07611,Stevens Creek
-Little Truckee River - Stampede Reservoir,STPC1,39.47056,-120.10306,Little Truckee River
-South Fork Yuba River - Lake Spaulding,SUAC1,39.32639,-120.64222,South Fork Yuba River
-Santa Ysabel Creek - Sutherland Reservoir,SUDC1,33.11806,-116.78667,Santa Ysabel Creek
-San Vicente Creek - San Vicente Reservoir,SVIC1,32.91278,-116.92416,San Vicente Creek
-West Fork Mojave River - Silverwood Lake,SVWC1,34.30417,-117.31805,West Fork Mojave River
-Lake Tahoe Inflow - Tahoe Basin,TAHC1,39.16778,-120.14278,Lake Tahoe Inflow
-Kaweah River - Lake Kaweah,TMDC1,36.415,-119.00194,Kaweah River
-West Walker River - Topaz Lake,TPZC1,38.63667,-119.5075,West Walker River
-Cuyama River - Twitchell Dam,TWDC1,34.98361,-120.32083,Cuyama River
-Uvas Creek - Uvas Reservoir,UVRC1,37.06556,-121.6875,Uvas Creek
-Temecula Creek - Vail Lake,VLKC1,33.49556,-116.97583,Temecula Creek
-Clear Creek - Whiskeytown Reservoir,WHSC1,40.59806,-122.53694,Clear Creek
-Dry Creek - Lake Sonoma,WSDC1,38.72306,-123.01,Dry Creek
+Location,ID,Latitude,Longitude,River,ReachID
+Santa Ana River - Prado Reservoir,ADOC1,33.89056,-117.63639,Santa Ana River,22563302
+Alamitos Creek - Almaden Reservoir,ALRC1,37.165,-121.8275,Alamitos Creek,17694737
+Coyote Creek - Anderson Reservoir,ANDC1,37.16556,-121.62833,Coyote Creek,17695819
+San Antonio Creek - San Antonio Reservoir,ANOC1,37.57,-121.84861,San Antonio Creek,2808653
+Indian Creek - Antelope Lake,ANTC1,40.18,-120.60694,Indian Creek,8027934
+Little Truckee River - Below Boca Dam,BCAC1,39.38694,-120.09444,Little Truckee River,8933684
+Bear Creek - Bear Reservoir,BCKC1,37.36694,-120.21694,Bear Creek,19777621
+Sacramento River - Bend Bridge Local Flow,BDBC1,40.28861,-122.18556,Sacramento River,12068830
+Chowchilla River - Eastman Lake,BHNC1,37.21333,-119.97,Chowchilla River,17101005
+Stony Creek - Black Butte Reservoir,BLBC1,39.80806,-122.32889,Stony Creek,12074526
+Burns Creek - Burns Reservoir,BNCC1,37.37667,-120.275,Burns Creek,948040367
+East Walker River - Bridgeport Reservoir,BPRC1,38.32778,-119.21389,East Walker River,8915857
+Cottonwood Creek - Barrett Lake,BRTC1,32.68056,-116.66944,Cottonwood Creek,20326499
+Big Tujunga Creek - Big Tujunga Reservoir,BTJC1,34.29444,-118.18722,Big Tujunga Creek,22515856
+Canyon Creek - Bowman Reservoir,BWKC1,39.45028,-120.6525,Canyon Creek,8063437
+Calero Creek - Calero Reservoir,CADC1,37.18333,-121.79111,Calero Creek,17695921
+Llagas Creek - Chesbro Reservoir,CBRC1,37.11667,-121.69278,Llagas Creek,17661097
+Santa Ynez River - Lake Cachuma,CCHC1,34.57917,-119.9775,Santa Ynez River,17611491
+Trinity River - Trinity Lake,CEGC1,40.80139,-122.76222,Trinity River,8246564
+Bear River - Camp Far West,CFWC1,39.05028,-121.31472,Bear River,15013989
+Cherry Creek - Cherry Lake,CHVC1,37.97472,-119.91611,Cherry Creek,17082185
+Lost River - Clear Lake Reservoir,CKEC1,41.92639,-121.07528,Lost River,2556483
+Clear Lake - Lakeport,CLKC1,39.03906,-122.91333,Clear Lake,8006631
+Mokelumne River - Pardee Reservoir,CMPC1,38.25694,-120.84972,Mokelumne River,17058392
+Coyote Creek - Coyote Reservoir,COYC1,37.08861,-121.53806,Coyote Creek,17695829
+Castaic Creek - Castaic Lake,CSKC1,34.52278,-118.61195,Castaic Creek,17572439
+Arroyo Hondo - Calaveras Reservoir,CVQC1,37.4925,-121.81973,Arroyo Hondo,2809701
+Dry Creek - Merle Collins Lake,DMCC1,39.3375,-121.32723,Dry Creek,8062463
+Donner Creek - Donner Lake,DNRC1,39.325,-120.28139,Donner Creek,8934496
+Arroyo Valle - Del Valle Reservoir,DVAC1,37.61389,-121.745,Arroyo Valle,2808695
+Big Grizzly Creek - Lake Davis,DVSC1,39.88389,-120.47528,Big Grizzly Creek,8041953
+Castaic Creek - Elderberry Forebay,EFBC1,34.56278,-118.63277,Castaic Creek,17572393
+San Diego River - El Capitan Reservoir,ELPC1,32.88222,-116.80695,San Diego River,20334720
+Little Stony Creek - East Park Reservoir,EPRC1,39.35917,-122.51778,Little Stony Creek,7994771
+Merced River - Exchequer Reservoir,EXQC1,37.585,-120.26722,Merced River,21608661
+Little Last Chance Creek - Frenchman Lake,FHDC1,39.89389,-120.19028,Little Last Chance Creek,8042001
+Fordyce Creek - Fordyce Lake,FOCC1,39.37889,-120.49445,Fordyce Creek,8064693
+American River - Folsom Lake,FOLC1,38.7,-121.16694,American River,15022453
+San Joaquin River - Millerton Lake,FRAC1,36.995,-119.69167,San Joaquin River,17126697
+Littlejohns Creek - Farmington Reservoir,FRGC1,37.915,-120.935,Littlejohns Creek,2822868
+Miller Creek - Gerber Reservoir,GERO3,42.20111,-121.13028,Miller Creek,2553671
+Guadalupe Creek - Guadalupe Reservoir,GUAC1,37.19917,-121.87833,Guadalupe Creek,17695787
+Tujunga Wash - Hansen Dam,HANC1,34.26028,-118.38417,Tujunga Wash,22515894
+Tuolumne River - Hetch Hetchy Reservoir,HETC1,37.94778,-119.78694,Tuolumne River,17082365
+Fresno River - Hensley Lake,HIDC1,37.10167,-119.88,Fresno River,17101081
+Yuba River - Englebright Lake,HLEC1,39.23944,-121.26667,Yuba River,8062551
+San Dieguito River - Lake Hodges,HODC1,33.06639,-117.10583,San Dieguito River,20329198
+Independence Creek - Independence Lake,ILAC1,39.45194,-120.28972,Independence Creek,8933376
+North Fork Cache Creek - Indian Valley Reservoir,INVC1,39.08,-122.53361,North Fork Cache Creek,8007863
+Kern River - Lake Isabella,ISAC1,35.64667,-118.47889,Kern River,24757076
+Middle Yuba River - Jackson Meadows Reservoir,JKRC1,39.50917,-120.55222,Middle Yuba River,8059613
+Upper Klamath Lake - Klamath Falls,KLAO3,42.25,-121.81528,Upper Klamath Lake,24092346
+Stanislaus River - Goodwin Dam,KNFC1,37.85167,-120.63778,Stanislaus River,348543
+Sacramento River - Keswick Reservoir,KWKC1,40.61167,-122.44333,Sacramento River,2495298
+East Fork Russian River - Lake Mendocino,LAMC1,39.20028,-123.18639,East Fork Russian River,8269153
+Los Banos Creek - Los Banos Creek Reservoir,LBDC1,36.99361,-120.92972,Los Banos Creek,16610567
+Putah Creek - Lake Berryessa,LBEC1,38.513,-122.104,Putah Creek,15032995
+Los Gatos Creek - Lake Elsman,LESC1,37.1298,-121.9296,Los Gatos Creek,17695803
+Los Gatos Creek - Lexington Reservoir,LEXC1,37.20167,-121.98806,Los Gatos Creek,17695937
+Santa Clara River - Lake Piru,LKPC1,34.46139,-118.75056,Santa Clara River,17575859
+Eleanor Creek - Lake Eleanor,LNRC1,37.97417,-119.88,Eleanor Creek,17082195
+Steamboat Creek - Little Washoe Lake,LWON2,39.3317,-119.8,Steamboat Creek,8935348
+Mariposa Creek - Mariposa Reservoir,MPAC1,37.29194,-120.14694,Mariposa Creek,19777677
+Martis Creek - Martis Creek Lake,MTSC1,39.32722,-120.11333,Martis Creek,8934508
+Mojave River - Mojave River Forks Reservoir,MVDC1,34.3425,-117.235,Mojave River,22660265
+Nacimiento River - Lake Nacimiento,NACC1,35.75583,-120.89111,Nacimiento River,8212941
+North Fork Yuba River - New Bullards Bar Reservoir,NBBC1,39.39278,-121.14028,North Fork Yuba River,8062451
+Tuolumne River - Don Pedro Lake,NDPC1,37.70167,-120.42111,Tuolumne River,17080371
+N Fork Stanislaus River - Diversion Dam,NDVC1,38.43833,-120.01667,N Fork Stanislaus River,342455
+Calaveras River - New Hogan Lake,NHGC1,38.155,-120.81389,Calaveras River,17067080
+American River - Lake Natoma,NIMC1,38.63667,-121.22333,American River,15022633
+Stanislaus River - New Melones Lake,NMSC1,37.95,-120.53694,Stanislaus River,348431
+Highland Creek - New Spicer Meadows Reservoir,NSWC1,38.39306,-119.99806,Highland Creek,347603
+Feather River - Lake Oroville,ORDC1,39.53306,-121.51694,Feather River,7968067
+Middle Fork Yuba River - Below Our House Dam,OURC1,39.41167,-120.99694,Middle Fork Yuba River,8060631
+Owens Creek - Owens Reservoir,OWCC1,37.31528,-120.18694,Owens Creek,17099037
+Kings River - Pine Flat Lake,PFTC1,36.83194,-119.32361,Kings River,17149780
+Eel River - Lake Pillsbury,PLBC1,39.40833,-122.95834,Eel River,8310058
+North Fork Feather River - Prattville,PLLC1,40.20917,-121.15694,North Fork Feather River,2773558
+Prosser Creek - Prosser Creek Reservoir,PSRC1,39.37944,-120.13667,Prosser Creek,8933720
+Piru Creek - Pyramid Lake,PYMC1,34.64472,-118.76305,Piru Creek,17569485
+Bear River - Rollins Lake,ROLC1,39.13556,-120.94917,Bear River,15014945
+Tule River - Lake Success,SCSC1,36.06111,-118.92194,Tule River,17159700
+Stony Creek - Stony Gorge Reservoir,SGEC1,39.58306,-122.53306,Stony Creek,948020277
+Sacramento River - Shasta Lake,SHDC1,40.71417,-122.41611,Sacramento River,2782699
+San Antonio River - Lake San Antonio,SNRC1,35.79667,-120.88556,San Antonio River,8212925
+Deer Creek - Scotts Flat Reservoir,SOVC1,39.27361,-120.93111,Deer Creek,8064719
+Santa Ana River - Mentone,SRWC1,34.10834,-117.10059,Santa Ana River,22555926
+Stevens Creek - Stevens Creek Reservoir,STDC1,37.29861,-122.07611,Stevens Creek,17693031
+Little Truckee River - Stampede Reservoir,STPC1,39.47056,-120.10306,Little Truckee River,8933230
+South Fork Yuba River - Lake Spaulding,SUAC1,39.32639,-120.64222,South Fork Yuba River,8064009
+Santa Ysabel Creek - Sutherland Reservoir,SUDC1,33.11806,-116.78667,Santa Ysabel Creek,20330934
+San Vicente Creek - San Vicente Reservoir,SVIC1,32.91278,-116.92416,San Vicente Creek,20334576
+West Fork Mojave River - Silverwood Lake,SVWC1,34.30417,-117.31805,West Fork Mojave River,22660171
+Lake Tahoe Inflow - Tahoe Basin,TAHC1,39.16778,-120.14278,Lake Tahoe Inflow,8934074
+Kaweah River - Lake Kaweah,TMDC1,36.415,-119.00194,Kaweah River,14922787
+West Walker River - Topaz Lake,TPZC1,38.63667,-119.5075,West Walker River,10742458
+Cuyama River - Twitchell Dam,TWDC1,34.98361,-120.32083,Cuyama River,17634908
+Uvas Creek - Uvas Reservoir,UVRC1,37.06556,-121.6875,Uvas Creek,17661325
+Temecula Creek - Vail Lake,VLKC1,33.49556,-116.97583,Temecula Creek,22550585
+Clear Creek - Whiskeytown Reservoir,WHSC1,40.59806,-122.53694,Clear Creek,2782777
+Dry Creek - Lake Sonoma,WSDC1,38.72306,-123.01,Dry Creek,8271463
