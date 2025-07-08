@@ -1,7 +1,7 @@
 ''' Run LSTM post-processing for ensemble forecast with additional CDF-matching
 
 Usage:
-    python run_lstm_cdfm_ens.py [domain] [fcst_start] [fcst_end] [fcst_update] [fcst_type]
+    python run_lstm_cdfm_fnf_ens.py [domain] [fcst_start] [fcst_end] [fcst_update] [fcst_type]
 Default values:
     must specify all
 '''
@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time, replace_brackets
-from cdf_match_lstm import sparse_cdf_match_lstm
+from cdf_match_range import sparse_cdf_match_range
 
 import s5_p1_predict
 
@@ -97,10 +97,12 @@ def main(argv):
             mapr = nmons
         if t.month==7:
             mjul = nmons
+        if t.month==tupdate.month:
+            mupd = nmons
         nmons += 1
         t += relativedelta(months=1)
     index2.append(f'{t2:%Y}-07-31')
-    print(f'Number of months in forecast = {nmons}, April is {mapr}th month and July is {mjul}th month (counting from 0)')
+    print(f'Number of months in forecast = {nmons}, April is {mapr}th month and July is {mjul}th month, and forecast update month is {mupd}th month (counting from 0)')
     header = [f'Ens{e:02d}' for e in range(1,nens+1)] + ['Exc10','Exc50','Exc90','Pav10','Pav50','Pav90','Avg']
     print('Merge ensembles and calculate percentiles...')
     for num,id in zip(namls['num'], namls['id']):
@@ -124,21 +126,30 @@ def main(argv):
             rec[0:nmons,ens] = np.array(flw['flow'].loc[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}'])
             tstamps = [ datetime.strptime(ts, '%Y-%m-%d') for ts in flw['date'].loc[f'{t1:%Y%m%d}':f'{t2:%Y%m%d}'] ]
 
-            ajsum0 = np.sum(rec[mapr:mjul+1,ens])
+            if mupd<=mapr:
+                ajsum0 = np.sum(rec[mapr:mjul+1,ens])
+            else:
+                ajsum0 = np.sum(rec[mupd:mjul+1,ens])
+            
             for m in range(nmons):
                 month = tstamps[m].month
                 year  = tstamps[m].year
-                #print(id, ens, m, rec[m,ens], id, month, year)
-                [matched, mavg] = sparse_cdf_match_lstm(domain, rec[m,ens], id, month, year)
+                #print(id, ens, m)
+                [matched, mavg] = sparse_cdf_match_range(domain, rec[m,ens], id, month, month, year)
                 rec[m,ens] = matched
-            [matched, mavg] = sparse_cdf_match_lstm(domain, ajsum0, id, 0, year)
-            ajsum1 = matched
+
+            if mupd<=mapr:
+                [matched, mavg] = sparse_cdf_match_range(domain, ajsum0, id, 4, 7, year)
+                ajsum1 = matched
+            else:
+                [matched, mavg] = sparse_cdf_match_range(domain, ajsum0, id, tupdate.month, 7, year)
+                ajsum1 = np.sum(rec[mapr:mupd,ens]) + matched
+                
             ajsum2 = np.sum(rec[mapr:mjul+1,ens])
 
             rec[nmons,ens] = ajsum1 if ajsum1<ajsum2 else ajsum2
-            if id=='FTO':
-                rec[nmons,ens] = (ajsum1+ajsum2)/2.0
-                #rec[nmons,ens] = ajsum2
+            #if id=='FTO':
+            #    rec[nmons,ens] = (ajsum1+ajsum2)/2.0
             #rec[nmons,ens] = ajsum1
             #rec[nmons,ens] = ajsum2
 

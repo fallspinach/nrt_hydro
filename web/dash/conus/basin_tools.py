@@ -39,12 +39,12 @@ def draw_system_status():
 def draw_basin_ts(staid, ptype, btype, freq):
     punits = 'mm/day' if freq=='daily' else 'mm/mon'
     if staid[:8] in huc8_basins:
-        fcsv = f'{cloud_url}/data/conus/{ptype}/{btype}/{staid[:4]}_{freq}.csv.gz'
+        fcsv = f'{cloud_url}/data/conus/{ptype}/{btype}/{staid[:4]}_{freq}.csv.gz' #; print(fcsv)
         df_all = pd.read_csv(fcsv, compression='gzip', parse_dates=True, index_col='Date', dtype={btype.upper(): str})
         df = df_all[df_all[btype.upper()]==staid]
         #print(df_all.head())
         #print(df.head())
-        if ptype=='nrt' and freq=='daily':
+        if ptype=='nrt' and freq=='daily' and False:
             diff = df.loc['2024-10-01']['SMTOT'] - df.loc['2024-09-30']['SMTOT']
             if abs(diff)>0.001:
                 df.loc[df.index<'2024-10-01', 'SMTOT'] += diff

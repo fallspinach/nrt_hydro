@@ -70,20 +70,27 @@ def main(argv):
             
             if (not config_dom['lake']) and f=='hydro.namelist':
                 replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
+            if domain=='conus':
+                if f=='hydro.namelist':
+                    replace_brackets(f, {'outlake  = 1': 'outlake  = 0', 'route_lake_f': '!route_lake_f'}, False)
+                    #if y==1979:
+                    #    replace_brackets(f, {'RESTART_FILE': '!RESTART_FILE'}, False)
+                #if f=='namelist.hrldas' and y==1979:
+                #    replace_brackets(f, {'RESTART_FILENAME_REQUESTED': '!RESTART_FILENAME_REQUESTED'}, False)
 
         # check restart files
         frestart = f'../../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
         if not os.path.isfile(frestart):
-            print(f'{frestart} not found, quitting now.')
-            return 1
+            print(f'{frestart} not found.')
+            #return 1
         frestart = f'../../restart/HYDRO_RST.{t1:%Y-%m-%d}_00:00_DOMAIN1'
         if not os.path.isfile(frestart):
-            print(f'{frestart} not found, quitting now.')
-            return 1
+            print(f'{frestart} not found.')
+            #return 1
     
         # check forcing files
         t = t1
-        while t<=t2:
+        while t<=t2+timedelta(days=1):
             fforcing = f'../../forcing/1km_hourly/{t1:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             if not os.path.isfile(fforcing):
                 print(f'{fforcing} not found, quitting now.')

@@ -40,6 +40,7 @@ def main(argv):
     tupdate = datetime.strptime(argv[3], '%Y%m%d')
     ens1 = int(argv[4])
     ens2 = int(argv[5])
+    tupdate_month = datetime(tupdate.year, tupdate.month, 1)
     
     workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/fcst/{argv[6]}/output/init{t1:%Y%m%d}_update{tupdate:%Y%m%d}'
     os.chdir(workdir)
@@ -79,7 +80,8 @@ def main(argv):
         # calculate the first month
         fnins = ''
         t = t1
-        t2m = t1 + relativedelta(months=1)
+        #t2m = t1 + relativedelta(months=1)
+        t2m = tupdate_month + relativedelta(months=1)
         while t<t2m:
             flink = f'{forcdir}/{ens:02d}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             tlink = datetime.strptime(os.path.basename(os.readlink(flink)).split('.')[0], '%Y%m%d')
@@ -94,7 +96,8 @@ def main(argv):
         
         # assemble the rest of months from retro data by tracing the links
         fnins = ''
-        t = t1 + relativedelta(months=1)
+        #t = t1 + relativedelta(months=1)
+        t = t2m
         while t<=t2:
             flink = f'{forcdir}/{ens:02d}/{t:%Y/%Y%m%d}.LDASIN_DOMAIN1'
             if 'retro' in os.readlink(flink):

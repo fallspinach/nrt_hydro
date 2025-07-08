@@ -1,0 +1,185 @@
+
+body { margin: 0; padding: 0; }
+html, body { height: 100%; }
+  #style-toggle {
+    display: flex;
+    gap: 4px;
+  }
+  .style-btn {
+    border: none;
+    padding: 2px 6px;
+    background: #eee;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 13px;
+    color: black;
+  }
+  .style-btn.active {
+    background: #5AB4E6;
+    color: white;
+    font-weight: bold;
+  }
+  .nav-tabs .nav-link {
+    padding: 4px 16px;     /* reduce vertical and horizontal padding */
+    font-size: 13px;      /* smaller font size */
+    font-weight: bold;
+    color: black;
+    line-height: 1.2;
+  }
+  .nav-tabs .nav-link.active {
+    color: darkblue; /* #1f77b4; */
+  }
+  .tab-content {
+    font-size: 13px;
+  }
+  #datepicker {
+    font-size: 14px !important;
+    padding: 0px 5px;
+    width: 95px;
+  }
+  .datepicker {
+    font-size: 12px !important;
+  }
+  /* Optional: shrink the size of day cells */
+  .datepicker table tr td,
+  .datepicker table tr th {
+    padding: 2px 6px !important;
+  }
+  .datepicker-days .day {
+    line-height: 1.2 !important;
+  }
+
+@media (max-width: 500px) {
+  .nav-link {
+    width: 120px;
+  }
+  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+    width: 500px;
+    height: 260px;
+  }
+  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+    width: 170px;
+    margin-left: 300px;
+    font-size: 8;
+    border-color: darkgray;
+  }
+}
+@media (min-width: 500px) and (max-width: 1000px) {
+  .nav-link {
+    width: 180px;
+  }
+  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+    width:  730px;
+    height: 250px;
+  }
+  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+    width: 170px;
+    margin-left: 550px;
+    font-size: 8;
+    border-color: darkgray;
+  }
+  .maplibregl-popup-content {
+    padding-top: 5px;
+    padding-bottom: 2px;
+  }
+  .tab-content .mt-2 {
+    margin-top: 0px;
+  }
+}
+@media (min-width: 1000px) {
+  .nav-link {
+    width: 200px;
+  }
+  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+    width: 1100px;
+    height: 340px;
+  }
+  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+    width: 170px;
+    margin-left: 920px;
+    font-size: 10;
+    border-color: darkgray;
+  }
+}
+  .maplibregl-popup-content .btn-group-vertical .btn {
+    padding: 3px;
+    font-size: 13px;
+  }
+  /* Reduce padding in modal title */
+  .modal-header {
+    padding: 0.5rem 1rem;
+  }
+
+  /* Reduce padding in modal body */
+  .modal-body {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Optionally reduce bottom padding in footer */
+  .modal-footer {
+    padding: 0.1rem 1rem;
+  }
+
+  /* Optional: smaller font for compact look */
+  .modal-body, .modal-title {
+    font-size: 0.95rem;
+  }
+  .modal-footer .btn {
+    padding: 0.05rem 0.5rem;
+    font-size: 0.9rem; /* Optional: scale text too */
+  }
+
+  .maplibregl-ctrl-scale {
+    height: 15px;
+    line-height: 15px;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 1px 3px;
+  }
+
+#layer-control {
+  position: absolute;
+  top: 10px;
+  left: 180px;
+  z-index: 1;
+}
+
+#layer-toggle-btn {
+  background: white;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  padding: 1px 7px;
+  font-size: 18px;
+  border-radius: 4px;
+}
+
+#layer-menu {
+  margin-top: 1px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 4px;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.hidden {
+  display: none;
+}
+
+.layer-option {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  margin: 0;
+}
+
+.legend-symbol {
+  width: 13px;
+  text-align: center;
+  vertical-align: top;
+  font-weight: 900;
+  display: inline-block;
+}

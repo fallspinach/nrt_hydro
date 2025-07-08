@@ -148,6 +148,7 @@ def main(argv):
             os.chdir(f'{config["base_dir"]}/web')
             os.system('gcloud storage rsync imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
             os.system('gcloud storage rsync data gs://cw3e-water-panel.appspot.com/data --recursive')
+            os.system('rsync -av imgs/cnrfc/* m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/imgs/')
             if False:
                 os.chdir(f'{config["base_dir"]}/wrf_hydro/{domain1}/web/dash')
                 os.system('gcloud app deploy -q --project=cw3e-water-panel')

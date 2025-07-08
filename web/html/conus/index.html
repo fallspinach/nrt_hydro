@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CONUS Hydrology on the Map</title>
+    <meta property="og:description" content="CONUS Hydrology on the Map" />
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.js'></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="main.css?v=latest">
+</head>
+<body>
+<div id="map" style="width: 100%; height: 100%"></div>
+<div id="style-toggle" style="position:absolute;top:10px;left:10px;z-index:1;background:#fff;padding:3px;border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,0.3);">
+  <button class="style-btn active" data-style="carto">Flat</button>
+  <button class="style-btn" data-style="terrain_maptiler">Terrain</button>
+  <button class="style-btn" data-style="satellite_maptiler">Satellite</button>
+</div>
+<div style="
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  z-index: 2;
+  background: white;
+  padding: 0px;
+  border-radius: 5px;
+  font-size: 12px;
+">
+  <div class="input date" id="datepicker-wrapper">
+    <input type="text" class="form-control" id="datepicker" />
+    <span class="input"></span>
+  </div>
+</div>
+<div id="legend-wrapper" style="
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 5px;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  font-family: sans-serif;
+  font-size: 12px;
+  max-width: 120px;
+">
+  <div id="legend-title" style="
+    font-weight: bold;
+    margin-bottom: 0px;
+    text-align: center;
+  ">
+  </div>
+
+  <div id="legend-container" style="
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  ">
+    <div id="color-strip" style="width: 14px; height: 144px;"></div>
+    <div id="step-labels" style="
+      margin-left: 6px;
+      height: 144px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    "></div>
+  </div>
+</div>
+<button id="copy-view-btn" title="Copy current map view URL" style="
+  position: absolute;
+  top: 225px;
+  right: 10px;
+  z-index: 3;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 0px 5px;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+  color: black;
+">
+  <i class="bi bi-bookmark-check"></i>
+</button>
+<div id="mouse-coords" style="
+  position: absolute;
+  bottom: 8px;
+  left: 120px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 1px 5px;
+  font-family: monospace;
+  font-size: 12px;
+  border-radius: 3px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.2);
+  z-index: 2;
+">
+  Lat: --, Lng: --
+</div>
+<div id="layer-control" class="maplibre-control">
+  <button id="layer-toggle-btn" title="Layer Control">
+    <i class="bi bi-layers"></i>
+  </button>
+  <div id="layer-menu" class="layer-menu hidden">
+    <!-- Checkboxes will be inserted here -->
+  </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="messageModalLabel">Notice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="messageModalBody">
+        <!-- Message goes here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Download Prompt Modal -->
+<div class="modal fade" id="downloadPromptModal" tabindex="-1" aria-labelledby="downloadPromptLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2 px-3">
+        <h5 class="modal-title fs-6" id="downloadPromptLabel">Download GeoJSON</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div id="downloadPromptMessage" class="modal-body py-2 px-3">
+        Shape identified. Do you want to download it?
+      </div>
+      <div class="modal-footer py-2 px-3">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-sm btn-primary" id="confirmDownloadBtn">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src='main.js?v=latest' type='module'></script>
+</body>
+</html>

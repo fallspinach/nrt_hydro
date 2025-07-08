@@ -1,0 +1,103 @@
+Location,ID,Latitude,Longitude,River
+Napa River - Napa,APCC1,38.36833,-122.30222,Napa River
+Mad River - Arcata,ARCC1,40.90972,-124.05972,Mad River
+Pajaro River - Chittenden,AROC1,36.90028,-121.59667,Pajaro River
+Sacramento River - Bend Bridge,BDBC1,40.28861,-122.18556,Sacramento River
+Salinas River - Bradley,BRDC1,35.93028,-120.86778,Salinas River
+Van Duzen River - Bridgeville,BRGC1,40.47944,-123.88972,Van Duzen River
+Bear River - Wheatland,BRWC1,39,-121.40556,Bear River
+Sacramento River - Butte City,BTCC1,39.45778,-121.99306,Sacramento River
+San Lorenzo River - Big Trees,BTEC1,37.04444,-122.07139,San Lorenzo River
+Sprague River - Beatty,BTYO3,42.44722,-121.2375,Sprague River
+East Fork Carson River - Markleeville,CEMC1,38.71389,-119.76389,East Fork Carson River
+Sacramento River - Colusa Weir,CLAC1,39.23667,-121.99361,Sacramento River
+Clear Lake - Lakeport,CLKC1,39.03906,-122.91333,Clear Lake
+Calleguas Creek - CSU Channel Islands,CLLC1,34.17944,-119.03889,Calleguas Creek
+Sacramento River - Moulton Weir,CLSC1,39.33833,-122.02167,Sacramento River
+Sacramento River - Colusa Bridge,CLUC1,39.21417,-121.99917,Sacramento River
+Humboldt River - Comus,CMSN2,40.9925,-117.31667,Humboldt River
+Pit River - Canby,CNBC1,41.40611,-120.92667,Pit River
+Smith River - Jedediah Smith SP,CREC1,41.78944,-124.05389,Smith River
+Coyote Creek - Madrone,CYTC1,37.16833,-121.64861,Coyote Creek
+Truckee River - Farad,FARC1,39.42806,-120.03306,Truckee River
+Feather River - Boyds Landing,FBLC1,39.045,-121.61111,Feather River
+Sacramento River - Fremont Weir,FMWC1,38.76694,-121.66694,Sacramento River
+Eel River - Fernbridge,FRNC1,40.61583,-124.20167,Eel River
+San Diego River - Fashion Valley,FSNC1,32.765,-117.16778,San Diego River
+Smith River - Doctor Fine Bridge,FTDC1,41.88083,-124.13528,Smith River
+Scott River - Fort Jones,FTJC1,41.64083,-123.01389,Scott River
+Eel River - Fort Seward,FTSC1,40.21806,-123.63167,Eel River
+Sisquoc River - Garey,GARC1,34.89389,-120.30556,Sisquoc River
+East Fork Carson River - Gardnerville,GRDN2,38.84722,-119.70278,East Fork Carson River
+Feather River - Gridley,GRIC1,39.36694,-121.64611,Feather River
+Guadalupe River - San Jose-Almaden Exprwy,GUDC1,37.28083,-121.88,Guadalupe River
+Russian River - Guerneville,GUEC1,38.49944,-122.99722,Russian River
+Sacramento River - Hamilton City,HAMC1,39.75139,-121.99722,Sacramento River
+Humboldt River - Battle Mountain,HBMN2,40.66667,-116.93056,Humboldt River
+Russian River - Healdsburg,HEAC1,38.61333,-122.83528,Russian River
+Trinity River - Hoopa,HOOC1,41.05,-123.6725,Trinity River
+Russian River - Hopland,HOPC1,39.02667,-123.12944,Russian River
+Merced River - Yosemite NP at Happy Isles,HPIC1,37.73167,-119.55778,Merced River
+Humboldt River - Elko,HREN2,40.93611,-115.62361,Humboldt River
+Klamath River - Klamath,KLMC1,41.51111,-123.97833,Klamath River
+Kern River - Kernville,KRVC1,35.75444,-118.42333,Kern River
+Yolo Bypass - Lisbon,LSBC1,38.47472,-121.58833,Yolo Bypass
+Walker River - Mason-Snyder Lane,MASN2,38.91972,-119.18889,Walker River
+Mojave River - Barstow,MBRC1,34.90694,-117.02194,Mojave River
+Cosumnes River - McConnell,MCNC1,38.3578,-121.34374,Cosumnes River
+Tuolumne River - Modesto,MDSC1,37.62722,-120.98639,Tuolumne River
+Bear Creek - McKee Road,MEEC1,37.30889,-120.44389,Bear Creek
+Middle Fork Feather River - Portola,MFTC1,39.81917,-120.44389,Middle Fork Feather River
+Cosumnes River - Michigan Bar,MHBC1,38.50028,-121.04417,Cosumnes River
+Marys River - Above Hot Springs Creek,MHSN2,41.25278,-115.25556,Marys River
+San Joaquin River - Mossdale,MOSC1,37.78611,-121.30583,San Joaquin River
+South Fork Eel River - Miranda,MRNC1,40.18222,-123.775,South Fork Eel River
+Yuba River - Marysville,MRYC1,39.17583,-121.52389,Yuba River
+Mormon Slough - Bellota,MSGC1,38.05,-121.01417,Mormon Slough
+Mojave River - Victorville,MVVC1,34.57306,-117.31972,Mojave River
+Feather River - Nicolaus,NCOC1,38.89111,-121.60389,Feather River
+Santa Ynez River - Narrows,NRWC1,34.63722,-120.42444,Santa Ynez River
+Navarro River - Navarro,NVRC1,39.17222,-123.66833,Navarro River
+San Joaquin River - Newman,NWMC1,37.35056,-120.97611,San Joaquin River
+Stanislaus River - Orange Blossom,OBBC1,37.78824,-120.7625,Stanislaus River
+Klamath River - Orleans,ONSC1,41.30346,-123.5345,Klamath River
+Sacramento River - Ord Ferry,ORFC1,39.62778,-121.99139,Sacramento River
+Redwood Creek - Orick,ORIC1,41.29944,-124.05,Redwood Creek
+Humboldt River - Palisade,PALN2,40.60722,-116.20194,Humboldt River
+San Joaquin River - Patterson,PATC1,37.49389,-121.08111,San Joaquin River
+Merced River - Yosemite NP at Pohono Bridge,POHC1,37.71694,-119.66528,Merced River
+Salinas River - Paso Robles,PRBC1,35.62778,-120.68556,Salinas River
+Sacramento River - Red Bluff,RDBC1,40.15389,-122.20083,Sacramento River
+Carmel River - Robles Del Rio,RDRC1,36.47444,-121.72778,Carmel River
+Cache Creek - Rumsey,RMSC1,38.89,-122.23806,Cache Creek
+Sacramento River - Rio Vista,RVBC1,38.15972,-121.68639,Sacramento River
+Sacramento River - Sacramento - I Street,SACC1,38.58886,-121.50528,Sacramento River
+American River - Sacramento - H Street,SAMC1,38.56889,-121.4225,American River
+Eel River - Scotia,SCOC1,40.49167,-124.09861,Eel River
+Santa Clara River - Piru,SCPC1,34.40361,-118.73833,Santa Clara River
+Klamath River - Seiad Valley,SEIC1,41.85389,-123.23111,Klamath River
+Sespe Creek - Fillmore,SESC1,34.44166,-118.92732,Sespe Creek
+Napa River - Saint Helena,SHEC1,38.51139,-122.45472,Napa River
+San Luis Rey River - Oceanside,SLOC1,33.21806,-117.35944,San Luis Rey River
+Salinas River - Spreckels,SPRC1,36.63111,-121.67139,Salinas River
+Merced River - Stevinson,STVC1,37.37083,-120.92944,Merced River
+Carson River - Carson City,STWN2,39.10778,-119.71222,Carson River
+Susan River - Susanville,SUSC1,40.41306,-120.66389,Susan River
+Sacramento River - Tehama Bridge,TEHC1,40.02876,-122.11798,Sacramento River
+Mokelumne River - Benson's Ferry,THTC1,38.25583,-121.43889,Mokelumne River
+Sacramento River - Tisdale Weir,TISC1,39.02667,-121.82111,Sacramento River
+Truckee River - Truckee,TRCC1,39.29639,-120.20444,Truckee River
+Truckee River - Reno,TRRN2,39.53028,-119.79472,Truckee River
+Santa Clara River - Victoria Avenue,VCAC1,34.235,-119.21583,Santa Clara River
+Truckee River - Vista,VISN2,39.52056,-119.7,Truckee River
+San Joaquin River - Vernalis,VNSC1,37.67611,-121.26528,San Joaquin River
+Sacramento River - Verona,VONC1,38.78083,-121.60333,Sacramento River
+Ventura River - Foster Park,VRVC1,34.35139,-119.30639,Ventura River
+Sacramento River - Vina Woodson Bridge,VWBC1,39.90889,-122.09111,Sacramento River
+Truckee River - Wadsworth,WADN2,39.63222,-119.28222,Truckee River
+Williamson River - Chiloquin,WMSO3,42.565,-121.87833,Williamson River
+West Fork Carson River - Woodfords,WOOC1,38.76944,-119.83194,West Fork Carson River
+West Walker River - Blo Ltl Walker Nr Coleville,WWBC1,38.37972,-119.44917,West Walker River
+Santa Margarita River - Ysidora,YDRC1,33.31111,-117.34639,Santa Margarita River
+Cache Creek - Yolo,YLOC1,38.72722,-121.80611,Cache Creek
+Feather River - Yuba City WTP,YWPC1,39.16165,-121.61242,Feather River

@@ -18,7 +18,7 @@ from config import cloud_url, riverids, graph_config, tabtitle_style, tabtitle_s
 # flow monitor/forecast figure
 def draw_mofor_river(rivid):
     
-    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update={datetime.now().microsecond}', parse_dates=True)
     
     moni_t2 = datetime.fromisoformat(df_system_status['WRF-Hydro NRT'][1]).date()
     if moni_t2.month>=10:

@@ -89,7 +89,7 @@ app.clientside_callback(
 @app.callback(Output(component_id='datepicker', component_property='max_date_allowed'),
               Input('interval-check_system', 'n_intervals'))
 def update_system_status(basin):
-    df_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
+    df_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update={datetime.now().microsecond}', parse_dates=True)
     return datetime.fromisoformat(df_status['WRF-Hydro NRT'][1]).date()
 
 # callback to switch river vector sources according to zoom level
@@ -115,7 +115,7 @@ app.clientside_callback(
               Input('slider_updates', 'value'),
               Input('radio_pp', 'value'))
 def update_flows(fcst_point, yday_update, pp):
-    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update=now', parse_dates=True)
+    df_system_status = pd.read_csv(f'{cloud_url}/data/system_status.csv?update={datetime.now().microsecond}', parse_dates=True)
     fcst_t1 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][0]).date()
     fcst_t2 = datetime.fromisoformat(df_system_status['ESP-WWRF Fcst'][1]).date()
     if fcst_t1.month>=10:
