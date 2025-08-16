@@ -1,182 +1,182 @@
 Location,ID,Latitude,Longitude,River,ReachID
 San Antonio Creek - Sunol,ACSC1,37.5775,-121.85667,San Antonio Creek,2806745
 Arroyo De La Laguna - Verona,ADLC1,37.62667,-121.88194,Arroyo De La Laguna,2806611
-Arroyo Hondo - San Jose,AHOC1,37.46167,-121.76833,Arroyo Hondo,2809809
+Arroyo Hondo - San Jose,AHOC1,37.46167,-121.76833,Arroyo Hondo,2809859
 South Fork American River - Kyburz,AKYC1,38.76389,-120.32833,South Fork American River,14982602
-Alamo Canal - Pleasanton,ALQC1,37.69444,-121.91944,Alamo Canal,2806353
+Alamo Canal - Pleasanton,ALQC1,37.69444,-121.91944,Alamo Canal,2806395
 Arroyo Mocho - Livermore,AMLC1,37.67687,-121.8144,Arroyo Mocho,2806391
 Sacramento River Delta - Antioch,ATIC1,38.01778,-121.80306,Sacramento River Delta,1889652
 N Fork Stanislaus River - Avery,AVYC1,38.24389,-120.29,N Fork Stanislaus River,344905
 Alameda Creek - Sunol,AWEC1,37.54056,-121.85528,Alameda Creek,2806865
 Arroyo Mocho - Pleasanton,AYMC1,37.69049,-121.87329,Arroyo Mocho,2806357
-Butte Creek - Chico,BKCC1,39.72611,-121.70778,Butte Creek,2770284
+Butte Creek - Chico,BKCC1,39.72611,-121.70778,Butte Creek,1680009
 Redwood Creek - Blue Lake,BLKC1,40.90722,-123.81472,Redwood Creek,8319319
 Klamath River - Below JC Boyle Power Plant,BOYO3,42.08472,-122.07222,Klamath River,358949
 Big Sulphur Creek - Cloverdale,BSCC1,38.82611,-122.99583,Big Sulphur Creek,8271875
 Big Sur River - Big Sur,BSRC1,36.24583,-121.77222,Big Sur River,8189809
-Trinity River - Burnt Ranch,BURC1,40.78889,-123.43889,Trinity River,8245172
+Trinity River - Burnt Ranch,BURC1,40.78889,-123.43889,Trinity River,8244250
 South Fork American River - Placerville,CBAC1,38.77111,-120.81528,South Fork American River,14982644
 Russian River - Cloverdale,CDLC1,38.87944,-123.0525,Russian River,8271445
-Chowchilla Bypass - Ripperdan,CHBC1,36.77417,-120.28528,Chowchilla Bypass,17140944
+Chowchilla Bypass - Ripperdan,CHBC1,36.77417,-120.28528,Chowchilla Bypass,19784539
 Salinas River - Chualar,CHLC1,36.55556,-121.54861,Salinas River,8200795
 Sprague River - Chiloquin,CHSO3,42.58472,-121.84861,Sprague River,24084310
 Cajon Creek - Keenbrook,CJKC1,34.26333,-117.46611,Cajon Creek,22554638
 Coyote Creek - Milpitas - Highway 237,CMIC1,37.42222,-121.92639,Coyote Creek,17695611
-Battle Creek - Cottonwood,COTC1,40.39833,-122.14528,Battle Creek,2495736
-San Joaquin River - Crows Landing,CRDC1,37.43194,-121.01278,San Joaquin River,2828040
-Laguna De Santa Rosa - Cotati - Stony Point Road,CTIC1,38.35222,-122.74306,Laguna De Santa Rosa,8273405
-Cottonwood Creek - Cottonwood,CWAC1,40.385,-122.23889,Cottonwood Creek,4296241
-Cow Creek - Millville,CWCC1,40.50528,-122.23222,Cow Creek,2494848
-Cuyama River - Buckhorn Canyon,CYBC1,35.02194,-120.2275,Cuyama River,17632490
+Battle Creek - Cottonwood,COTC1,40.39833,-122.14528,Battle Creek,2495730
+San Joaquin River - Crows Landing,CRDC1,37.43194,-121.01278,San Joaquin River,2828042
+Laguna De Santa Rosa - Cotati - Stony Point Road,CTIC1,38.35222,-122.74306,Laguna De Santa Rosa,8273659
+Cottonwood Creek - Cottonwood,CWAC1,40.385,-122.23889,Cottonwood Creek,948020238
+Cow Creek - Millville,CWCC1,40.50528,-122.23222,Cow Creek,2495212
+Cuyama River - Buckhorn Canyon,CYBC1,35.02194,-120.2275,Cuyama River,17633130
 Coyote Creek - Edenvale,CYEC1,37.27083,-121.79639,Coyote Creek,948050176
 Dry Creek - Modesto,DCMC1,37.65667,-120.92333,Dry Creek,2823920
 Deer Creek - Smartsville,DCSC1,39.22444,-121.2675,Deer Creek,8061235
-Deer Creek - Vina,DCVC1,40.01417,-121.94722,Deer Creek,12069362
+Deer Creek - Vina,DCVC1,40.01417,-121.94722,Deer Creek,8020924
 Dry Creek - Wheatland,DCWC1,39.02639,-121.43611,Dry Creek,15069312
 Deep Creek - Palm Desert,DEPC1,33.63111,-116.39139,Deep Creek,22592497
-North Fork Humboldt River - Devils Gate,DEVN2,41.18056,-115.49306,North Fork Humboldt River,10763309
+North Fork Humboldt River - Devils Gate,DEVN2,41.18056,-115.49306,North Fork Humboldt River,10764661
 Dry Creek - Geyserville,DGYC1,38.69861,-122.95695,Dry Creek,8272125
-South Fork Humboldt River - Above Dixie Creek,DIXN2,40.685,-115.8125,South Fork Humboldt River,10750113
+South Fork Humboldt River - Above Dixie Creek,DIXN2,40.685,-115.8125,South Fork Humboldt River,10750117
 Deer Creek - Fountain Springs,DKCC1,35.94162,-118.82287,Deer Creek,14934716
 Deep Creek - Hesperia,DKHC1,34.34111,-117.2275,Deep Creek,22658309
-Dry Creek - Lemoncove,DLMC1,36.4475,-119.02722,Dry Creek,17153058
+Dry Creek - Lemoncove,DLMC1,36.4475,-119.02722,Dry Creek,17152974
 Sacramento River - Delta,DLTC1,40.93972,-122.41611,Sacramento River,7966063
-Middle Fork Eeel River - Dos Rios,DOSC1,39.70639,-123.32417,Middle Fork Eeel River,8295207
+Middle Fork Eeel River - Dos Rios,DOSC1,39.70639,-123.32417,Middle Fork Eeel River,8259207
 Dry Creek - Near Mouth Near Healdsburg,DRIC1,38.58737,-122.86218,Dry Creek,8272381
-Butte Creek - Durham,DRMC1,39.67806,-121.77694,Butte Creek,1678545
+Butte Creek - Durham,DRMC1,39.67806,-121.77694,Butte Creek,1680023
 Dry Creek - Snelling,DSNC1,37.555,-120.46333,Dry Creek,2824270
 Elder Creek - Paskenta,EDCC1,40.02472,-122.50861,Elder Creek,12068798
-North Fork Cosumnes River - El Dorado,EDOC1,38.58889,-120.84389,North Fork Cosumnes River,20195546
+North Fork Cosumnes River - El Dorado,EDOC1,38.58889,-120.84389,North Fork Cosumnes River,20195536
 Eastside Bypass - El Nido,ELNC1,37.13306,-120.56694,Eastside Bypass,19777743
-Estrella River - Estrella,ESRC1,35.71722,-120.63917,Estrella River,17647985
+Estrella River - Estrella,ESRC1,35.71722,-120.63917,Estrella River,17647991
 Mattole River - Ettersburg,ETTC1,40.13945,-123.99028,Mattole River,2546355
 East Walker River - Strosnider Ditch,EWSN2,38.81361,-119.04806,East Walker River,946050110
 Noyo River - Fort Bragg,FTBC1,39.42833,-123.73667,Noyo River,2665525
-Carson River - Fort Churchill,FTCN2,39.29167,-119.31111,Carson River,11432087
+Carson River - Fort Churchill,FTCN2,39.29167,-119.31111,Carson River,11432099
 Russian River - Geyserville,GEYC1,38.71111,-122.89222,Russian River,8272107
 Garcia River - Point Arena,GRCC1,38.90333,-123.60778,Garcia River,2666253
-Guadalupe River - San Jose - US Highway 101,GSJC1,37.37389,-121.93194,Guadalupe River,17694137
-South Fork Gualala River - Sea Ranch,GSRC1,38.70917,-123.42555,South Fork Gualala River,8280895
+Guadalupe River - San Jose - US Highway 101,GSJC1,37.37389,-121.93194,Guadalupe River,17694237
+South Fork Gualala River - Sea Ranch,GSRC1,38.70917,-123.42555,South Fork Gualala River,8280869
 San Joaquin River - Gravelly Ford,GVAC1,36.79778,-120.16,San Joaquin River,19784325
-North Fork Yuba River - Goodyears Bar,GYRC1,39.525,-120.93694,North Fork Yuba River,8058547
+North Fork Yuba River - Goodyears Bar,GYRC1,39.525,-120.93694,North Fork Yuba River,8058609
 Indian Creek - Happy Camp,HAPC1,41.83528,-123.38194,Indian Creek,4440524
 Bear Creek - Holsten Chimney Canyon,HCHC1,38.95556,-122.34167,Bear Creek,8009213
 South Fork Honcut Creek - Bangor,HCTC1,39.36833,-121.37167,South Fork Honcut Creek,8053903
-Big Chico Creek - Chico,HKCC1,39.76806,-121.77694,Big Chico Creek,12075702
-San Benito River - Hospital Rd Br Nr Hollister,HOSC1,36.81675,-121.39268,San Benito River,948060253
+Big Chico Creek - Chico,HKCC1,39.76806,-121.77694,Big Chico Creek,12076092
+San Benito River - Hospital Rd Br Nr Hollister,HOSC1,36.81675,-121.39268,San Benito River,17663521
 North Fork Cache Creek - Hough Springs,HOUC1,39.16556,-122.61889,North Fork Cache Creek,8005975
 West Walker River - Hoye Bridge,HOYN2,38.72806,-119.42778,West Walker River,10742328
 Humboldt River - Carlin,HRCN2,40.72778,-116.00833,Humboldt River,10783402
-Humboldt River - Imlay,HRIN2,40.69167,-118.20278,Humboldt River,11165011
+Humboldt River - Imlay,HRIN2,40.69167,-118.20278,Humboldt River,11153151
 South Fork Trinity River - Hyampom,HYMC1,40.65,-123.49306,South Fork Trinity River,8232392
 Indian Creek - Indian Falls,IIFC1,40.05611,-120.96194,Indian Creek,8027088
 Klamath River - Iron Gate,IRGC1,41.92806,-122.44306,Klamath River,361671
-James Bypass - San Joaquin,JAMC1,36.6525,-120.18028,James Bypass,17136404
+James Bypass - San Joaquin,JAMC1,36.6525,-120.18028,James Bypass,17136382
 South Fork Yuba River - Jones Bar,JNSC1,39.29222,-121.10361,South Fork Yuba River,8060983
 Kelsey Creek - Kelseyville,KCVC1,38.9275,-122.8425,Kelsey Creek,948020963
 San Lorenzo Creek - King City,KCYC1,36.26806,-121.06528,San Lorenzo Creek,8205487
-Klamath River - Keno,KEOO3,42.13333,-121.96111,Klamath River,359945
-South Fork Kings River - Above Boyden Cavern,KGPC1,36.80889,-118.77805,South Fork Kings River,22058773
+Klamath River - Keno,KEOO3,42.13333,-121.96111,Klamath River,2553639
+South Fork Kings River - Above Boyden Cavern,KGPC1,36.80889,-118.77805,South Fork Kings River,22058767
 Kern River - Fairview Dam,KKVC1,35.94528,-118.47667,Kern River,14971709
-Kaweah River - Three Rivers,KTRC1,36.44389,-118.90444,Kaweah River,14922303
-Lamoille Creek - Lamoille,LCLN2,40.69083,-115.47556,Lamoille Creek,10786414
+Kaweah River - Three Rivers,KTRC1,36.44389,-118.90444,Kaweah River,14922321
+Lamoille Creek - Lamoille,LCLN2,40.69083,-115.47556,Lamoille Creek,10786444
 South Fork Eel River - Leggett,LEGC1,39.87472,-123.71944,South Fork Eel River,8287256
 Los Gatos Creek - El Dorado Avenue,LGAC1,36.16694,-120.20889,Los Gatos Creek,17150416
 Los Gatos Creek - Coalinga,LGCC1,36.21472,-120.46972,Los Gatos Creek,14883269
 Little Humboldt River - Paradise Valley,LHPN2,41.41583,-117.37361,Little Humboldt River,11138998
-Santa Ynez River - Los Laureles Canyon,LLYC1,34.54361,-119.86389,Santa Ynez River,17610647
+Santa Ynez River - Los Laureles Canyon,LLYC1,34.54361,-119.86389,Santa Ynez River,17611449
 Oregon Creek - Below Log Cabin Dam,LOCC1,39.43944,-121.05806,Oregon Creek,8060553
 San Lorenzo Creek - Hayward,LRZC1,37.68556,-122.06333,San Lorenzo Creek,2803983
-Laguna De Santa Rosa - Sebastopol,LSEC1,38.42556,-122.82806,Laguna De Santa Rosa,8273287
+Laguna De Santa Rosa - Sebastopol,LSEC1,38.42556,-122.82806,Laguna De Santa Rosa,8273691
 Little Dry Creek - Friant,LTDC1,36.93444,-119.73,Little Dry Creek,19791931
 San Antonio River - Lockwood,LWDC1,35.89667,-121.08722,San Antonio River,8210533
-Martin Creek - Paradise Valley,MARN2,41.53333,-117.42778,Martin Creek,11136370
+Martin Creek - Paradise Valley,MARN2,41.53333,-117.42778,Martin Creek,11137442
 Mad River - Above Ruth Reservoir,MAUC1,40.28444,-123.33417,Mad River,8320019
 McDermitt Creek - McDermitt,MDCN2,41.96667,-117.83083,McDermitt Creek,11849049
 Middle Fork American River - Foresthill,MFAC1,39.00611,-120.75972,Middle Fork American River,14993649
 Middle Fork American River - Above Middle Fork Powerhouse,MFPC1,39.02528,-120.59444,Middle Fork American River,14992983
-Sacramento River Delta - Mallard Island,MLIC1,38.04278,-121.92,Sacramento River Delta,948050126
+Sacramento River Delta - Mallard Island,MLIC1,38.04278,-121.92,Sacramento River Delta,948050047
 Mill Creek - Los Molinos,MLMC1,40.05472,-122.02306,Mill Creek,8019544
 Mill Creek - Piedra,MLPC1,36.81861,-119.34083,Mill Creek,14907219
 McCloud River - McCloud,MMCC1,41.18833,-122.06444,McCloud River,7960779
 Alameda Creek - Above Diversion Dam,MPTC1,37.4975,-121.7725,Alameda Creek,2809681
 Middle Fork Feather River - Merrimac,MRMC1,39.70833,-121.26944,Middle Fork Feather River,8037183
-McCloud River - Above Shasta Lake,MSSC1,40.95833,-122.21833,McCloud River,7962279
+McCloud River - Above Shasta Lake,MSSC1,40.95833,-122.21833,McCloud River,7962651
 Mattole River - Petrolia,MTOC1,40.31333,-124.28222,Mattole River,2544433
-Middle Creek - Upper Lake,MUPC1,39.18278,-122.91083,Middle Creek,8005907
+Middle Creek - Upper Lake,MUPC1,39.18278,-122.91083,Middle Creek,948020931
 Murrieta Creek - Temecula,MUTC1,33.47972,-117.14306,Murrieta Creek,22549073
-Mark West Creek - Mirabel Heights,MWEC1,38.49417,-122.85222,Mark West Creek,8273153
+Mark West Creek - Mirabel Heights,MWEC1,38.49417,-122.85222,Mark West Creek,8273161
 Santa Ana River - Muni Water Dist Crossing,MWXC1,33.96861,-117.4475,Santa Ana River,22563032
-Nacimiento River - Sapaque,NBYC1,35.78861,-121.09278,Nacimiento River,8209947
+Nacimiento River - Sapaque,NBYC1,35.78861,-121.09278,Nacimiento River,8209949
 North Fork American River - North Fork Dam,NFDC1,38.93611,-121.02278,North Fork American River,14994413
-North Fork Feather River - East Branch,NFEC1,40.01111,-121.21694,North Fork Feather River,2773118
+North Fork Feather River - East Branch,NFEC1,40.01111,-121.21694,North Fork Feather River,8025256
 Alameda Creek - Niles,NILC1,37.58722,-121.95972,Alameda Creek,2806725
 Truckee River - Nixon,NIXN2,39.77778,-119.3375,Truckee River,11314309
-NF of MF American River - Foresthill,NMFC1,39.02417,-120.7175,NF of MF American River,14993005
-Orestimba Creek - Newman,OREC1,37.31556,-121.12417,Orestimba Creek,2828012
-Deer Creek - Scott Road,OTTC1,38.55139,-121.10973,Deer Creek,3947415
-Middle Fork Yuba River - Below Our House Dam,OURC1,39.41167,-120.99694,Middle Fork Yuba River,8060631
+NF of MF American River - Foresthill,NMFC1,39.02417,-120.7175,NF of MF American River,14993059
+Orestimba Creek - Newman,OREC1,37.31556,-121.12417,Orestimba Creek,2827244
+Deer Creek - Scott Road,OTTC1,38.55139,-121.10973,Deer Creek,20192438
+Middle Fork Yuba River - Below Our House Dam,OURC1,39.41167,-120.99694,Middle Fork Yuba River,8063597
 Putah Creek - Guenoc,PCGC1,38.77889,-122.51639,Putah Creek,8015823
-Palm Canyon Creek - Palm Springs 5S,PCNC1,33.745,-116.53472,Palm Canyon Creek,22592153
-Pacheco Creek - Dunneville,PHOC1,36.98,-121.37917,Pacheco Creek,17662803
+Palm Canyon Creek - Palm Springs 5S,PCNC1,33.745,-116.53472,Palm Canyon Creek,22593537
+Pacheco Creek - Dunneville,PHOC1,36.98,-121.37917,Pacheco Creek,17663037
 San Benito River - Willow Creek,PIIC1,36.60944,-121.20194,San Benito River,17665649
-Pit River - Montgomery Creek,PITC1,40.84389,-122.00139,Pit River,7956678
+Pit River - Montgomery Creek,PITC1,40.84389,-122.00139,Pit River,7951290
 South Fork Pit River - Likely,PLYC1,41.23083,-120.43611,South Fork Pit River,7932193
-Panoche Creek - Interstate 5,PNEC1,36.6525,-120.63111,Panoche Creek,19780229
+Panoche Creek - Interstate 5,PNEC1,36.6525,-120.63111,Panoche Creek,19784451
 Del Puerto Creek - Patterson,PTTC1,37.48667,-121.20806,Del Puerto Creek,2827982
 Cherokee Canal - Richvale,RCVC1,39.465,-121.74194,Cherokee Canal,1682671
 Clear Creek - Igo,RDGC1,40.51333,-122.52306,Clear Creek,2495296
-Russian River - Hacienda Bridge,RIOC1,38.50861,-122.92667,Russian River,8272723
+Russian River - Hacienda Bridge,RIOC1,38.50861,-122.92667,Russian River,8272725
 Stanislaus River - Ripon,RIPC1,37.72972,-121.10944,Stanislaus River,2821830
 Maacama Creek - Kellogg,RMKC1,38.64111,-122.76278,Maacama Creek,8272605
-Rock Creek - Battle Mountain,ROCN2,40.825,-116.58333,Rock Creek,11191351
-Russian River - Highway 1 Bridge near Jenner,RROC1,38.43389,-123.10083,Russian River,8272949
+Rock Creek - Battle Mountain,ROCN2,40.825,-116.58333,Rock Creek,11192063
+Russian River - Highway 1 Bridge near Jenner,RROC1,38.43389,-123.10083,Russian River,8272953
 Rubicon River - Foresthill,RUFC1,39.00028,-120.72306,Rubicon River,14993187
-Salmon River - Somes Bar,SBRC1,41.37778,-123.47639,Salmon River,8258825
-Spanish Creek - Keddie,SCBC1,40.00306,-120.95333,Spanish Creek,8027418
-Sycan River - Beatty,SCNO3,42.48611,-121.27778,Sycan River,24084782
-Steamboat Creek - Steamboat,SCRN2,39.37778,-119.7425,Steamboat Creek,8935238
+Salmon River - Somes Bar,SBRC1,41.37778,-123.47639,Salmon River,8261865
+Spanish Creek - Keddie,SCBC1,40.00306,-120.95333,Spanish Creek,8027910
+Sycan River - Beatty,SCNO3,42.48611,-121.27778,Sycan River,24084766
+Steamboat Creek - Steamboat,SCRN2,39.37778,-119.7425,Steamboat Creek,8935822
 Steamboat Creek - Sparks - Cleanwater Way,SCWN2,39.51305,-119.71139,Steamboat Creek,8932212
-Salinas River - Soledad,SDDC1,36.41111,-121.31833,Salinas River,948060171
-San Francisquito Creek - Stanford University,SFCC1,37.42333,-122.18833,San Francisquito Creek,17692959
+Salinas River - Soledad,SDDC1,36.41111,-121.31833,Salinas River,948060170
+San Francisquito Creek - Stanford University,SFCC1,37.42333,-122.18833,San Francisquito Creek,17693217
 South Fork Humboldt River - Above Tenmile Creek - Elko,SFHN2,40.62833,-115.72889,South Fork Humboldt River,10750253
 Sagehen Creek - Truckee,SGNC1,39.43167,-120.23694,Sagehen Creek,8933522
 San Joaquin River - Mendota,SJMC1,36.81056,-120.37823,San Joaquin River,19784319
-Scotts Creek - Lakeport,SKPC1,39.09556,-122.96,Scotts Creek,8006363
-South Fork Kern River - Onyx,SKRC1,35.7375,-118.17278,South Fork Kern River,14961121
-Salsipuedes Creek - Lompoc,SLUC1,34.58861,-120.4075,Salsipuedes Creek,17608073
-Santa Margarita River - Temecula,SMHC1,33.47389,-117.14139,Santa Margarita River,22548249
+Scotts Creek - Lakeport,SKPC1,39.09556,-122.96,Scotts Creek,8006559
+South Fork Kern River - Onyx,SKRC1,35.7375,-118.17278,South Fork Kern River,14961097
+Salsipuedes Creek - Lompoc,SLUC1,34.58861,-120.4075,Salsipuedes Creek,17609017
+Santa Margarita River - Temecula,SMHC1,33.47389,-117.14139,Santa Margarita River,22549075
 Arroyo Seco - Soledad,SOLC1,36.28056,-121.32167,Arroyo Seco,8205291
-Middle Fork Cosumnes River - Somerset,SOSC1,38.62417,-120.70056,Middle Fork Cosumnes River,20195260
-Pilot Creek - Abv Stumpy Meadows Reservoir,SPYC1,38.89472,-120.56722,Pilot Creek,14997611
-Santa Ana River - San Bernardino - E Street,SREC1,34.065,-117.29944,Santa Ana River,22557930
-Santa Rosa Creek - Santa Rosa,SSAC1,38.43667,-122.72361,Santa Rosa Creek,948010118
+Middle Fork Cosumnes River - Somerset,SOSC1,38.62417,-120.70056,Middle Fork Cosumnes River,20195334
+Pilot Creek - Abv Stumpy Meadows Reservoir,SPYC1,38.89472,-120.56722,Pilot Creek,14997987
+Santa Ana River - San Bernardino - E Street,SREC1,34.065,-117.29944,Santa Ana River,22557960
+Santa Rosa Creek - Santa Rosa,SSAC1,38.43667,-122.72361,Santa Rosa Creek,8273645
 Sisquoc River - Sisquoc,SSQC1,34.83972,-120.16722,Sisquoc River,17625379
 San Joaquin River - Stevinson,SSTC1,37.29472,-120.85083,San Joaquin River,19771543
 Truckee River - Below Derby Dam,TBDN2,39.58472,-119.44028,Truckee River,8931712
 Trinity River - Above Coffee Creek,TCCC1,41.11139,-122.70444,Trinity River,8242324
-Thomes Creek - Paskenta,TCRC1,39.88861,-122.52139,Thomes Creek,12074376
+Thomes Creek - Paskenta,TCRC1,39.88861,-122.52139,Thomes Creek,12074976
 Temecula River - Aguanga,TEKC1,33.45917,-116.92278,Temecula River,22549471
 Tres Pinos Creek - Tres Pinos,TESC1,36.76472,-121.29583,Tres Pinos Creek,17663805
 Lake Tahoe - Tahoe City,THLC1,39.18083,-120.11833,Lake Tahoe,8942147
-San Timoteo Creek - Loma Linda,TIMC1,34.06361,-117.27194,San Timoteo Creek,24843738
+San Timoteo Creek - Loma Linda,TIMC1,34.06361,-117.27194,San Timoteo Creek,22557960
 Trinity River - Junction City,TRJC1,40.72861,-123.06083,Trinity River,8244466
 Trinity River - Above NF Trinity R Nr Helena,TRNC1,40.76722,-123.11333,Trinity River,8244344
 Temescal Creek - Corona - Main Street,TSLC1,33.88917,-117.56194,Temescal Creek,22560716
 South Fork Tule River - Reservation Boundary,TVRC1,36.02417,-118.8125,South Fork Tule River,14930789
 Russian River - Ukiah 3NNE,UKAC1,39.19556,-123.19389,Russian River,8269099
-Upper Penitencia Creek - Piedmont Road,UPCC1,37.39084,-121.8425,Upper Penitencia Creek,17694089
-Sacramento River Delta - Venice Island,VNCC1,38.05028,-121.49695,Sacramento River Delta,1889736
-Walker River - Wabuska,WALN2,39.1525,-119.09889,Walker River,10736793
-Warthan Creek - Coalinga,WARC1,36.09806,-120.44333,Warthan Creek,14883703
+Upper Penitencia Creek - Piedmont Road,UPCC1,37.39084,-121.8425,Upper Penitencia Creek,17694085
+Sacramento River Delta - Venice Island,VNCC1,38.05028,-121.49695,Sacramento River Delta,1889732
+Walker River - Wabuska,WALN2,39.1525,-119.09889,Walker River,10736789
+Warthan Creek - Coalinga,WARC1,36.09806,-120.44333,Warthan Creek,14883693
 West Branch Feather River - Magalia,WBGC1,39.825,-121.5675,West Branch Feather River,2775742
-West Fork Mojave River - Hesperia,WFMC1,34.33889,-117.25694,West Fork Mojave River,22660253
+West Fork Mojave River - Hesperia,WFMC1,34.33889,-117.25694,West Fork Mojave River,22660259
 Williamson River - Klamath Agency,WKAO3,42.74028,-121.83333,Williamson River,24081561
 Sacramento River - Wilkins Slough,WLKC1,39.01,-121.82361,Sacramento River,2851625
-Whitewater River - Indio,WTIC1,33.73724,-116.23612,Whitewater River,22593717
-West Walker River - Hudson,WWHN2,38.80972,-119.22639,West Walker River,10742226
-Whitewater River - Rancho Mirage,WWIC1,33.74944,-116.42194,Whitewater River,22592163
-Arroyo Valle - Lang Canyon,YLEC1,37.56139,-121.68278,Arroyo Valle,2806777
+Whitewater River - Indio,WTIC1,33.73724,-116.23612,Whitewater River,22593695
+West Walker River - Hudson,WWHN2,38.80972,-119.22639,West Walker River,10743426
+Whitewater River - Rancho Mirage,WWIC1,33.74944,-116.42194,Whitewater River,22593529
+Arroyo Valle - Lang Canyon,YLEC1,37.56139,-121.68278,Arroyo Valle,2806807
 Shasta River - Yreka,YREC1,41.82306,-122.59444,Shasta River,3917058
 Lytle Creek - Colton,YTLC1,34.07889,-117.30472,Lytle Creek,22557922
-New River - Westmorland,ZNRC1,33.1047,-115.66361,New River,22598927
+New River - Westmorland,ZNRC1,33.1047,-115.66361,New River,22599619

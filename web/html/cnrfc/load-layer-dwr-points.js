@@ -92,6 +92,7 @@ export async function loadLayerDwrPoints(map, id, initialVisibility=false, legen
     popuptext += `River: ${feature.properties.River}<br/>`;
     popuptext += `Location: ${feature.properties.Location.split(" - ")[1]}<br/>`;
     popuptext += `Matching NWM Reach: ${feature.properties.ReachID}`;
+    // popuptext += `Matching NWM Reach 2: ${feature.properties.link}`;
 
     popupHover.setLngLat(e.lngLat)
         .setHTML(popuptext)

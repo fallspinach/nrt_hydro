@@ -116,6 +116,18 @@ expanse:
             climrange:  [1979, 2023]
             lonlatbox:  [-112, -106, 39, 44]
             mapdpi:    80
+            
+    nwm_v3:
+        cnrfc:
+            partition: 'cw3e-shared'
+            nnodes:     1
+            nprocs:    64
+            minperday:  2
+            lake:       False
+            climrange:  [1979, 2023]
+            lonlatbox:  [-125, -113, 32, 44]
+            mapdpi:    50
+            
     obs:
         # products to process
         products:   ['modis']

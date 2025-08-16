@@ -104,8 +104,8 @@ def main(argv):
             huc_means_swe_mon = ndimage.mean(data_swe_mon, labels=huc_data, index=huc_ids)
             huc_means_sm_mon  = ndimage.mean(data_sm_mon,  labels=huc_data, index=huc_ids)
         else:
-            huc_means_swe_mon = np.vstack((huc_means_swe_mon, ndimage.mean(data_swe, labels=huc_data, index=huc_ids)))
-            huc_means_sm_mon  = np.vstack((huc_means_sm_mon,  ndimage.mean(data_sm,  labels=huc_data, index=huc_ids)))
+            huc_means_swe_mon = np.vstack((huc_means_swe_mon, ndimage.mean(data_swe_mon, labels=huc_data, index=huc_ids)))
+            huc_means_sm_mon  = np.vstack((huc_means_sm_mon,  ndimage.mean(data_sm_mon,  labels=huc_data, index=huc_ids)))
         fin.close()
         
         # monthly forcing
@@ -117,8 +117,8 @@ def main(argv):
             huc_means_p_mon = ndimage.mean(data_p_mon, labels=huc_data, index=huc_ids)
             huc_means_t_mon = ndimage.mean(data_t_mon, labels=huc_data, index=huc_ids)
         else:
-            huc_means_p_mon = np.vstack((huc_means_p_mon, ndimage.mean(data_p, labels=huc_data, index=huc_ids)))
-            huc_means_t_mon = np.vstack((huc_means_t_mon, ndimage.mean(data_t, labels=huc_data, index=huc_ids)))
+            huc_means_p_mon = np.vstack((huc_means_p_mon, ndimage.mean(data_p_mon, labels=huc_data, index=huc_ids)))
+            huc_means_t_mon = np.vstack((huc_means_t_mon, ndimage.mean(data_t_mon, labels=huc_data, index=huc_ids)))
         fin.close()
         
         t += relativedelta(months=1)

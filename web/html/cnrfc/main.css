@@ -53,11 +53,11 @@ html, body { height: 100%; }
   .nav-link {
     width: 120px;
   }
-  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+  #plotly-basints-hourly, #plotly-basints-daily, #plotly-basints-monthly {
     width: 500px;
     height: 260px;
   }
-  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+  #download-basints-hourly, #download-basints-daily, #download-basints-monthly {
     width: 170px;
     margin-left: 300px;
     font-size: 8;
@@ -68,11 +68,11 @@ html, body { height: 100%; }
   .nav-link {
     width: 180px;
   }
-  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+  #plotly-basints-hourly, #plotly-basints-daily, #plotly-basints-monthly {
     width:  730px;
     height: 250px;
   }
-  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+  #download-basints-hourly, #download-basints-daily, #download-basints-monthly {
     width: 170px;
     margin-left: 550px;
     font-size: 8;
@@ -90,11 +90,11 @@ html, body { height: 100%; }
   .nav-link {
     width: 200px;
   }
-  #plotly-retro, #plotly-nrt, #plotly-gsha-yearly, #plotly-gsha-monthly {
+  #plotly-basints-hourly, #plotly-basints-daily, #plotly-basints-monthly {
     width: 1100px;
     height: 340px;
   }
-  #download-grades-retro, #download-grades-nrt, #download-gsha-yearly, #download-gsha-monthly {
+  #download-basints-hourly, #download-basints-daily, #download-basints-monthly {
     width: 170px;
     margin-left: 920px;
     font-size: 10;

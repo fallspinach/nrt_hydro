@@ -33,7 +33,7 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
     { id: 'nwmrivers',   name: 'NWM Rivers (v2.1)',     load: loadLayerNwmRivers,   initialVisibility: true,  legendSymbol: '&#65374;', legendColor: 'darkcyan' },
     { id: 'dwrofficial', name: 'Official Points',       load: loadLayerDwrPoints,   initialVisibility: true,  legendSymbol: '&#9679;',  legendColor: 'magenta' },
     { id: 'dwrreservoir',name: 'Reservoir Points',      load: loadLayerDwrPoints,   initialVisibility: true,  legendSymbol: '&#9679;',  legendColor: 'blue' },
-    { id: 'dwrother',    name: 'Other Points',          load: loadLayerDwrPoints,   initialVisibility: false, legendSymbol: '&#9679;',  legendColor: 'tan' },
+    { id: 'dwrother',    name: 'Other Points',          load: loadLayerDwrPoints,   initialVisibility: true,  legendSymbol: '&#9679;',  legendColor: 'tan' },
     { id: 'dwrens',      name: 'Ens Points',            load: loadLayerDwrPoints,   initialVisibility: false, legendSymbol: '&#9679;',  legendColor: 'plum' },
     { id: 'snowcourse',  name: 'Snow Courses',          load: loadLayerSnowNetwork, initialVisibility: false, legendSymbol: '*',        legendColor: 'brown' },
     { id: 'snowpillow',  name: 'Snow Pillows',          load: loadLayerSnowNetwork, initialVisibility: false, legendSymbol: '*',        legendColor: 'darkorange' }
