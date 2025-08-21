@@ -54,10 +54,10 @@ def main(argv):
         trun1 = datetime(1,1,1)+timedelta(minutes=ndays*minperday+30)
         trun = f'{trun1.day-1}-{trun1:%H:%M:%S}'
 
-        os.system(f'mkdir -p {workdir}/{t1:%Y}')
-        os.system(f'mkdir -p {workdir}/../output/1km_daily/{t1:%Y}')
-        os.system(f'mkdir -p {workdir}/../output/1km_hourly/{t1:%Y}')
-        os.system(f'mkdir -p {workdir}/../output/1km_monthly/{t1:%Y}')
+        os.makedirs(f'{workdir}/{t1:%Y}', exist_ok=True)
+        for freq in ['hourly', 'daily', 'monthly']:
+            os.makedirs(f'{workdir}/../output/1km_{freq}/{t1:%Y}', exist_ok=True)
+        os.makedirs(f'{workdir}/../output/1km_daily/{y+1}', exist_ok=True)
         os.chdir(f'{workdir}/{t1:%Y}')
         os.system('ln -nfs ../../../../shared/tables/*.TBL .')
 
@@ -106,8 +106,8 @@ def main(argv):
         nc_shared   = nmons
         mem_shared  = 12*nc_shared
         part_shared = config_dom["partition"].replace("compute", "shared")
-        cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
-        cmd = f'sbatch -d afterok:{jid1} -t 04:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_aggregate.py'
+        cmd = f'sbatch -d afterok:{jid1} -t 04:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} retro" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
         ret = subprocess.check_output([cmd], shell=True)
         jid2 = ret.decode().split(' ')[-1].rstrip()
         print(f'Merging/percentile calculation job ID for year {y} is: {jid2}')

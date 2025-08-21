@@ -29,6 +29,8 @@ def main(argv):
     t1 = datetime.strptime(argv[1], '%Y%m%d')
     t2 = datetime.strptime(argv[2], '%Y%m%d')
     
+    jid1 = argv[3] if len(argv)>3 else ''
+    
     ndays = (t2+timedelta(days=1)-t1).days
     nmons = round(ndays/30.5)
 
@@ -47,10 +49,9 @@ def main(argv):
     if nprocs<tpn:
         tpn = nprocs
 
-    os.system(f'mkdir -p {workdir}/{t1:%Y}')
-    os.system(f'mkdir -p {workdir}/../output/1km_daily/{t1:%Y}')
-    os.system(f'mkdir -p {workdir}/../output/1km_hourly/{t1:%Y}')
-    os.system(f'mkdir -p {workdir}/../output/1km_monthly/{t1:%Y}')
+    os.makedirs(f'{workdir}/{t1:%Y}', exist_ok=True)
+    for freq in ['hourly', 'daily', 'monthly']:
+        os.makedirs(f'{workdir}/../output/1km_{freq}/{t1:%Y}', exist_ok=True)
     os.chdir(f'{workdir}/{t1:%Y}')
     os.system('ln -nfs ../../../../shared/tables/*.TBL .')
 
@@ -75,12 +76,14 @@ def main(argv):
     # check restart files
     frestart = f'../../restart/RESTART.{t1:%Y%m%d}00_DOMAIN1'
     if not os.path.isfile(frestart):
-        print(f'{frestart} not found, quitting now.')
-        return 1
+        if jid1=='':
+            print(f'{frestart} not found. Please make sure it is available before running from {t1:%Y-%m-%d}.')
+            return 1
     frestart = f'../../restart/HYDRO_RST.{t1:%Y-%m-%d}_00:00_DOMAIN1'
     if not os.path.isfile(frestart):
-        print(f'{frestart} not found, quitting now.')
-        return 1
+        if jid1=='':
+            print(f'{frestart} not found. Please make sure it is available before running from {t1:%Y-%m-%d}.')
+            return 1
     
     # check forcing files
     t = t1
@@ -91,7 +94,8 @@ def main(argv):
             return 1
         t += timedelta(days=1)
 
-    ret = subprocess.check_output([f'sbatch run_{modelid}.sh'], shell=True)
+    dep = '' if jid1=='' else f'-d afterok:{jid1}'
+    ret = subprocess.check_output([f'sbatch {dep} run_{modelid}.sh'], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'WRF-Hydro job ID is: {jid}')
     
@@ -99,8 +103,8 @@ def main(argv):
     nc_shared   = nmons
     mem_shared  = 12*nc_shared
     part_shared = config_dom["partition"].replace("compute", "shared")
-    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_fix_time_retro.py'
-    cmd = f'sbatch -d afterok:{jid} -t 04:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_aggregate.py'
+    cmd = f'sbatch -d afterok:{jid} -t 04:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} retro" -o {workdir}/log/mergefixtime_{t1:%Y%m}_{t2:%Y%m}.txt'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip()
     print('Merging/percentile calculation job ID is: '+jid)

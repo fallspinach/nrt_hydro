@@ -1,7 +1,7 @@
-''' Extract CNRFC basin averaged quantities from WRF-Hydro retrospective simulation
+''' Extract CNRFC basin averaged quantities from WRF-Hydro, monthly only
 
 Usage:
-    python extract_basin_retro.py [domain] [yyyymm1] [yyyymm2]
+    python extract_basin_monthly.py [domain] [yyyymm1] [yyyymm2] [retro|nrt]
 Default values:
     must specify all
 '''
@@ -117,6 +117,7 @@ def main(argv):
 
     t1 = datetime.strptime(argv[1], '%Y%m')
     t2 = datetime.strptime(argv[2], '%Y%m')
+    period = argv[3]
 
     fbasin = nc.Dataset(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.nc', 'r')
     basin_data = fbasin['basin_id'][:]
@@ -124,7 +125,7 @@ def main(argv):
 
     df_basins = pd.read_csv(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.csv')
     
-    workdir = f'{config["base_dir"]}/{modelid}/{domain}/retro/output'
+    workdir = f'{config["base_dir"]}/{modelid}/{domain}/{period}/output'
     os.chdir(workdir)
 
     t = t1

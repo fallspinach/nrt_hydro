@@ -1,7 +1,7 @@
-''' Merge WRF-Hydro per-day retro output files into per-month and make the time dimension compliant to standard format
+''' Merge WRF-Hydro per-dayoutput files into per-month and aggregate to daily/monthly
 
 Usage:
-    mpirun -np [# of procs] python merge_fix_time_retro.py [domain] [yyyymm1] [yyyymm2]
+    mpirun -np [# of procs] python merge_aggregate.py [domain] [yyyymm1] [yyyymm2] [retro/nrt]
 Default values:
     must specify all
 '''
@@ -26,9 +26,6 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-flag_deldaily  = True
-flag_delhourly = True
-
 modelid = 'nwm_v3'
 
 ## main function
@@ -39,9 +36,17 @@ def main(argv):
     domain = argv[0]
     t1 = datetime.strptime(argv[1], '%Y%m')
     t2 = datetime.strptime(argv[2], '%Y%m')
+    period = argv[3]
     step  = timedelta(days=1)
 
-    workdir   = f'{config["base_dir"]}/{modelid}/{domain}/retro/output/1km_daily'
+    if period=='retro':
+        flag_deldaily  = True
+        flag_delhourly = True
+    else:
+        flag_deldaily  = False
+        flag_delhourly = False
+
+    workdir   = f'{config["base_dir"]}/{modelid}/{domain}/{period}/output/1km_daily'
     os.chdir(workdir)
 
     alltimes = []

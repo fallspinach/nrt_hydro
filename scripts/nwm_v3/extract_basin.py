@@ -1,7 +1,7 @@
-''' Extract CNRFC basin averaged quantities from WRF-Hydro retrospective simulation
+''' Extract CNRFC basin averaged quantities from WRF-Hydro
 
 Usage:
-    python extract_basin_retro.py [domain] [yyyymm1] [yyyymm2]
+    python extract_basin.py [domain] [yyyymm1] [yyyymm2] [retro|nrt]
 Default values:
     must specify all
 '''
@@ -117,6 +117,7 @@ def main(argv):
 
     t1 = datetime.strptime(argv[1], '%Y%m')
     t2 = datetime.strptime(argv[2], '%Y%m')
+    period = argv[3]
 
     fbasin = nc.Dataset(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.nc', 'r')
     basin_data = fbasin['basin_id'][:]
@@ -124,7 +125,7 @@ def main(argv):
 
     df_basins = pd.read_csv(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.csv')
     
-    workdir = f'{config["base_dir"]}/{modelid}/{domain}/retro/output'
+    workdir = f'{config["base_dir"]}/{modelid}/{domain}/{period}/output'
     os.chdir(workdir)
 
     t = t1
@@ -238,45 +239,54 @@ def main(argv):
     basin_means_t   = np.atleast_2d(basin_means_t);   basin_means_t_mon   = np.atleast_2d(basin_means_t_mon)
             
     # output dir
-    hout = f'basins/hourly/{t1:%Y%m}-{t2:%Y%m}'
-    os.makedirs(hout, exist_ok=True)
-    dout = f'basins/daily/{t1:%Y%m}-{t2:%Y%m}'
-    os.makedirs(dout, exist_ok=True)
-    mout = f'basins/monthly/{t1:%Y%m}-{t2:%Y%m}'
-    os.makedirs(mout, exist_ok=True)
+    outds = {}
+    for freq in ['hourly', 'daily', 'monthly']:
+        outds[freq] = f'basins/{freq}'
+        if period=='retro':
+            outds[freq] += f'/{t1:%Y%m}-{t2:%Y%m}'
+        os.makedirs(outds[freq], exist_ok=True)
 
     print(f'Writing data: total={basin_ids.size} basins')
-    
+
+    dfs = {}
     for j in range(basin_ids.size):
         basin_name = df_basins.loc[df_basins['ID']==basin_ids[j], 'Basin'].to_list()[0] 
 
         if j%10==0:
             print(f'    {j+1}th: {basin_name}')
         # daily
-        df_daily = pd.DataFrame({'Date': pd.to_datetime(tstamps, format='%Y-%m-%d')})
-        df_daily['SWE']   = basin_means_swe[:, j]
-        df_daily['SMTOT'] = basin_means_sm[:, j]
-        df_daily['T2D']   = basin_means_t[:, j]
-        df_daily['PREC']  = basin_means_p[:, j]
-        df_daily['RUNOFF']= basin_sums_all[j]['qBucket'].to_numpy() + basin_sums_all[j]['qSfcLatRunoff'].to_numpy()
+        dfs['daily'] = pd.DataFrame({'Date': pd.to_datetime(tstamps, format='%Y-%m-%d')})
+        dfs['daily']['SWE']   = basin_means_swe[:, j]
+        dfs['daily']['SMTOT'] = basin_means_sm[:, j]
+        dfs['daily']['T2D']   = basin_means_t[:, j]
+        dfs['daily']['PREC']  = basin_means_p[:, j]
+        dfs['daily']['RUNOFF']= basin_sums_all[j]['qBucket'].to_numpy() + basin_sums_all[j]['qSfcLatRunoff'].to_numpy()
 
         # monthly
-        df_monthly = pd.DataFrame({'Date': pd.to_datetime(tstamps_mon, format='%Y-%m-%d')})
-        df_monthly['SWE']   = basin_means_swe_mon[:, j]
-        df_monthly['SMTOT'] = basin_means_sm_mon[:, j]
-        df_monthly['T2D']   = basin_means_t_mon[:, j]
-        df_monthly['PREC']  = basin_means_p_mon[:, j]
-        df_monthly['RUNOFF']= basin_sums_mon_all[j]['qBucket'].to_numpy() + basin_sums_mon_all[j]['qSfcLatRunoff'].to_numpy()
+        dfs['monthly'] = pd.DataFrame({'Date': pd.to_datetime(tstamps_mon, format='%Y-%m-%d')})
+        dfs['monthly']['SWE']   = basin_means_swe_mon[:, j]
+        dfs['monthly']['SMTOT'] = basin_means_sm_mon[:, j]
+        dfs['monthly']['T2D']   = basin_means_t_mon[:, j]
+        dfs['monthly']['PREC']  = basin_means_p_mon[:, j]
+        dfs['monthly']['RUNOFF']= basin_sums_mon_all[j]['qBucket'].to_numpy() + basin_sums_mon_all[j]['qSfcLatRunoff'].to_numpy()
 
         # hourly
         basin_sums_hr_all[j]['RUNOFF'] = basin_sums_hr_all[j]['qBucket'] + basin_sums_hr_all[j]['qSfcLatRunoff']
-        
-        fnout = f'{dout}/{basin_name}_daily.csv.gz'
-        df_daily.to_csv(fnout, compression='gzip', index=False, float_format='%.4f', date_format='%Y-%m-%d')
-        fnout = f'{mout}/{basin_name}_monthly.csv.gz'
-        df_monthly.to_csv(fnout, compression='gzip', index=False, float_format='%.4f', date_format='%Y-%m-%d')
-        fnout = f'{hout}/{basin_name}_hourly.csv.gz'        
-        basin_sums_hr_all[j].to_csv(fnout, compression='gzip', index=False, float_format='%.4f')
+        dfs['hourly'] = basin_sums_hr_all[j]
+
+        for freq in ['hourly', 'daily', 'monthly']:
+            fnout = f'{outds[freq]}/{basin_name}_{freq}.csv.gz'
+            dfs[freq].set_index('Date', inplace=True)
+            
+            if period=='nrt' and os.path.isfile(fnout):
+                df0 = pd.read_csv(fnout, parse_dates=True, index_col='Date')
+                dfs[freq] = pd.concat([df0, dfs[freq]])
+                dfs[freq] = dfs[freq].loc[~dfs[freq].index.duplicated(keep='last')]
+
+            if freq=='hourly':
+                dfs[freq].to_csv(fnout, compression='gzip', float_format='%.4f')
+            else:
+                dfs[freq].to_csv(fnout, compression='gzip', float_format='%.4f', date_format='%Y-%m-%d')
         
     return 0
 
