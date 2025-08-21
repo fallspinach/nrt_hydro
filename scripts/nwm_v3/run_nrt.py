@@ -189,6 +189,16 @@ def main(argv):
     jid = ret.decode().split(' ')[-1].rstrip(); jid1 = jid
     print(f'Merging/percentile calculation job ID is: {jid}')
 
+    if domain in ['cnrfc']:
+        
+        cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_basin.py'
+        flog = f'{workdir}/log/extract_basin_{t1:%Y%m}_{t2:%Y%m}.txt'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} -A cwp101 --mem=13G -J "exbasnrt" --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
+        #print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid = ret.decode().split(' ')[-1].rstrip()
+        print(f'Basin time series extraction will run with job ID: {jid}')
+    
     if True:
         return 0
 
