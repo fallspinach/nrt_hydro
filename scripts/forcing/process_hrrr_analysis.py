@@ -15,7 +15,7 @@ import sys, os, pytz, time, yaml, subprocess
 from glob import glob
 import numpy as np
 import numpy.ma as ma
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import requests, re
 from bs4 import BeautifulSoup
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
@@ -29,7 +29,8 @@ lockfile = 'hrrr.lock'
 hrrr_ncep_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/'
 hrrr_aws_url  = 'https://noaa-hrrr-bdp-pds.s3.amazonaws.com/'
 
-cdocmd = 'cdo -f nc4 -z zip chname,sp,pressfc,\\2t,tmp2m,\\2sh,spfh2m,\\10u,ugrd10m,\\10v,vgrd10m,dswrf,dswrfsfc,dlwrf,dlwrfsfc,prate,pratesfc -remap,latlon_conus_0.03125deg.txt,hrrr_to_0.03125deg_weight.nc'
+#cdocmd = 'cdo -f nc4 -z zip chname,sp,pressfc,\\2t,tmp2m,\\2sh,spfh2m,\\10u,ugrd10m,\\10v,vgrd10m,dswrf,dswrfsfc,dlwrf,dlwrfsfc,prate,pratesfc -remap,latlon_conus_0.03125deg.txt,hrrr_to_0.03125deg_weight.nc'
+cdocmd = 'cdo -f nc4 -z zip chname,sp,pressfc,\\2t,tmp2m,\\2sh,spfh2m,\\10u,ugrd10m,\\10v,vgrd10m,sdswrf,dswrfsfc,sdlwrf,dlwrfsfc,prate,pratesfc -remap,latlon_conus_0.03125deg.txt,hrrr_to_0.03125deg_weight.nc'
 ncocmd = 'ncwa -a height,height_2'
 
 ## main function
@@ -51,7 +52,7 @@ def main(argv):
     time_start = time.time()
     
     # get current UTC time
-    curr_time = datetime.utcnow()
+    curr_time = datetime.now(UTC)
     curr_time = curr_time.replace(tzinfo=pytz.utc)
     
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)

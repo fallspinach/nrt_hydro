@@ -1,7 +1,7 @@
 ''' Aggregate hourly forcing to daily and monthly
 
 Usage:
-    mpirun -np [# of procs] python aggregate_forcing.py [domain] [yyyymm1] [yyyymm2] [retro|nrt]
+    mpirun -np [# of procs] python aggregate_forcing.py [yyyymm1] [yyyymm2] [retro|nrt]
 Default values:
     must specify all
 '''
@@ -16,7 +16,9 @@ from dateutil.relativedelta import relativedelta
 from calendar import monthrange
 from mpi4py import MPI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/wrf_hydro')
 from utilities import config, find_last_time
+import add_pctl_rank_monthly
 
 # MPI setup
 comm = MPI.COMM_WORLD
@@ -28,13 +30,13 @@ def main(argv):
 
     '''main loop'''
 
-    domain = argv[0]
+    domain = 'conus'
 
-    t1 = datetime.strptime(argv[1], '%Y%m')
-    t2 = datetime.strptime(argv[2], '%Y%m')
-    ptype = argv[3]
+    t1 = datetime.strptime(argv[0], '%Y%m')
+    t2 = datetime.strptime(argv[1], '%Y%m')
+    ptype = argv[2]
     
-    workdir = f'{config["base_dir"]}/wrf_hydro/{domain}/{ptype}/forcing'
+    workdir = f'{config["base_dir"]}/forcing/nwm'
     os.chdir(workdir)
 
     step  = relativedelta(months=1)
@@ -45,17 +47,47 @@ def main(argv):
         t += step
     
     for t in alltimes[rank::size]:
+        
         md = monthrange(t.year, t.month)[1]
         tn = t + step
-        if os.path.isfile(f'1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1'):
-            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+        if os.path.isfile(f'1km_hourly/conus/{ptype}/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1'):
+            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/conus/{ptype}/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 1km_hourly/conus/{ptype}/{tn:%Y/%Y%m}01.LDASIN_DOMAIN1 ] 1km_daily/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily'
         else:
-            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily'
+            cmd = f'cdo -O -f nc4 -z zip delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/conus/{ptype}/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily'
         print(cmd); os.system(cmd)
-        cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/{t:%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/{t:%Y%m}.LDASIN_DOMAIN1.monthly'
+        cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly'
         print(cmd); os.system(cmd)
+        if ptype=='nrt':
+            add_pctl_rank_monthly.main([domain, f'1km_monthly/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly'])
+        
+        for subdomain in ['cnrfc', 'cbrfc']:
+            findex = f'domain/cdo_indexbox_{subdomain}.txt'
+            fmask  = f'domain/xmask0_{subdomain}.nc'
+            with open(findex, 'r') as f:
+                indexbox = f.read().rstrip()
+            cdocmd = f'cdo -f nc4 -z zip add -selindexbox,{indexbox}'
+            for freq in ['daily', 'monthly']:
+                fsrc = f'1km_{freq}/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.{freq}'
+                fout = f'1km_{freq}/{subdomain}/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.{freq}'
+                cmd = f'{cdocmd} {fsrc} {fmask} {fout}'
+                print(cmd); os.system(cmd)
+                
+        for subdomain in ['basins24', 'yampa']:
+            findex = f'domain/cdo_indexbox_{subdomain}.txt'
+            fmask  = f'domain/xmask0_{subdomain}.nc'
+            with open(findex, 'r') as f:
+                indexbox = f.read().rstrip()
+            cdocmd = f'cdo -f nc4 -z zip add -selindexbox,{indexbox}'
+            for freq in ['daily', 'monthly']:
+                if subdomain=='basins24':
+                    fsrc = f'1km_{freq}/cnrfc/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.{freq}'
+                elif subdomain=='yampa':
+                    fsrc = f'1km_{freq}/cbrfc/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.{freq}'
+                fout = f'1km_{freq}/{subdomain}/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.{freq}'
+                cmd = f'{cdocmd} {fsrc} {fmask} {fout}'
+                print(cmd); os.system(cmd)
 
-    comm.Barrier()
+    comm.Barrier()        
 
     return 0
 

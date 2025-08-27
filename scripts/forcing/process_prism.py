@@ -12,7 +12,7 @@ __status__ = 'Development'
 import sys, os, pytz, time, subprocess
 from glob import glob
 import netCDF4 as nc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from dateutil.relativedelta import relativedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
@@ -66,7 +66,7 @@ def main(argv):
 def update_prisms():
 
     # get current UTC time
-    curr_time  = datetime.utcnow() - timedelta(days=1) # add 1 days buffer for PRISM
+    curr_time  = datetime.now(UTC) - timedelta(days=1) # add 1 days buffer for PRISM
     curr_month = datetime(curr_time.year, curr_time.month, 1)
 
     ptypes  = ['recent', 'provisional']

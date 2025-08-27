@@ -132,3 +132,98 @@ expanse:
         # products to process
         products:   ['modis']
 
+# computing cluster Aware
+aware:
+
+    # platform wide specs
+    base_dir:       /cw3e/mead/projects/cnt107/nrt_hydro
+    cores_per_node: 192
+    modules:        'slurm openmpi/gcc/64/4.1.5 gcc/11.2.0'
+    node_scratch:   'job_'
+    slurm_account:  'cnt107'
+    part_shared:    'shared-192'
+    part_compute:   'compute-192'
+    
+    forcing:
+        # domains to subset after conus
+        domains:    ['cnrfc', 'cbrfc', 'basins24', 'yampa']
+        # flag to produce daily forcing data for LSTM modeling
+        lstm:       True
+        
+    wrf_hydro:
+        conus:
+            partition: 'compute-192'
+            nnodes:     1
+            nprocs:   128
+            minperday:  5
+            lake:       True
+            climrange:  [1979, 2023]
+            lonlatbox:  [-125, -67, 25, 50]
+            mapdpi:   200
+        cnrfc:
+            partition: 'shared-192'
+            nnodes:     1
+            nprocs:    32
+            minperday:  2
+            lake:       True
+            climrange:  [1979, 2023]
+            lonlatbox:  [-125, -113, 32, 44]
+            mapdpi:    50
+        cbrfc:
+            partition: 'shared-192'
+            nnodes:     1
+            nprocs:    64
+            minperday:  2
+            lake:       True
+            climrange:  [1979, 2023]
+            lonlatbox:  [-119, -103, 29, 45]
+            mapdpi:    80
+        basins24:
+            partition: 'shared-192'
+            nnodes:     1
+            nprocs:    16
+            minperday:  2.5
+            lake:       False
+            climrange:  [1979, 2023]
+            lonlatbox:  [-124, -117, 35, 42]
+            mapdpi:    80
+            lstm:
+                TEST_PARA:
+                    Ttrain:       ['19791001', '20190930']
+                    Tvalid:       ['20210801', '20250731']
+                    Tpredc:       ['20210801', '20250731']  # Forecast period
+                    dyn_var_list: ['PREC', 'T2D', 'SWDOWN', 'LWDOWN', 'SMTOT', 'SWE', 'Qsim'] ## variables used as predictors
+                    target_var:   ['FNF']
+                    log_var_list: ['FNF', 'prec', 'Qsim', 'p_mean']  ## p and flow need log-transform
+                    stc_var_list: ['elev', 'sand', 'slope', 'size', 'p_mean']
+                HYPER_PARA:
+                    nepoch:       400
+                    batch_size:    24
+                    rho:           48
+                    hidden_size:   64
+                    EPOCHsave:      5   # save model for every save step
+        yampa:
+            partition: 'shared-192'
+            nnodes:     1
+            nprocs:    16
+            minperday:  2.5
+            lake:       False
+            climrange:  [1979, 2023]
+            lonlatbox:  [-112, -106, 39, 44]
+            mapdpi:    80
+            
+    nwm_v3:
+        cnrfc:
+            partition: 'shared-192'
+            nnodes:     1
+            nprocs:    64
+            minperday:  2
+            lake:       False
+            climrange:  [1979, 2024]
+            lonlatbox:  [-125, -113, 32, 44]
+            mapdpi:    50
+            
+    obs:
+        # products to process
+        products:   ['modis']
+

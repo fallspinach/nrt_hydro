@@ -14,7 +14,7 @@ __status__ = 'Development'
 
 import sys, os, pytz, time, subprocess
 from glob import glob
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time, replace_brackets
 
@@ -123,7 +123,7 @@ def run_wrf_hydro(domain, t1, t2, xland='rfcs', dep=-1):
 def main(argv):
 
     '''main loop'''
-    curr_time = datetime.utcnow()
+    curr_time = datetime.now(UTC)
     curr_time = curr_time.replace(tzinfo=pytz.utc)
 
     print(f'Current day is {curr_time:%Y-%m-%d}.')
@@ -184,7 +184,7 @@ def main(argv):
     part_shared = config_dom["partition"].replace("compute", "shared")
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {nc_shared} python merge_aggregate.py'
     flog = f'{workdir}/log/merge_aggre_{t1:%Y%m}_{t2:%Y%m}.txt'
-    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -A cwp101 -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
+    cmd = f'sbatch -d afterok:{jid} -t 02:00:00 --nodes=1 -p {part_shared} --ntasks-per-node={nc_shared:d} --mem={mem_shared}G -J mf{t1:%Y%m} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid1 = jid
     print(f'Merging/percentile calculation job ID is: {jid}')
@@ -193,7 +193,7 @@ def main(argv):
         
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_basin.py'
         flog = f'{workdir}/log/extract_basin_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} -A cwp101 --mem=13G -J "exbasnrt" --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} --mem=13G -J "exbasnrt" --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()
@@ -204,11 +204,11 @@ def main(argv):
 
     cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_nrt.py'
     flog = f'{workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
-    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
     print(f'Daily plotting job ID is: {jid}')
-    cmd = f'sbatch -d afterok:{jid2} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=10G -J plotmon --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+    cmd = f'sbatch -d afterok:{jid2} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotmon --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
     print(f'Monthly plotting job ID is: {jid}')
@@ -217,7 +217,7 @@ def main(argv):
         
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_rivers_nrt.py'
         flog = f'{workdir}/log/extract_rivers_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=30G -J "exrivnrt" --wrap="{cmd1} {domain}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} --mem=30G -J "exrivnrt" --wrap="{cmd1} {domain}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid = ret.decode().split(' ')[-1].rstrip()
@@ -227,7 +227,7 @@ def main(argv):
 
         cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np 6 python {config["base_dir"]}/scripts/{modelid}/extract_average_nrt.py'
         flog = f'{workdir}/log/extract_averages_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=6 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=12G -J "exavgnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=6 -t 00:20:00 -p {part_shared} --mem=12G -J "exavgnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid3 = ret.decode().split(' ')[-1].rstrip()
@@ -235,7 +235,7 @@ def main(argv):
 
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_points_nrt.py'
         flog = f'{workdir}/log/extract_points_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=2G -J "expntnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} --mem=2G -J "expntnrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid3 = ret.decode().split(' ')[-1].rstrip()
@@ -243,7 +243,7 @@ def main(argv):
 
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_b120_nrt.py'
         flog = f'{workdir}/log/extract_b120_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p cw3e-shared -A cwp101 --mem=2G -J "ex120nrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} --mem=2G -J "ex120nrt" --wrap="{cmd1} {domain} 202405 {t2:%Y%m}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid3 = ret.decode().split(' ')[-1].rstrip()
@@ -254,7 +254,7 @@ def main(argv):
         for huclev in [8, 10]:
             cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_huc_nrt.py'
             flog = f'{workdir}/log/extract_huc{huclev}_{t1:%Y%m}_{t2:%Y%m}.txt'
-            cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 01:20:00 -p cw3e-shared -A cwp101 --mem=5G -J "exhucnrt" --wrap="{cmd1} {domain} 202410 {t2:%Y%m} {huclev}" -o {flog}'
+            cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 01:20:00 -p {part_shared} --mem=5G -J "exhucnrt" --wrap="{cmd1} {domain} 202410 {t2:%Y%m} {huclev}" -o {flog}'
             #print(cmd)
             ret = subprocess.check_output([cmd], shell=True)
             jid4 = ret.decode().split(' ')[-1].rstrip()
@@ -262,7 +262,7 @@ def main(argv):
             
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_gauges_nrt_conus.py'
         flog = f'{workdir}/log/extract_gauges_{t1:%Y%m}_{t2:%Y%m}.txt'
-        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 00:30:00 -p cw3e-shared -A cwp101 --mem=5G -J "extgage" --wrap="{cmd1} {domain} 202410 {t2:%Y%m}" -o {flog}'
+        cmd = f'sbatch -d afterok:{jid3} --nodes=1 --ntasks-per-node=1 -t 00:30:00 -p {part_shared} --mem=5G -J "extgage" --wrap="{cmd1} {domain} 202410 {t2:%Y%m}" -o {flog}'
         #print(cmd)
         ret = subprocess.check_output([cmd], shell=True)
         jid4 = ret.decode().split(' ')[-1].rstrip()
@@ -273,7 +273,7 @@ def main(argv):
             # subset subdomain from conus
             cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/subset_output.py'
             flog = f'{workdir}/log/subset_{subdomain}_{t1:%Y%m}_{t2:%Y%m}.txt'
-            cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101 --mem=5G -J subset{subdomain} --wrap="{cmd1} {subdomain} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
+            cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=5G -J subset{subdomain} --wrap="{cmd1} {subdomain} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
             ret = subprocess.check_output([cmd], shell=True)
             jid5 = ret.decode().split(' ')[-1].rstrip()
             print(f'Subsetting {subdomain} job ID is: {jid5}')
@@ -281,11 +281,11 @@ def main(argv):
             # plot subdomain
             cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_nrt.py'
             flog = f'{workdir}/log/plot_{subdomain}_{t1:%Y%m}_{t2:%Y%m}.txt'
-            cmd = f'sbatch -d afterok:{jid5} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=6G -J plotday --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+            cmd = f'sbatch -d afterok:{jid5} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotday --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
             ret = subprocess.check_output([cmd], shell=True)
             jid6 = ret.decode().split(' ')[-1].rstrip()
             print(f'Daily plotting for subdomain {subdomain} job ID is: {jid6}')
-            cmd = f'sbatch -d afterok:{jid5} -t 00:10:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 -A cwp101  --mem=6G -J plotmon --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+            cmd = f'sbatch -d afterok:{jid5} -t 00:10:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotmon --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
             ret = subprocess.check_output([cmd], shell=True)
             jid7 = ret.decode().split(' ')[-1].rstrip()
             print(f'Monthly plotting for subdomain {subdomain} job ID is: {jid7}')

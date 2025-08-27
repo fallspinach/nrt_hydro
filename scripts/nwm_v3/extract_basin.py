@@ -117,7 +117,7 @@ def main(argv):
 
     t1 = datetime.strptime(argv[1], '%Y%m')
     t2 = datetime.strptime(argv[2], '%Y%m')
-    period = argv[3]
+    ptype = argv[3]
 
     fbasin = nc.Dataset(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.nc', 'r')
     basin_data = fbasin['basin_id'][:]
@@ -125,7 +125,7 @@ def main(argv):
 
     df_basins = pd.read_csv(f'{config["base_dir"]}/{modelid}/{domain}/domain/{domain.upper()}_Basins_ID_lcc.csv')
     
-    workdir = f'{config["base_dir"]}/{modelid}/{domain}/{period}/output'
+    workdir = f'{config["base_dir"]}/{modelid}/{domain}/{ptype}/output'
     os.chdir(workdir)
 
     t = t1
@@ -242,7 +242,7 @@ def main(argv):
     outds = {}
     for freq in ['hourly', 'daily', 'monthly']:
         outds[freq] = f'basins/{freq}'
-        if period=='retro':
+        if ptype=='retro':
             outds[freq] += f'/{t1:%Y%m}-{t2:%Y%m}'
         os.makedirs(outds[freq], exist_ok=True)
 
@@ -278,7 +278,7 @@ def main(argv):
             fnout = f'{outds[freq]}/{basin_name}_{freq}.csv.gz'
             dfs[freq].set_index('Date', inplace=True)
             
-            if period=='nrt' and os.path.isfile(fnout):
+            if ptype=='nrt' and os.path.isfile(fnout):
                 df0 = pd.read_csv(fnout, parse_dates=True, index_col='Date')
                 dfs[freq] = pd.concat([df0, dfs[freq]])
                 dfs[freq] = dfs[freq].loc[~dfs[freq].index.duplicated(keep='last')]

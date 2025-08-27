@@ -16,7 +16,7 @@ from glob import glob
 import numpy as np
 import numpy.ma as ma
 import netCDF4 as nc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
 
@@ -55,7 +55,7 @@ def main(argv):
     time_start = time.time()
     
     # get current UTC time
-    curr_time = datetime.utcnow()
+    curr_time = datetime.now(UTC)
     curr_time = curr_time.replace(tzinfo=pytz.utc)
     
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)

@@ -15,6 +15,8 @@ import socket
 
 fconfig = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/config.yaml'
 cluster = socket.getfqdn().split('.')[-3].split('-')[0]
+if socket.getfqdn().split('.')[-1]=='cluster':
+    cluster = 'aware'
 with open(fconfig, 'r') as f:
     config_all = yaml.safe_load(f)
     config     = config_all[cluster]

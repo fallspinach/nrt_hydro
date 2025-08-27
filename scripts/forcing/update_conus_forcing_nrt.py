@@ -71,12 +71,12 @@ def main(argv):
     print(f'Last NLDAS-2 data:      {last_nld2:%Y-%m-%dT%H}')
     print(f'Last HRRR analysis:     {last_hrrr:%Y-%m-%dT%H}')
     
-    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=30G'
-    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=6 --mem=32G'
+    cmd0 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=12 --mem=30G'
+    cmd1 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=6 --mem=32G'
     cmd2 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 6 python mergetime_subset.py'
     
-    cmd0ml = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=6 --mem=36G'
+    cmd0ml = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=6 --mem=36G'
     cmd2ml = 'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np 6 python create_conus_forcing.py'
     
     # NLDAS-2 + Stage-IV archive update
@@ -140,7 +140,7 @@ def main(argv):
 
     if flag_lstm:
         nmons = (t2.year-t1.year)*12 + (t2.month-t1.month) + 1
-        cmd4 = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node={nmons}'
+        cmd4 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons}'
         cmd5 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python mergetime_lstm.py'
         cmd = f'{cmd4} -d afterok:{jid1ml}:{jid2ml}:{jid3ml} -t 00:45:00 -J mergefml --wrap="{cmd5} {t1:%Y%m} {t2:%Y%m} {prodtype}"  -o {logdir}/mergefml_lstm_{t1:%Y%m}_{t2:%Y%m}.txt'
         print(cmd)
@@ -151,9 +151,9 @@ def main(argv):
     # aggregate hourly forcing data to daily and monthly and subset them
     nmons = 1 if t1.month==t2.month else 2
     nmem  = 25*nmons
-    cmd5 = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
-    cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing_nrt.py'
-    cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J aggreg --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m}"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    cmd5 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
+    cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing.py'
+    cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J aggreg --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m} nrt"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid5 = ret.decode().split(' ')[-1].rstrip()
@@ -163,7 +163,7 @@ def main(argv):
     rcmd = f'rsync -a {out_path}/conus/{prodtype}/{t1:%Y}/{t1:%Y%m}* {globus_path}/{prodtype}/{t1:%Y}/'
     if t1.year!=t2.year or t1.month!=t2.month:
         rcmd += f'; rsync -a {out_path}/conus/{prodtype}/{t2:%Y}/{t2:%Y%m}* {globus_path}/{prodtype}/{t2:%Y}/'
-    cmd = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=1 -d afterok:{jid4} -t 02:00:00 -J rsync --wrap="{rcmd}" -o {logdir}/rsync_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    cmd = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=1 -d afterok:{jid4} -t 02:00:00 -J rsync --wrap="{rcmd}" -o {logdir}/rsync_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid6 = ret.decode().split(' ')[-1].rstrip()

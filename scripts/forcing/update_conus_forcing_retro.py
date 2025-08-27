@@ -85,7 +85,7 @@ def main(argv):
         
         tt1 = last_stnl + timedelta(days=1)
         tt2 = last_prsm_provis + timedelta(days=1)
-        cmd00 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=6'
+        cmd00 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=6'
         cmd22 = 'unset SLURM_MEM_PER_NODE; mpirun -np 6 python fill_stage4_with_nldas2.py'
         
         # Merge
@@ -103,8 +103,8 @@ def main(argv):
     #cmd1 = 'sbatch -p compute -N 1 '
     #cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     #cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
-    cmd0 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=72G'
-    cmd1 = 'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node=12 --mem=120G'
+    cmd0 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=12 --mem=72G'
+    cmd1 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node=12 --mem=120G'
     cmd2 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python create_conus_forcing.py'
     cmd3 = 'unset SLURM_MEM_PER_NODE; mpirun -np 12 python mergetime_subset.py'
         
@@ -132,7 +132,7 @@ def main(argv):
 
     # merge daily lstm files to monthly
     nmons = (t2.year-t1.year)*12 + (t2.month-t1.month) + 1
-    cmd4 = f'sbatch -A cwp101 -p cw3e-shared --nodes=1 --ntasks-per-node={nmons}'
+    cmd4 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons}'
     cmd5 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python mergetime_lstm.py'
     cmd = f'{cmd4} -d afterok:{jid3ml} -t 00:45:00 -J mergefml --wrap="{cmd5} {t1:%Y%m} {t2:%Y%m} {prodtype}"  -o {logdir}/mergefml_retro_{t1:%Y%m}_{t2:%Y%m}.txt'; print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
