@@ -4,10 +4,10 @@
  * @copyright Ming Pan, University of California San Diego
  */
 
-import { getYesterday } from './utils.js';
+import { loadJson } from './utils.js';
 import { variableImages, cnrfcCoords } from './overlay-control.js';
 
-export function loadLayerOverlay(map, id, initialVisibility=false, legendColor='darkgray') {
+export async function loadLayerOverlay(map, id, initialVisibility=false, legendColor='darkgray') {
 
   const layerName = id;
   
@@ -16,7 +16,10 @@ export function loadLayerOverlay(map, id, initialVisibility=false, legendColor='
 
   const input = dateInput.value;
   var   dataDate = new Date(input);
-  if (isNaN(dataDate)) dataDate = getYesterday();
+
+  const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
+  const latestNrt = statusJson['WRF-Hydro NRT'];
+  if (isNaN(dataDate)) dataDate = new Date(latestNrt);
   // Read selected variable
   const variable = varibleSelector.value;
 

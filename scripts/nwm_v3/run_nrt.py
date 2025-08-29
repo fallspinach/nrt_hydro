@@ -199,9 +199,6 @@ def main(argv):
         jid = ret.decode().split(' ')[-1].rstrip()
         print(f'Basin time series extraction will run with job ID: {jid}')
     
-    if True:
-        return 0
-
     cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_nrt.py'
     flog = f'{workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
     cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
@@ -213,6 +210,9 @@ def main(argv):
     jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
     print(f'Monthly plotting job ID is: {jid}')
     
+    if True:
+        return 0
+
     if domain in ['cnrfc']:
         
         cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_rivers_nrt.py'

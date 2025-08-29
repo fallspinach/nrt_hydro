@@ -72,7 +72,7 @@ def main(argv):
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
         if ptype=='nrt':
-            add_pctl_rank_daily.main([fout])
+            add_pctl_rank_daily.main([domain, fout])
         
         fmout = f'../1km_monthly/{m:%Y/%Y%m}.LDASOUT_DOMAIN1.monthly'
         cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
@@ -80,7 +80,7 @@ def main(argv):
         cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
         print(cmd); os.system(cmd)
         if ptype=='nrt':
-            add_pctl_rank_monthly.main([fmout])
+            add_pctl_rank_monthly.main([domain, fmout])
 
         outtypes = ['CHRT']
         if config[modelid][domain]['lake']:
@@ -109,7 +109,7 @@ def main(argv):
             cmd = f'ncks -4 -L 5 {fdout} {fdout}.nc4; /bin/mv {fdout}.nc4 {fdout}'
             print(cmd); os.system(cmd)
             if ptype=='nrt':
-                add_pctl_rank_daily.main([fdout])
+                add_pctl_rank_daily.main([domain, fdout])
             
             fmout = f'../1km_monthly/{m:%Y/%Y%m}.{rout}OUT_DOMAIN1.monthly'
             cmd = f'cdo -O -f nc4 -z zip monmean {fdout} {fmout}'
@@ -117,7 +117,7 @@ def main(argv):
             cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
             print(cmd); os.system(cmd)
             if ptype=='nrt':
-                add_pctl_rank_monthly.main([fmout])
+                add_pctl_rank_monthly.main([domain, fmout])
 
     return 0
 

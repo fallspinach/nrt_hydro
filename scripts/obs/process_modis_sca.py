@@ -16,7 +16,7 @@ from modis_tools.auth import ModisSession
 from modis_tools.resources import CollectionApi, GranuleApi
 from modis_tools.granule_handler import GranuleHandler
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 import pytz
 
 import netCDF4 as nc
@@ -72,7 +72,7 @@ def main(argv):
     granule_client = GranuleApi.from_collection(collections[0], session=session)
 
     # Filter the selected granules via spatial and temporal parameters
-    backday = datetime.utcnow()-timedelta(days=4); backday = backday.replace(tzinfo=pytz.utc)
+    backday = datetime.now(UTC)-timedelta(days=4); backday = backday.replace(tzinfo=pytz.utc)
     #backday = find_last_time('nc/MOD10A1.A???????.nc', 'MOD10A1.A%Y%j.nc')
     utcnow = datetime.now(timezone.utc)
     ca_bbox = [-121, 38, -115, 41]

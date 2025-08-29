@@ -30,8 +30,6 @@ def main(argv):
 
     '''main loop'''
 
-    domain = 'conus'
-
     t1 = datetime.strptime(argv[0], '%Y%m')
     t2 = datetime.strptime(argv[1], '%Y%m')
     ptype = argv[2]
@@ -58,9 +56,10 @@ def main(argv):
         cmd = f'cdo -O -f nc4 -z zip monmean 1km_daily/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily 1km_monthly/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly'
         print(cmd); os.system(cmd)
         if ptype=='nrt':
-            add_pctl_rank_monthly.main([domain, f'1km_monthly/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly'])
+            add_pctl_rank_monthly.main(['conus', f'1km_monthly/conus/{ptype}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly'])
         
-        for subdomain in ['cnrfc', 'cbrfc']:
+        #for subdomain in ['cnrfc', 'cbrfc']:
+        for subdomain in ['cbrfc']:
             findex = f'domain/cdo_indexbox_{subdomain}.txt'
             fmask  = f'domain/xmask0_{subdomain}.nc'
             with open(findex, 'r') as f:
@@ -72,7 +71,8 @@ def main(argv):
                 cmd = f'{cdocmd} {fsrc} {fmask} {fout}'
                 print(cmd); os.system(cmd)
                 
-        for subdomain in ['basins24', 'yampa']:
+        #for subdomain in ['basins24', 'yampa']:
+        for subdomain in ['yampa']:
             findex = f'domain/cdo_indexbox_{subdomain}.txt'
             fmask  = f'domain/xmask0_{subdomain}.nc'
             with open(findex, 'r') as f:

@@ -77,7 +77,7 @@ def main(argv):
         data2.to_csv(f'fnf/FNF_daily_{site}.csv', na_rep='NaN', float_format='%g')
 
         # monthly sum derived from daily, just in case the official monthly is not out in time
-        data3 = data2.resample('1M').agg(pd.Series.sum, min_count=25)
+        data3 = data2.resample('MS').agg(pd.Series.sum, min_count=25)
         data3.to_csv(f'fnf/FNF_derived_monthly_{site}.csv', na_rep='NaN', float_format='%g')
 
         # monthly FNF

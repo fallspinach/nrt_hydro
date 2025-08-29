@@ -9,7 +9,7 @@ __author__ = 'Ming Pan'
 __email__  = 'm3pan@ucsd.edu'
 __status__ = 'Prototype'
 
-import os, sys
+import os, sys, time
 
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
@@ -19,6 +19,27 @@ import dataretrieval.nwis as nwis
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
 
+def run_with_retries(func, retries=5, wait=10, *args, **kwargs):
+    """
+    Run a function with retries.
+    
+    Parameters:
+        func    : callable   → the function to run
+        retries : int        → how many total attempts
+        wait    : int/float  → seconds to wait between attempts
+        *args, **kwargs      → arguments to pass to func
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"Attempt {attempt} failed: {e}")
+            if attempt < retries:
+                print(f"Retrying in {wait} seconds...")
+                time.sleep(wait)
+            else:
+                print("All retries failed.")
+                raise
 
 ## main function
 def main(argv):
@@ -50,10 +71,11 @@ def main(argv):
     for s,site in enumerate(sites):
 
         fout = f'streamflow/{site}.csv'
-        if s%100==0:
-            print(f'Retrieving {s+1}th site {site}.')
+        #if s%10==0:
+        print(f'Retrieving {s+1}th site {site}.')
+        time.sleep(1)
         
-        df = nwis.get_record(sites=site, service='dv', parameterCd='00060', start=f'{date0:%Y-%m-%d}', end=f'{yesterday:%Y-%m-%d}')
+        df = run_with_retries(nwis.get_record, retries=5, wait=30, sites=site, service='dv', parameterCd='00060', start=f'{date0:%Y-%m-%d}', end=f'{yesterday:%Y-%m-%d}')
         df.index = df.index.date
         df.index.name = 'Date'
         df.drop(columns=['site_no'], inplace=True)

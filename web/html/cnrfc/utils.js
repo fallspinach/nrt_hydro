@@ -128,5 +128,3 @@ export function getYesterday() {
 
   return yesterday;
 }
-
-

@@ -4,7 +4,7 @@
  * @copyright Ming Pan, University of California San Diego
  */
 
-import { getYesterday } from './utils.js';
+import { loadJson } from './utils.js';
 import { setupColormap } from './colormap.js';
 
 export const variableImages = {
@@ -142,7 +142,7 @@ export const cnrfcCoords = [
           [-125, 32]  // bottom-left corner
         ];
 
-export function setupOverlayControl(map, layerOverlay='dataoverlay') {
+export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
 
   const dateInput = document.getElementById('datepicker');
   const varibleSelector = document.getElementById('variable-selector');
@@ -159,8 +159,11 @@ export function setupOverlayControl(map, layerOverlay='dataoverlay') {
     dateInput.dispatchEvent(new Event('change'));
   });
 
-  const yesterday = getYesterday();
-    
+  const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
+  const latestNrt = statusJson['WRF-Hydro NRT'];
+  const latestNrtDate = new Date(latestNrt);
+  // console.log(`${latestNrt}, ${latestNrtDate}`);
+
   // initialize datepicker
   $(document).ready(function () {
     $('#datepicker-wrapper input').datepicker({
@@ -168,13 +171,13 @@ export function setupOverlayControl(map, layerOverlay='dataoverlay') {
       autoclose: true,
       todayHighlight: true,
       startDate: '2023-10-01',
-      endDate: yesterday.toISOString().split('T')[0]
-    }).datepicker('setDate', yesterday.toISOString().split('T')[0]);
+      endDate: latestNrt
+    }).datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
     updateNavButtons();
   });
 
   // Initial load
-  updateOverlay(map, layerOverlay, 'smtot_r', yesterday);
+  updateOverlay(map, layerOverlay, 'smtot_r', latestNrtDate);
 
   document.getElementById('prev-day').addEventListener('click', () => shiftDate({ days: -1 }));
   document.getElementById('next-day').addEventListener('click', () => shiftDate({ days: 1 }));
@@ -183,14 +186,17 @@ export function setupOverlayControl(map, layerOverlay='dataoverlay') {
 
 }
 
-export function updateOverlay(map, layerOverlay='dataoverlay') {
+export async function updateOverlay(map, layerOverlay='dataoverlay') {
 
   const dateInput = document.getElementById('datepicker');
   const varibleSelector = document.getElementById('variable-selector');
 
   const input = dateInput.value;
   var   dataDate = new Date(input);
-  if (isNaN(dataDate)) dataDate = getYesterday();
+
+  const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
+  const latestNrt = statusJson['WRF-Hydro NRT'];
+  if (isNaN(dataDate)) dataDate = new Date(latestNrt);
   // Read selected variable
   const variable = varibleSelector.value;
 
@@ -238,6 +244,7 @@ function updateNavButtons() {
   const currentDate = input.datepicker('getDate');
   const minDate = input.datepicker('getStartDate');
   const maxDate = input.datepicker('getEndDate');
+  // console.log(`Current: ${currentDate}\nmaxDate: ${maxDate}`);
 
   const prevDayBtn = document.getElementById('prev-day');
   const nextDayBtn = document.getElementById('next-day');

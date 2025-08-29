@@ -150,14 +150,23 @@ def main(argv):
 
     # aggregate hourly forcing data to daily and monthly and subset them
     nmons = 1 if t1.month==t2.month else 2
-    nmem  = 25*nmons
-    cmd5 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
+    nmem  = 10*nmons
+    cmd5 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons*5:d} --mem={nmem:d}G'
     cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing.py'
     cmd = f'{cmd5} -d afterok:{jid4} -t 02:00:00 -J aggreg --wrap="{cmd6} {t1:%Y%m} {t2:%Y%m} nrt"  -o {logdir}/aggreg_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid5 = ret.decode().split(' ')[-1].rstrip()
-    print(f'Aggregate forcing job ID is: {jid5}')
+    print(f'Aggregate CONUS forcing job ID is: {jid5}')
+    # aggregate CNRFC separately for faster results
+    nmem  = 3*nmons
+    cmd5 = f'sbatch -p {config["part_shared"]} --nodes=1 --ntasks-per-node={nmons:d} --mem={nmem:d}G'
+    cmd6 = f'unset SLURM_MEM_PER_NODE SLURM_MEM_PER_CPU; mpirun -np {nmons} python aggregate_forcing_domain.py'
+    cmd = f'{cmd5} -d afterok:{jid4} -t 01:00:00 -J aggregcn --wrap="{cmd6} cnrfc {t1:%Y%m} {t2:%Y%m} nrt"  -o {logdir}/aggreg_cnrfc_{t1:%Y%m%d}_{t2:%Y%m%d}.txt'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid51 = ret.decode().split(' ')[-1].rstrip()
+    print(f'Aggregate CNRFC forcing job ID is: {jid51}')
 
     # rsync a copy to skyriver for Globus share
     rcmd = f'rsync -a {out_path}/conus/{prodtype}/{t1:%Y}/{t1:%Y%m}* {globus_path}/{prodtype}/{t1:%Y}/'
