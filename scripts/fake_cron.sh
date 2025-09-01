@@ -55,11 +55,11 @@ while true; do
             flog=$modelid/$domain/fcst/wwrf/run/log/log_wwrf_$(date -u +%Y%m%d_%H)z.txt
             python scripts/$modelid/run_wwrf.py $domain > $flog 2>&1
         done
-        sleep 30m
+        sleep 40m
 
         # update system status
         flog=$modelid/$domain/nrt/run/log/log_status_$(date -u +%Y%m%d_%H)z.txt
-        python script/$modelid/check_status.py update_gcloud > $flog 2>&1
+        python scripts/$modelid/check_status.py update_gcloud > $flog 2>&1
         sleep 40m
 
         # update system status

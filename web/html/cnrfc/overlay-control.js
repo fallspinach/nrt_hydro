@@ -162,7 +162,6 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
   const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
   const latestNrt = statusJson['WRF-Hydro NRT'];
   const latestNrtDate = new Date(latestNrt);
-  // console.log(`${latestNrt}, ${latestNrtDate}`);
 
   // initialize datepicker
   $(document).ready(function () {
@@ -175,6 +174,7 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
     }).datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
     updateNavButtons();
   });
+  // console.log(`${latestNrt}, ${latestNrtDate}, ${latestNrtDate.toISOString().split('T')[0]}`);
 
   // Initial load
   updateOverlay(map, layerOverlay, 'smtot_r', latestNrtDate);

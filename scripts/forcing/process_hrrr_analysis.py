@@ -26,8 +26,8 @@ from utilities import config, find_last_time
 workdir  = f'{config["base_dir"]}/forcing/hrrr'
 lockfile = 'hrrr.lock'
 
-hrrr_ncep_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/'
-hrrr_aws_url  = 'https://noaa-hrrr-bdp-pds.s3.amazonaws.com/'
+hrrr_ncep_url = 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod'
+hrrr_aws_url  = 'https://noaa-hrrr-bdp-pds.s3.amazonaws.com'
 
 #cdocmd = 'cdo -f nc4 -z zip chname,sp,pressfc,\\2t,tmp2m,\\2sh,spfh2m,\\10u,ugrd10m,\\10v,vgrd10m,dswrf,dswrfsfc,dlwrf,dlwrfsfc,prate,pratesfc -remap,latlon_conus_0.03125deg.txt,hrrr_to_0.03125deg_weight.nc'
 cdocmd = 'cdo -f nc4 -z zip chname,sp,pressfc,\\2t,tmp2m,\\2sh,spfh2m,\\10u,ugrd10m,\\10v,vgrd10m,sdswrf,dswrfsfc,sdlwrf,dlwrfsfc,prate,pratesfc -remap,latlon_conus_0.03125deg.txt,hrrr_to_0.03125deg_weight.nc'
@@ -83,7 +83,7 @@ def main(argv):
     t = t1
     while t <= t2:
 
-        fullurl = f'{hrrr_aws_url}hrrr.{t:%Y%m%d}/conus/hrrr.t{t:%H}z.wrfsfcf00.grib2'
+        fullurl = f'{hrrr_aws_url}/hrrr.{t:%Y%m%d}/conus/hrrr.t{t:%H}z.wrfsfcf00.grib2'
         cmd = f'get_inv.pl {fullurl}.idx | grep -e DLWRF -e DSWRF | get_grib.pl {fullurl} tmp15.grb2'
         print(cmd); os.system(f'{timeout} {cmd}')
         cmd = f'get_inv.pl {fullurl}.idx | grep -e "PRES:surface" | get_grib.pl {fullurl} tmp11.grb2'
@@ -98,7 +98,7 @@ def main(argv):
         print(cmd); os.system(cmd)
 
         t0 = t - timedelta(hours=1)
-        fullurl = f'{hrrr_aws_url}hrrr.{t0:%Y%m%d}/conus/hrrr.t{t0:%H}z.wrfsfcf01.grib2'
+        fullurl = f'{hrrr_aws_url}/hrrr.{t0:%Y%m%d}/conus/hrrr.t{t0:%H}z.wrfsfcf01.grib2'
         cmd = f'get_inv.pl {fullurl}.idx | grep PRATE | get_grib.pl {fullurl} tmp0.grb2'
         print(cmd); os.system(f'{timeout} {cmd}')
         cmd = 'cat tmp1.grb2 tmp0.grb2 > tmp2.grb2'
@@ -154,7 +154,7 @@ def find_last_hrrr_anal():
     last_ymd = soup.find_all('a', string=re.compile(r'^hrrr.[0-9]+'))[-1].string
 
     # find last hh
-    html_text = requests.get(hrrr_ncep_url+last_ymd+'conus/').text
+    html_text = requests.get(f'{hrrr_ncep_url}/{last_ymd}conus/').text
     soup = BeautifulSoup(html_text, 'html.parser')
     last_h = soup.find_all('a', string=re.compile(r'^hrrr.t[0-9]+z.wrfnatf00.grib2$'))[-1].string
 
