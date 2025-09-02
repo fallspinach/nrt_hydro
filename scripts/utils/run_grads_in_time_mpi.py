@@ -44,10 +44,15 @@ def main(argv):
         time1 = datetime.strptime(argv[1], '%Y')
         time2 = datetime.strptime(argv[2], '%Y')
     else:
-        print(f'Usage: mpirun -np [num_of_procs] python {os.path.basename(sys.argv[0])} [hourly|daily|monthly|yearly] [time_start] [time_end] [grads_script]')
+        print(f'Usage: mpirun -np [num_of_procs] python {os.path.basename(sys.argv[0])} [hourly|daily|monthly|yearly] [time_start] [time_end] [grads_script] [grads_args]')
         sys.exit(1)
 
     gs = argv[3]
+
+    if len(argv)>4:
+        grads_args = argv[4]
+    else:
+        grads_args = ''
 
     alltimes = []
     t = time1
@@ -77,7 +82,7 @@ def main(argv):
         elif argv[0] == 'yearly' or argv[0] == 'annual' or argv[0] == 'annually':
             tg2 = (alltimes[t2]+relativedelta(years=1)-timedelta(hours=1)).strftime('%Hz%d%b%Y')
 
-        cmd = f'opengrads -lbc "{gs} {tg1} {tg2}"'
+        cmd = f'opengrads -lbc "{gs} {tg1} {tg2} {grads_args}"'
         print(cmd); os.system(cmd)
 
     comm.Barrier()

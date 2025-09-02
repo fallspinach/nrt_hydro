@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, UTC
 import requests, re
 from bs4 import BeautifulSoup
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
-from utilities import config, find_last_time
+from utilities import config, find_last_time, replace_brackets
 
     
 ## some setups
@@ -66,7 +66,7 @@ def main(argv):
         t0 = datetime.strptime(argv[0], '%Y%m%d%H')
         t0 = t0.replace(tzinfo=pytz.utc)
     else:
-        t0 = curr_day
+        t0 = last_fcst
 
     dout = f'0.25deg/{t0:%Y%m%d%H}'
     os.makedirs(dout, exist_ok=True)
@@ -109,6 +109,46 @@ def main(argv):
 
         time.sleep(2)
 
+    # create GrADS control file
+    os.system(f'/bin/cp {dout}/../gfs_fcst.ctl.tpl {dout}/gfs_fcst.ctl')
+    t1 = t0 + timedelta(hours=1)
+    replace_brackets(f'{dout}/gfs_fcst.ctl', {'START_TIME': f'{t1:%Hz%d%b%Y}'})
+    t2 = t0 + timedelta(hours=384)
+
+    modelid = 'nwm_v3'
+    domain = 'cnrfc'
+    
+    # downscale to 0.01 deg
+    os.chdir(f'{config["base_dir"]}/forcing/nwm/')
+    np = 12
+    python_script = '../../scripts/utils/run_grads_in_time_mpi.py'
+    grads_script  = '../../scripts/forcing/downscale_gfs_0.01deg.gs'
+    [lon1, lon2, lat1, lat2] = config[modelid][domain]['lonlatbox']
+    grads_args    = f'../gfs/0.25deg/{t0:%Y%m%d%H}/gfs_fcst.ctl {lon1} {lon2} {lat1} {lat2} ../gfs/0.01deg/{domain}'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} hourly {t1:%Y%m%d%H} {t2:%Y%m%d%H} {grads_script} "{grads_args}"'
+    flog = f'../log/dnsc_gfs_{domain}_{t0:%Y%m%H}.txt'
+    cmd = f'sbatch -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J dnscgfs --wrap=\'{cmd1}\' -o {flog}'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid1 = jid
+    print(f'GFS downscaling ({domain}) job ID is: {jid}')
+    
+    # mergetime and remap to NWM 1km grid
+    os.chdir(f'{config["base_dir"]}/forcing/gfs/')
+    os.makedirs(f'1km/{domain}/{t1:%Y}', exist_ok=True)
+    os.makedirs(f'1km/{domain}/{t2:%Y}', exist_ok=True)
+    np = 17
+    python_script = '../../scripts/utils/run_cmd_in_time_mpi.py'
+    #cdo -f nc4 -z zip remap,domain/scrip_cnrfc_bilinear.nc,domain/cdo_weights_cnrfc.nc [ -mergetime 0.01deg/cnrfc/2025/202509/20250901??.LDASIN_DOMAIN1 ] 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc; cdo -f nc4 -z zip add 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc domain/xmask0_cnrfc.nc 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1; /bin/rm -f 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc
+    cmd0 = f'cdo -f nc4 -z zip remap,domain/scrip_{domain}_bilinear.nc,domain/cdo_weights_{domain}.nc [ -mergetime 0.01deg/{domain}/%Y/%Y%m/%Y%m%d??.LDASIN_DOMAIN1 ] 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc; cdo -f nc4 -z zip add 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc domain/xmask0_{domain}.nc 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1; /bin/rm -f 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} daily {t1:%Y%m%d} {t2:%Y%m%d} "{cmd0}"'
+    flog = f'../log/remap_gfs_{domain}_{t0:%Y%m%H}.txt'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J remapgfs --wrap=\'{cmd1}\' -o {flog}'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
+    print(f'GFS merging/remapping ({domain}) job ID is: {jid}')
+    
     time_finish = time.time()
     print(f'Total download/process time {time_finish-time_start:.1f} seconds')
     

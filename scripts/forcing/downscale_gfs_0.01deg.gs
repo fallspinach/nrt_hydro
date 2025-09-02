@@ -1,5 +1,5 @@
 * GrADS script to downscale forcing data to 0.01 deg based on elevation
-* Usage: opengrads -lbc "downscale_gfs_0.01deg.gs [fctl] [time1] [time2] [lon1] [lon2] [lat1] [lat2] [outpath]"
+* Usage: opengrads -lbc "downscale_gfs_0.01deg.gs [time1] [time2] [fctl] [lon1] [lon2] [lat1] [lat2] [outpath]"
 *
 * author: Ming Pan
 * email: m3pan@ucsd.edu
@@ -7,9 +7,9 @@
 
 function downscale(args)
 
-fctl=subwrd(args, 1)
-time1=subwrd(args, 2)
-time2=subwrd(args, 3)
+time1=subwrd(args, 1)
+time2=subwrd(args, 2)
+fctl=subwrd(args, 3)
 lon1=subwrd(args, 4)
 lon2=subwrd(args, 5)
 lat1=subwrd(args, 6)
@@ -140,6 +140,9 @@ while (t<=t2)
 
     tlastflx=math_int((t-1)/3)*3
     tnextflx=tlastflx+3
+    if (tnextflx>384)
+        tnextflx=384
+    endif
     
     say "Input file timestamp "tstamp1"; Forcing file timestamp "tstamp"; timestep = "t
     if (t<=120)
