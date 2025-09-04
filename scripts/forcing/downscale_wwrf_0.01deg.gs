@@ -1,5 +1,5 @@
 * GrADS script to downscale forcing data to 0.01 deg based on elevation
-* Usage: opengrads -lbc "downscale_gfs_0.01deg.gs [time1] [time2] [fctl] [lon1] [lon2] [lat1] [lat2] [outpath]"
+* Usage: opengrads -lbc "downscale_wwrf_0.01deg.gs [time1] [time2] [fctl] [lon1] [lon2] [lat1] [lat2] [outpath]"
 *
 * author: Ming Pan
 * email: m3pan@ucsd.edu
@@ -38,39 +38,30 @@ rv=455
 sb=5.67e-8
 pi=3.1415926535897384626
 
-* rounding to nearest GFS grid boundaries
-gfslon1=math_nint(lon1*4)/4-0.125
-gfslon2=math_nint(lon2*4-0.0000001)/4+0.125
-gfslat1=math_nint(lat1*4)/4-0.125
-gfslat2=math_nint(lat2*4-0.0000001)/4+0.125
-
+* rounding to nearest 0.01 deg grid boundaries
 nwmlon1=math_nint(lon1*100-0.5)/100
 nwmlon2=math_nint(lon2*100+0.49999999)/100
 nwmlat1=math_nint(lat1*100-0.5)/100
 nwmlat2=math_nint(lat2*100+0.49999999)/100
 
-say "GFS domain rounded to: "gfslon1", "gfslon2", "gfslat1", "gfslat2
-say "NWM domain rounded to: "nwmlon1", "nwmlon2", "nwmlat1", "nwmlat2
+say "NWM  domain rounded to: "nwmlon1", "nwmlon2", "nwmlat1", "nwmlat2
 
-resdlo=0.25
-resdhi=0.0125
-resdnw=0.01
+resdlo=0.05
+resdhi=0.01
 buff=4
 
-rehi=mkre(gfslat1%" "%gfslat2%" "%gfslon1%" "%gfslon2%" "%resdhi)
-relo=mkre(gfslat1%" "%gfslat2%" "%gfslon1%" "%gfslon2%" "%resdlo)
-renw=mkre(nwmlat1%" "%nwmlat2%" "%nwmlon1%" "%nwmlon2%" "%resdnw)
+rehi=mkre(nwmlat1%" "%nwmlat2%" "%nwmlon1%" "%nwmlon2%" "%resdhi)
+relo=mkre(nwmlat1%" "%nwmlat2%" "%nwmlon1%" "%nwmlon2%" "%resdlo)
 
 say "Hires configuration:    "rehi
 say "Lores configuration:    "relo
-say "NWM mask configuration: "renw
 
 'xdfopen domain/wrfinput.d01.lat-lon.modis.ctl'
 'xdfopen domain/wrfinput.d01.lat-lon.usgs.ctl'
 'sdfopen domain/pfconus2/CONUS2.0.Final1km.NWM.Mask.0.01deg.nc'
 
-'set lat 'nwmlat1+resdnw/2' 'nwmlat2-resdnw/2
-'set lon 'nwmlon1+resdnw/2' 'nwmlon2-resdnw/2
+'set lat 'nwmlat1+resdhi/2' 'nwmlat2-resdhi/2
+'set lon 'nwmlon1+resdhi/2' 'nwmlon2-resdhi/2
 
 'define msks1=const(maskout(1, 1.5-xland.1), 0, -u)'
 'define msks2=const(maskout(1, 1.5-xland.2), 0, -u)'
@@ -83,8 +74,8 @@ say "NWM mask configuration: "renw
 'close 1'
 
 'open domain/gtopo30_nldas.ctl'
-'set lat 'gfslat1+resdhi/2' 'gfslat2-resdhi/2
-'set lon 'gfslon1+resdhi/2' 'gfslon2-resdhi/2
+'set lat 'nwmlat1+resdhi/2' 'nwmlat2-resdhi/2
+'set lon 'nwmlon1+resdhi/2' 'nwmlon2-resdhi/2
 'define demhi=re(const(dem, 0, -u), 'rehi', ba)'
 'define demlo=re(const(dem, 0, -u), 'relo', ba)'
 'close 1'
@@ -93,8 +84,8 @@ say "NWM mask configuration: "renw
 'xdfopen 'fctl
 
 * 
-'set lat 'gfslat1+resdhi/2' 'gfslat2-resdhi/2
-'set lon 'gfslon1+resdhi/2' 'gfslon2-resdhi/2
+'set lat 'nwmlat1+resdhi/2' 'nwmlat2-resdhi/2
+'set lon 'nwmlon1+resdhi/2' 'nwmlon2-resdhi/2
 
 if (time1=time2)
     'set time 'time1
@@ -127,77 +118,19 @@ while (t<=t2)
     
     hh=math_mod(t-1, 6)
     
-    nflxlos="tmp prs sfh wsu wsv"
-    nflxins="tmp2m pressfc spfh2m ugrd10m vgrd10m"
-    fluxlos="pcp dlw dsw"
-    fluxins="pratesfc dlwrfsfc dswrfsfc"
-    
-    tlast=math_int(t/3)*3
-    tnext=tlast+3
-    if (tnext>384)
-        tnext=384
-    endif
-
-    tlastflx=math_int((t-1)/3)*3
-    tnextflx=tlastflx+3
-    if (tnextflx>384)
-        tnextflx=384
-    endif
+    vlos="tmp prs sfh wsu wsv pcp dlw dsw"
+    vins="t_2m p_sfc*100 q_2m u_10m v_10m precip_bkt/3600 lw_d sw_d"
     
     say "Input file timestamp "tstamp1"; Forcing file timestamp "tstamp"; timestep = "t
-    if (t<=120)
-        say "Lead time <= 5 days (t<=120), hourly fcst steps: flux variables (pratesfc, dlwrfsfc, dswrfsfc) accumulating from "hh+1" hour(s) ago"
-    else
-        say "Lead time > 5 days (t>120), 3-hourly fcst steps: nonflux variables interpolated between t="tlast" and t="tnext", flux variables remain constant between t="tlastflx+1" and t="tnextflx
-    endif
 
-*   non-flux variables
     v=1
-    while (v<=5)
-        vlo=subwrd(nflxlos, v)
-        vin=subwrd(nflxins, v)
-        if (t<=120)
-*           hourly output steps
-            'define 'vlo'lo='vin'(t='t')'
-        else
-*           3-hourly output steps
-            w1=(tnext-t)/3
-            w2=(t-tlast)/3
-            if (tnext=tlast)
-                w1=0.5
-                w2=0.5
-            endif
-*            say "define "vlo"lo="vin"(t="tlast")*"w1"+"vin"(t="tnext")*"w2
-            'define 'vlo'lo='vin'(t='tlast')*'w1'+'vin'(t='tnext')*'w2
-        endif
+    while (v<=8)
+        vlo=subwrd(vlos, v)
+        vin=subwrd(vins, v)
+        'define 'vlo'lo='vin
         v=v+1
     endwhile
-    
-*   flux variables
-    v=1
-    while (v<=3)
-        vlo=subwrd(fluxlos, v)
-        vin=subwrd(fluxins, v)
-        if (t<=120)
-*           hourly output steps
-            if (hh=0)
-                'define 'vlo'lo='vin'(t='t')'
-            else
-                'define 'vlo'lo='vin'(t='t')*'hh+1'-'vin'(t='t-1')*'hh
-            endif
-        else
-*           3-hourly output steps    
-            if (hh<3)
-*                say "define "vlo"lo="vin"(t="tnextflx")"
-                'define 'vlo'lo='vin'(t='tnextflx')'
-            else
-*                say "define "vlo"lo="vin"(t="tnextflx")*2-"vin"(t="tlastflx")"
-                'define 'vlo'lo='vin'(t='tnextflx')*2-'vin'(t='tlastflx')'
-            endif
-        endif
-        v=v+1
-    endwhile
-    
+        
 *   For precipitation, simple interpolation
     'define pcphi=re(pcplo, 'rehi', bl)'
     
@@ -278,8 +211,8 @@ while (t<=t2)
     '!mkdir -p 'fdir
     fout=fdir%"/"tstamp%".LDASIN_DOMAIN1"
 
-'set lat 'nwmlat1+resdnw/2' 'nwmlat2-resdnw/2
-'set lon 'nwmlon1+resdnw/2' 'nwmlon2-resdnw/2
+'set lat 'nwmlat1+resdhi/2' 'nwmlat2-resdhi/2
+'set lon 'nwmlon1+resdhi/2' 'nwmlon2-resdhi/2
 
     v=1
     while (v<=8)
@@ -291,8 +224,7 @@ while (t<=t2)
         vu=subwrd(units, v)
        
 *        'define 'vs'=nfill('vi', msks, 30)*msks'
-        'define 'vs'=re('vi', 'renw', bl)'
-        'define 'vs'='vs'*msks'
+        'define 'vs'='vi'*msks'
         
         'clear sdfwrite'
 

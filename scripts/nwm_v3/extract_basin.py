@@ -1,7 +1,7 @@
 ''' Extract CNRFC basin averaged quantities from WRF-Hydro
 
 Usage:
-    python extract_basin.py [domain] [yyyymm1] [yyyymm2] [retro|nrt]
+    python extract_basin.py [domain] [yyyymm1] [yyyymm2] [retro|nrt|fcst/xxx]
 Default values:
     must specify all
 '''
@@ -179,47 +179,49 @@ def main(argv):
         else:
             for i in range(len(basin_sums_all)):
                 basin_sums_all[i] = pd.concat([basin_sums_all[i], basin_sums[i]])
+
+        if ptype.split('/')[0]!='fcst':
+            
+            # monthly NoahMP output
+            print('  monthly NoahMP output')
+            if t==t1:
+                tstamps_mon = [t.strftime('%Y-%m-%d')]
+            else:
+                tstamps_mon.append(t.strftime('%Y-%m-%d'))
+            fin = nc.Dataset(f'1km_monthly/{t:%Y/%Y%m}.LDASOUT_DOMAIN1.monthly', 'r')
+            data_swe_mon = np.squeeze(fin['SNEQV'][0, :, :])
+            data_sm_mon  = np.squeeze(fin['SOIL_M'][0, :, 0, :]*0.05 + fin['SOIL_M'][0, :, 1, :]*0.15 + fin['SOIL_M'][0, :, 2, :]*0.3 + fin['SOIL_M'][0, :, 3, :]*0.5)
+            if t==t1:
+                basin_means_swe_mon = ndimage.mean(data_swe_mon, labels=basin_data, index=basin_ids)
+                basin_means_sm_mon  = ndimage.mean(data_sm_mon,  labels=basin_data, index=basin_ids)
+            else:
+                basin_means_swe_mon = np.vstack((basin_means_swe_mon, ndimage.mean(data_swe_mon, labels=basin_data, index=basin_ids)))
+                basin_means_sm_mon  = np.vstack((basin_means_sm_mon,  ndimage.mean(data_sm_mon,  labels=basin_data, index=basin_ids)))
+            fin.close()
         
-        # monthly NoahMP output
-        print('  monthly NoahMP output')
-        if t==t1:
-            tstamps_mon = [t.strftime('%Y-%m-%d')]
-        else:
-            tstamps_mon.append(t.strftime('%Y-%m-%d'))
-        fin = nc.Dataset(f'1km_monthly/{t:%Y/%Y%m}.LDASOUT_DOMAIN1.monthly', 'r')
-        data_swe_mon = np.squeeze(fin['SNEQV'][0, :, :])
-        data_sm_mon  = np.squeeze(fin['SOIL_M'][0, :, 0, :]*0.05 + fin['SOIL_M'][0, :, 1, :]*0.15 + fin['SOIL_M'][0, :, 2, :]*0.3 + fin['SOIL_M'][0, :, 3, :]*0.5)
-        if t==t1:
-            basin_means_swe_mon = ndimage.mean(data_swe_mon, labels=basin_data, index=basin_ids)
-            basin_means_sm_mon  = ndimage.mean(data_sm_mon,  labels=basin_data, index=basin_ids)
-        else:
-            basin_means_swe_mon = np.vstack((basin_means_swe_mon, ndimage.mean(data_swe_mon, labels=basin_data, index=basin_ids)))
-            basin_means_sm_mon  = np.vstack((basin_means_sm_mon,  ndimage.mean(data_sm_mon,  labels=basin_data, index=basin_ids)))
-        fin.close()
+            # monthly forcing
+            print('  monthly forcing')
+            fin = nc.Dataset(f'../forcing/1km_monthly/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly', 'r')
+            md = monthrange(t.year, t.month)[1]
+            data_p_mon = np.squeeze(fin['RAINRATE'][0, :, :]*86400*md)
+            data_t_mon = np.squeeze(fin['T2D'][0, :, :]-273.15)
+            if t==t1:
+                basin_means_p_mon = ndimage.mean(data_p_mon, labels=basin_data, index=basin_ids)
+                basin_means_t_mon = ndimage.mean(data_t_mon, labels=basin_data, index=basin_ids)
+            else:
+                basin_means_p_mon = np.vstack((basin_means_p_mon, ndimage.mean(data_p_mon, labels=basin_data, index=basin_ids)))
+                basin_means_t_mon = np.vstack((basin_means_t_mon, ndimage.mean(data_t_mon, labels=basin_data, index=basin_ids)))
+            fin.close()
         
-        # monthly forcing
-        print('  monthly forcing')
-        fin = nc.Dataset(f'../forcing/1km_monthly/{t:%Y/%Y%m}.LDASIN_DOMAIN1.monthly', 'r')
-        md = monthrange(t.year, t.month)[1]
-        data_p_mon = np.squeeze(fin['RAINRATE'][0, :, :]*86400*md)
-        data_t_mon = np.squeeze(fin['T2D'][0, :, :]-273.15)
-        if t==t1:
-            basin_means_p_mon = ndimage.mean(data_p_mon, labels=basin_data, index=basin_ids)
-            basin_means_t_mon = ndimage.mean(data_t_mon, labels=basin_data, index=basin_ids)
-        else:
-            basin_means_p_mon = np.vstack((basin_means_p_mon, ndimage.mean(data_p_mon, labels=basin_data, index=basin_ids)))
-            basin_means_t_mon = np.vstack((basin_means_t_mon, ndimage.mean(data_t_mon, labels=basin_data, index=basin_ids)))
-        fin.close()
-        
-        # monthly routing output
-        print('  monthly routing output')
-        fin = f'1km_monthly/{t:%Y/%Y%m}.CHRTOUT_DOMAIN1.monthly'
-        basin_sums_mon = extract_chrt(domain, df_basins, fin)
-        if t==t1:
-            basin_sums_mon_all = basin_sums_mon
-        else:
-            for i in range(len(basin_sums_mon_all)):
-                basin_sums_mon_all[i] = pd.concat([basin_sums_mon_all[i], basin_sums_mon[i]])
+            # monthly routing output
+            print('  monthly routing output')
+            fin = f'1km_monthly/{t:%Y/%Y%m}.CHRTOUT_DOMAIN1.monthly'
+            basin_sums_mon = extract_chrt(domain, df_basins, fin)
+            if t==t1:
+                basin_sums_mon_all = basin_sums_mon
+            else:
+                for i in range(len(basin_sums_mon_all)):
+                    basin_sums_mon_all[i] = pd.concat([basin_sums_mon_all[i], basin_sums_mon[i]])
         
         # hourly routing output
         print('  hourly routing output')
@@ -233,14 +235,23 @@ def main(argv):
         
         t += relativedelta(months=1)
 
-    basin_means_swe = np.atleast_2d(basin_means_swe); basin_means_swe_mon = np.atleast_2d(basin_means_swe_mon)
-    basin_means_sm  = np.atleast_2d(basin_means_sm);  basin_means_sm_mon  = np.atleast_2d(basin_means_sm_mon)
-    basin_means_p   = np.atleast_2d(basin_means_p);   basin_means_p_mon   = np.atleast_2d(basin_means_p_mon)
-    basin_means_t   = np.atleast_2d(basin_means_t);   basin_means_t_mon   = np.atleast_2d(basin_means_t_mon)
+    basin_means_swe = np.atleast_2d(basin_means_swe)
+    basin_means_sm  = np.atleast_2d(basin_means_sm)
+    basin_means_p   = np.atleast_2d(basin_means_p)
+    basin_means_t   = np.atleast_2d(basin_means_t)
+    
+    if ptype.split('/')[0]!='fcst':
+        freqs = ['hourly', 'daily', 'monthly']
+        basin_means_swe_mon = np.atleast_2d(basin_means_swe_mon)
+        basin_means_sm_mon  = np.atleast_2d(basin_means_sm_mon)
+        basin_means_p_mon   = np.atleast_2d(basin_means_p_mon)
+        basin_means_t_mon   = np.atleast_2d(basin_means_t_mon)
+    else:
+        freqs = ['hourly', 'daily']
             
     # output dir
     outds = {}
-    for freq in ['hourly', 'daily', 'monthly']:
+    for freq in freqs:
         outds[freq] = f'basins/{freq}'
         if ptype=='retro':
             outds[freq] += f'/{t1:%Y%m}-{t2:%Y%m}'
@@ -262,19 +273,20 @@ def main(argv):
         dfs['daily']['PREC']  = basin_means_p[:, j]
         dfs['daily']['RUNOFF']= basin_sums_all[j]['qBucket'].to_numpy() + basin_sums_all[j]['qSfcLatRunoff'].to_numpy()
 
-        # monthly
-        dfs['monthly'] = pd.DataFrame({'Date': pd.to_datetime(tstamps_mon, format='%Y-%m-%d')})
-        dfs['monthly']['SWE']   = basin_means_swe_mon[:, j]
-        dfs['monthly']['SMTOT'] = basin_means_sm_mon[:, j]
-        dfs['monthly']['T2D']   = basin_means_t_mon[:, j]
-        dfs['monthly']['PREC']  = basin_means_p_mon[:, j]
-        dfs['monthly']['RUNOFF']= basin_sums_mon_all[j]['qBucket'].to_numpy() + basin_sums_mon_all[j]['qSfcLatRunoff'].to_numpy()
+        if ptype.split('/')[0]!='fcst':
+            # monthly
+            dfs['monthly'] = pd.DataFrame({'Date': pd.to_datetime(tstamps_mon, format='%Y-%m-%d')})
+            dfs['monthly']['SWE']   = basin_means_swe_mon[:, j]
+            dfs['monthly']['SMTOT'] = basin_means_sm_mon[:, j]
+            dfs['monthly']['T2D']   = basin_means_t_mon[:, j]
+            dfs['monthly']['PREC']  = basin_means_p_mon[:, j]
+            dfs['monthly']['RUNOFF']= basin_sums_mon_all[j]['qBucket'].to_numpy() + basin_sums_mon_all[j]['qSfcLatRunoff'].to_numpy()
 
         # hourly
         basin_sums_hr_all[j]['RUNOFF'] = basin_sums_hr_all[j]['qBucket'] + basin_sums_hr_all[j]['qSfcLatRunoff']
         dfs['hourly'] = basin_sums_hr_all[j]
 
-        for freq in ['hourly', 'daily', 'monthly']:
+        for freq in freqs:
             fnout = f'{outds[freq]}/{basin_name}_{freq}.csv.gz'
             dfs[freq].set_index('Date', inplace=True)
             

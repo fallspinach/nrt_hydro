@@ -141,8 +141,8 @@ aware:
     modules:        'slurm openmpi/gcc/64/4.1.5 gcc/11.2.0'
     node_scratch:   'job_'
     slurm_account:  'cnt107'
-    part_shared:    'shared-192'
-    part_compute:   'compute-192'
+    part_shared:    'shared-128'
+    part_compute:   'compute-128'
     
     forcing:
         # domains to subset after conus
@@ -214,7 +214,7 @@ aware:
             
     nwm_v3:
         cnrfc:
-            partition: 'shared-192'
+            partition: 'shared-128'
             nnodes:     1
             nprocs:    64
             minperday:  2

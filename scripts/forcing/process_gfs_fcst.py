@@ -15,6 +15,8 @@ from glob import glob
 import numpy as np
 import numpy.ma as ma
 from datetime import datetime, timedelta, UTC
+from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 import requests, re
 from bs4 import BeautifulSoup
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
@@ -126,7 +128,7 @@ def main(argv):
     [lon1, lon2, lat1, lat2] = config[modelid][domain]['lonlatbox']
     grads_args    = f'../gfs/0.25deg/{t0:%Y%m%d%H}/gfs_fcst.ctl {lon1} {lon2} {lat1} {lat2} ../gfs/0.01deg/{domain}'
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} hourly {t1:%Y%m%d%H} {t2:%Y%m%d%H} {grads_script} "{grads_args}"'
-    flog = f'../log/dnsc_gfs_{domain}_{t0:%Y%m%H}.txt'
+    flog = f'../log/dnsc_gfs_{domain}_{t0:%Y%m%d%H}.txt'
     cmd = f'sbatch -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J dnscgfs --wrap=\'{cmd1}\' -o {flog}'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
@@ -142,12 +144,27 @@ def main(argv):
     #cdo -f nc4 -z zip remap,domain/scrip_cnrfc_bilinear.nc,domain/cdo_weights_cnrfc.nc [ -mergetime 0.01deg/cnrfc/2025/202509/20250901??.LDASIN_DOMAIN1 ] 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc; cdo -f nc4 -z zip add 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc domain/xmask0_cnrfc.nc 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1; /bin/rm -f 1km/cnrfc/2025/20250901.LDASIN_DOMAIN1.nc
     cmd0 = f'cdo -f nc4 -z zip remap,domain/scrip_{domain}_bilinear.nc,domain/cdo_weights_{domain}.nc [ -mergetime 0.01deg/{domain}/%Y/%Y%m/%Y%m%d??.LDASIN_DOMAIN1 ] 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc; cdo -f nc4 -z zip add 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc domain/xmask0_{domain}.nc 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1; /bin/rm -f 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc'
     cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} daily {t1:%Y%m%d} {t2:%Y%m%d} "{cmd0}"'
-    flog = f'../log/remap_gfs_{domain}_{t0:%Y%m%H}.txt'
+    flog = f'../log/remap_gfs_{domain}_{t0:%Y%m%d%H}.txt'
     cmd = f'sbatch -d afterok:{jid1} -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J remapgfs --wrap=\'{cmd1}\' -o {flog}'
     print(cmd)
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
     print(f'GFS merging/remapping ({domain}) job ID is: {jid}')
+
+    # aggregate to daily (no monthly at the moment)
+    os.makedirs(f'1km_daily/{domain}/{t1:%Y}', exist_ok=True)
+    os.makedirs(f'1km_daily/{domain}/{t2:%Y}', exist_ok=True)
+    t = t1
+    while t <= t2:
+        md = monthrange(t.year, t.month)[1]        
+        cmd0 = f'cdo -O -f nc4 -z zip seldate,{t1:%Y-%m-%d},{t2:%Y-%m-%d} -delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{domain}/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{domain}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily'
+        flog = f'../log/agg_gfs_{domain}_{t0:%Y%m%d%H}.txt'
+        cmd = f'sbatch -d afterok:{jid2} -t 00:15:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node=1 -J agg_gfs --wrap="{cmd0}" -o {flog}'
+        print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
+        print(f'GFS forcing aggregation ({domain}, {t:%Y%m}) job ID is: {jid}')
+        t += relativedelta(months=1)
     
     time_finish = time.time()
     print(f'Total download/process time {time_finish-time_start:.1f} seconds')

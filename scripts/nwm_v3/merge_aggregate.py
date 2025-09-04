@@ -1,7 +1,7 @@
 ''' Merge WRF-Hydro per-dayoutput files into per-month and aggregate to daily/monthly
 
 Usage:
-    mpirun -np [# of procs] python merge_aggregate.py [domain] [yyyymm1] [yyyymm2] [retro|nrt]
+    mpirun -np [# of procs] python merge_aggregate.py [domain] [yyyymm1] [yyyymm2] [retro|nrt|fcst/xxx]
 Default values:
     must specify all
 '''
@@ -71,16 +71,17 @@ def main(argv):
         print(cmd); os.system(cmd)
         if flag_deldaily:
             os.system(f'rm -f {" ".join(fin)}')
-        if ptype=='nrt':
+        if ptype=='nrt' or ptype.split('/')[0]=='fcst':
             add_pctl_rank_daily.main([domain, fout])
-        
-        fmout = f'../1km_monthly/{m:%Y/%Y%m}.LDASOUT_DOMAIN1.monthly'
-        cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
-        print(cmd); os.system(cmd)
-        cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
-        print(cmd); os.system(cmd)
-        if ptype=='nrt':
-            add_pctl_rank_monthly.main([domain, fmout])
+
+        if ptype.split('/')[0]!='fcst':
+            fmout = f'../1km_monthly/{m:%Y/%Y%m}.LDASOUT_DOMAIN1.monthly'
+            cmd = f'cdo -O -f nc4 -z zip monmean {fout} {fmout}'
+            print(cmd); os.system(cmd)
+            cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
+            print(cmd); os.system(cmd)
+            if ptype=='nrt':
+                add_pctl_rank_monthly.main([domain, fmout])
 
         outtypes = ['CHRT']
         if config[modelid][domain]['lake']:
@@ -108,16 +109,17 @@ def main(argv):
             print(cmd); os.system(cmd)
             cmd = f'ncks -4 -L 5 {fdout} {fdout}.nc4; /bin/mv {fdout}.nc4 {fdout}'
             print(cmd); os.system(cmd)
-            if ptype=='nrt':
+            if ptype=='nrt' or ptype.split('/')[0]=='fcst':
                 add_pctl_rank_daily.main([domain, fdout])
             
-            fmout = f'../1km_monthly/{m:%Y/%Y%m}.{rout}OUT_DOMAIN1.monthly'
-            cmd = f'cdo -O -f nc4 -z zip monmean {fdout} {fmout}'
-            print(cmd); os.system(cmd)
-            cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
-            print(cmd); os.system(cmd)
-            if ptype=='nrt':
-                add_pctl_rank_monthly.main([domain, fmout])
+            if ptype.split('/')[0]!='fcst':
+                fmout = f'../1km_monthly/{m:%Y/%Y%m}.{rout}OUT_DOMAIN1.monthly'
+                cmd = f'cdo -O -f nc4 -z zip monmean {fdout} {fmout}'
+                print(cmd); os.system(cmd)
+                cmd = f'ncks -4 -L 5 {fmout} {fmout}.nc4; /bin/mv {fmout}.nc4 {fmout}'
+                print(cmd); os.system(cmd)
+                if ptype=='nrt':
+                    add_pctl_rank_monthly.main([domain, fmout])
 
     return 0
 

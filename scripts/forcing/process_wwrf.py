@@ -12,19 +12,15 @@ __author__ = 'Ming Pan'
 __email__  = 'm3pan@ucsd.edu'
 __status__ = 'Development'
 
-import sys, os, pytz, time, yaml
+import sys, os, pytz, time, yaml, subprocess
 from glob import glob
 import numpy as np
 import numpy.ma as ma
 from datetime import datetime, timedelta, UTC
+from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/utils')
 from utilities import config, find_last_time
-from mpi4py import MPI
-
-# MPI setup
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
 
 ## some setups
 wwrfdir  = f'{config["base_dir"]}/forcing/wwrf'
@@ -43,7 +39,7 @@ def main(argv):
     os.chdir(wwrfdir)
     
     # keep the time
-    #time_start = time.time()
+    time_start = time.time()
     
     # get current UTC time
     curr_time = datetime.now(UTC)
@@ -52,11 +48,8 @@ def main(argv):
     curr_day  = curr_time - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=curr_time.second, microseconds=curr_time.microsecond)
     
     # figure out the water year
-    wy      = curr_day.year if curr_day.month>=10 else curr_day.year-1
-    # temporary freeze for 2025 due to AWARE testing
-    #wy = 2023
+    wy      = curr_day.year if curr_day.month>=9 else curr_day.year-1
     fcst_dir = f'links/NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
-    out_dir  =       f'NRT/{wy:d}-{wy+1:d}/NRT_{fcst_init}'
     
     # find the latest West-WRF forecast
     latest_day = find_last_time(fcst_dir+'/????????00', '%Y%m%d%H')
@@ -68,83 +61,76 @@ def main(argv):
     if (not os.path.isfile(fww)) or ntmp>0:
         latest_day -= timedelta(hours=24)
     
-    if len(argv)>0:
-        fcst_length = int(argv[0])
-    if len(argv)>1:
-        latest_day = datetime.strptime(argv[1], '%Y%m%d%H')
+    if len(argv)==1:
+        latest_day = datetime.strptime(argv[0], '%Y%m%d%H')
         latest_day = latest_day.replace(tzinfo=pytz.utc)
         
     print(f'Latest forecast to process: {latest_day:%Y-%m-%dT%H}.')
-        
-    ncocmd1 = 'ncap2 -O -s "PSFC=PSFC*100; RAINRATE=RAINRATE/3600" '
-    ncocmd2 = 'ncatted -a units,PSFC,o,c,"Pa" -a units,RAINRATE,o,c,"kg m-2 s-1" '
-    
-    for domain in ['cnrfc', 'cbrfc']: #config['forcing']['domains']:
-        
-        cdocmd = f'cdo -O -f nc4 -z zip remap,../nwm/domain/scrip_{domain}_bilinear.nc,{out_dir}/cdo_weights_d01_cf_{domain}.nc -chname,p_sfc,PSFC,T_2m,T2D,q_2m,Q2D,LW_d,LWDOWN,SW_d,SWDOWN,precip_bkt,RAINRATE,u_10m_gr,U2D,v_10m_gr,V2D -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m_gr,v_10m_gr'
-    
-        t = latest_day + timedelta(hours=1)
-        last_day = latest_day + timedelta(days=fcst_length)
-        allsteps = []
-        alldays  = []
-        while t <= last_day:
-            fww = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
-            fnwm = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
-            if os.path.isfile(fww): # and not os.path.isfile(fnwm):
-                allsteps.append(t)
-            if t.hour == 23:
-                alldays.append(t-timedelta(hours=23))
-            t = t + timedelta(hours=1)
-        # add last day for WRF-Hydro
-        alldays.append(alldays[-1]+timedelta(days=1))
-        #print(alldays)
 
-        for t in allsteps[rank::size]:
+    # remap to 0.05 deg
+    t1 = latest_day + timedelta(hours=1)
+    t2 = latest_day + timedelta(days=fcst_length)
+    np = fcst_length
+    python_script = '../../scripts/utils/run_cmd_in_time_mpi.py'
+    cdocmd = f'cdo -O -f nc4 -z zip remap,domain/latlon_wus_0.05deg.txt,domain/cdo_weights_d01_wus_0.05deg.nc -selname,p_sfc,T_2m,q_2m,LW_d,SW_d,precip_bkt,u_10m,v_10m'
+    cmd0 = f'{cdocmd} {fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_%Y-%m-%d_%H_00_00.nc 0.05deg/%Y/%Y%m/wrfcf_d{fcst_domain}_%Y%m%d%H.nc'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} hourly {t1:%Y%m%d%H} {t2:%Y%m%d%H} "{cmd0}"'
+    flog = f'../log/remap_wwrf_0.05deg_{latest_day:%Y%m%d%H}.txt'
+    cmd = f'sbatch -t 00:15:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J wwrf005 --wrap=\'{cmd1}\' -o {flog}'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid1 = jid
+    print(f'WWRF remapping to 0.05deg job ID is: {jid}')
         
-            print(f'Processing {t:%Y-%m-%d %H:00}')
-
-            fww   = f'{fcst_dir}/{latest_day:%Y%m%d%H}/cf/wrfcf_{fcst_init}_d{fcst_domain}_{t:%Y-%m-%d_%H}_00_00.nc'
-            ftmp  = f'{tmpdir}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
-            ftmp2 = f'{ftmp}.nc'
-            fnwm  = f'{out_dir}/{domain}/{t:%Y%m%d%H}.LDASIN_DOMAIN1'
-            if os.path.isfile(fww):
-                cmd = f'{cdocmd} {fww} {ftmp}'
-                #print(cmd)
-                os.system(cmd)
-                cmd = f'{ncocmd1} {ftmp} {ftmp2}'
-                os.system(cmd)
-                cmd = f'cdo -f nc4 -z zip add {ftmp2} ../nwm/domain/xmask0_{domain}.nc {fnwm}'
-                os.system(cmd)
-                cmd = f'{ncocmd2} {fnwm}'
-                os.system(cmd)
-                cmd = f'/bin/rm -f {ftmp}'
-                os.system(cmd)
-            
-        comm.Barrier()
+    modelid = 'nwm_v3'
+    domain = 'cnrfc'
     
-        for t in alldays[rank::size]:
-            fh = f'{out_dir}/{domain}/{t:%Y%m%d}??.LDASIN_DOMAIN1'
-            fd = f'{out_dir}/{domain}/{t:%Y%m%d}.LDASIN_DOMAIN1'
-            cmd = f'cdo -O --sortname -f nc4 -z zip mergetime {fh} {fd}'
-            os.system(cmd)
-            if domain=='cnrfc':
-                fd2 = f'{out_dir}/basins24/{t:%Y%m%d}.LDASIN_DOMAIN1'
-                cmd = f'cdo -O -f nc4 -z zip add -selindexbox,111,410,381,1130 {fd} ../nwm/domain/xmask0_basins24.nc {fd2}'
-                os.system(cmd)
-            if domain=='cbrfc':
-                fd2 = f'{out_dir}/yampa/{t:%Y%m%d}.LDASIN_DOMAIN1'
-                cmd = f'cdo -O -f nc4 -z zip add -selindexbox,579,948,962,1401 {fd} ../nwm/domain/xmask0_yampa.nc {fd2}'
-                os.system(cmd)
+    # downscale to 0.01 deg
+    os.chdir(f'{config["base_dir"]}/forcing/nwm/')
+    python_script = '../../scripts/utils/run_grads_in_time_mpi.py'
+    grads_script  = '../../scripts/forcing/downscale_wwrf_0.01deg.gs'
+    [lon1, lon2, lat1, lat2] = config[modelid][domain]['lonlatbox']
+    grads_args    = f'../wwrf/0.05deg/wwrf_d01_0.05deg.ctl {lon1} {lon2} {lat1} {lat2} ../wwrf/0.01deg/{domain}'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} hourly {t1:%Y%m%d%H} {t2:%Y%m%d%H} {grads_script} "{grads_args}"'
+    flog = f'../log/dnsc_wwrf_{domain}_{latest_day:%Y%m%d%H}.txt'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J dnscwwrf --wrap=\'{cmd1}\' -o {flog}'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
+    print(f'WWRF downscaling ({domain}) job ID is: {jid}')
     
-        # delete hourly files older than 2 days
-        old_day = latest_day - timedelta(days=2)
-        cmd = f'/bin/rm -f {out_dir}/{domain}/{old_day:%Y%m%d}.LDASIN_DOMAIN1'
-        os.system(cmd)
+    # mergetime and remap to NWM 1km grid
+    os.chdir(f'{config["base_dir"]}/forcing/wwrf/')
+    os.makedirs(f'1km/{domain}/{t1:%Y}', exist_ok=True)
+    os.makedirs(f'1km/{domain}/{t2:%Y}', exist_ok=True)
+    python_script = '../../scripts/utils/run_cmd_in_time_mpi.py'
+    cmd0 = f'cdo -f nc4 -z zip remap,domain/scrip_{domain}_bilinear.nc,domain/cdo_weights_{domain}.nc [ -mergetime 0.01deg/{domain}/%Y/%Y%m/%Y%m%d??.LDASIN_DOMAIN1 ] 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc; cdo -f nc4 -z zip add 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc domain/xmask0_{domain}.nc 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1; /bin/rm -f 1km/{domain}/%Y/%Y%m%d.LDASIN_DOMAIN1.nc'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; mpirun -np {np} python {python_script} daily {t1:%Y%m%d} {t2:%Y%m%d} "{cmd0}"'
+    flog = f'../log/remap_wwrf_{domain}_{latest_day:%Y%m%d%H}.txt'
+    cmd = f'sbatch -d afterok:{jid2} -t 00:20:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node={np} -J rempwwrf --wrap=\'{cmd1}\' -o {flog}'
+    print(cmd)
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
+    print(f'WWRF merging/remapping ({domain}) job ID is: {jid}')
     
-    #time_finish = time.time()
-    #print('Total processing time %.1f seconds' % (time_finish-time_start))
+    # aggregate to daily (no monthly at the moment)
+    os.makedirs(f'1km_daily/{domain}/{t1:%Y}', exist_ok=True)
+    os.makedirs(f'1km_daily/{domain}/{t2:%Y}', exist_ok=True)
+    t = t1
+    while t <= t2:
+        md = monthrange(t.year, t.month)[1]        
+        cmd0 = f'cdo -O -f nc4 -z zip seldate,{t1:%Y-%m-%d},{t2:%Y-%m-%d} -delete,timestep=1,{md+2} -daymean -shifttime,-1hour [ -mergetime 1km_hourly/{domain}/{t:%Y/%Y%m}??.LDASIN_DOMAIN1 ] 1km_daily/{domain}/{t:%Y/%Y%m}.LDASIN_DOMAIN1.daily'
+        flog = f'../log/agg_wwrf_{domain}_{latest_day:%Y%m%d%H}.txt'
+        cmd = f'sbatch -d afterok:{jid3} -t 00:15:00 --nodes=1 -p {config["part_shared"]} --ntasks-per-node=1 -J agg_wwrf --wrap="{cmd0}" -o {flog}'
+        print(cmd)
+        ret = subprocess.check_output([cmd], shell=True)
+        jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
+        print(f'WWRF forcing aggregation ({domain}, {t:%Y%m}) job ID is: {jid}')
+        t += relativedelta(months=1)
+        
+    time_finish = time.time()
+    print('Total processing time %.1f seconds' % (time_finish-time_start))
     
-    comm.Barrier()
     return 0
     
 

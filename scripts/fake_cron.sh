@@ -6,7 +6,7 @@
 # email: m3pan@ucsd.edu
 # status: Development
 
-part_shared=shared-192
+part_shared=shared-128
 hinterval=4
 hoffset=0
 
