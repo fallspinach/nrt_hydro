@@ -155,13 +155,17 @@
     </div>
   </div>
 </div>
-<select id="variable-selector" class="form-select" style="position: absolute; top: 80px; left: 10px; z-index: 1; width: 155px; font-size: 13px; padding: 2px 1px 2px 5px">
+<select id="variable-selector" class="form-select" style="position: absolute; top: 80px; left: 10px; z-index: 1; width: 120px; font-size: 13px; padding: 2px 1px 2px 5px">
   <option value="smtot_r">Daily SM %ile</option>
   <option value="swe_r">Daily SWE %ile</option>
-  <option value="precip">Daily Precip (mm)</option>
-  <option value="tair2m">Daily Temp (&deg;C)</option>
-  <option value="precip_r">Monthly Precip %ile</option>
-  <option value="tair2m_r">Monthly Temp %ile</option>
+  <option value="precip">Daily P (mm)</option>
+  <option value="tair2m">Daily T (&deg;C)</option>
+  <option value="precip_r">Monthly P %ile</option>
+  <option value="tair2m_r">Monthly T %ile</option>
+</select>
+<select id="source-selector" class="form-select form-select-sm" style="position: absolute; top: 80px; left: 135px; z-index: 0; width: 95px; font-size: 13px; padding: 2px 1px 2px 5px">
+  <option value="fcst/wwrf">West-WRF</option>
+  <option value="fcst/gfs">GFS</option>
 </select>
 <script src='main.js?v=latest' type='module'></script>
 </body>

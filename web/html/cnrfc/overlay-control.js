@@ -146,6 +146,7 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
 
   const dateInput = document.getElementById('datepicker');
   const varibleSelector = document.getElementById('variable-selector');
+  const sourceSelector = document.getElementById('source-selector');
 
   dateInput.addEventListener('change', () => {
     updateOverlay(map, layerOverlay);
@@ -156,6 +157,9 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
   });
 
   varibleSelector.addEventListener('change', () => {
+    dateInput.dispatchEvent(new Event('change'));
+  });
+  sourceSelector.addEventListener('change', () => {
     dateInput.dispatchEvent(new Event('change'));
   });
 
@@ -192,6 +196,7 @@ export async function updateOverlay(map, layerOverlay='dataoverlay') {
 
   const dateInput = document.getElementById('datepicker');
   const varibleSelector = document.getElementById('variable-selector');
+  const sourceSelector = document.getElementById('source-selector');
 
   const input = dateInput.value;
   var   dataDate = new Date(input);
@@ -210,7 +215,14 @@ export async function updateOverlay(map, layerOverlay='dataoverlay') {
   if (timestamp=='month') tString = ymd.slice(0, 6);
   var ptype = 'nrt';
   if (dataDate>latestNrtDate) {
-    ptype = 'fcst/gfs';
+    sourceSelector.disabled = false;
+    sourceSelector.style.backgroundColor = 'yellow';
+    sourceSelector.style.color = 'black';
+    ptype = sourceSelector.value;
+  } else {
+    sourceSelector.disabled = true;
+    sourceSelector.style.backgroundColor = '#eee';
+    sourceSelector.style.color = '#999';
   }
   const imgUrl = `https://cw3e.ucsd.edu/hydro/cnrfc/imgs/${ptype}/${folder}/${y}/${variable}_${tString}.png`;
 

@@ -149,6 +149,7 @@ def main(argv):
             os.system(f'rsync -av {fnjson} m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/csv/')
             for ptype in ['nrt', 'fcst/wwrf', 'fcst/gfs']:
                 os.system(f'rsync -av {config["base_dir"]}/{modelid}/cnrfc/{ptype}/output/basins/* m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/csv/basins/{ptype}/')
+                os.system(f'rsync -av {config["base_dir"]}/{modelid}/cnrfc/{ptype}/output/basins m3pan@skyriver.ucsd.edu:/data/projects/Hydro/wrf_hydro/cnrfc/{ptype}/output/')
     
     return 0
 

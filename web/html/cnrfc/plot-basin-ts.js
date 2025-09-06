@@ -128,11 +128,21 @@ async function plotBasinTs(nwsId, freq, title) {
       const dataWwrf = parsedWwrf.data;
       const datesWwrf = dataWwrf.map(row => row['Date']);  // Replace 'Date' with your column name
 
+      const sourceSelector = document.getElementById('source-selector');
+      var dataFcst = dataWwrf;
+      var datesFcst = datesWwrf;
+      var wfcst = 'West-WRF';
+      if (sourceSelector.value=='fcst/gfs') {
+        dataFcst = dataGfs;
+        datesFcst = datesGfs;
+        wfcst = 'GFS';
+      }
+
       if (freq=='daily') {
         // precipitation
-        var trace_prec_gfs = {
-          x: datesGfs,
-          y: dataGfs.map(row => parseFloat(row['PREC'])),
+        var trace_prec_fcst = {
+          x: datesFcst,
+          y: dataFcst.map(row => parseFloat(row['PREC'])),
           type: 'bar',
           name: `Fcst P (mm)`, //`Forecast Precipitation (mm)`,
           //showlegend: false,
@@ -142,11 +152,11 @@ async function plotBasinTs(nwsId, freq, title) {
             pattern: { shape: '/', bgcolor: 'white', fgcolor: 'darkgray', fillmode: 'replace' }
           }
         };
-        traces.push(trace_prec_gfs);
+        traces.push(trace_prec_fcst);
         // temperature
-        var trace_temp_gfs = {
-          x: datesGfs,
-          y: dataGfs.map(row => parseFloat(row['T2D'])),
+        var trace_temp_fcst = {
+          x: datesFcst,
+          y: dataFcst.map(row => parseFloat(row['T2D'])),
           mode: 'markers',
           name: `Fcst T (&deg;C)`, //`Forecast Temperature (&deg;C)`,
           //showlegend: false,
@@ -156,11 +166,11 @@ async function plotBasinTs(nwsId, freq, title) {
             symbol: 'circle-open'
           }
         };
-        traces.push(trace_temp_gfs);
+        traces.push(trace_temp_fcst);
         // SWE
-        var trace_swe_gfs = {
-          x: datesGfs,
-          y: dataGfs.map(row => parseFloat(row['SWE'])),
+        var trace_swe_fcst = {
+          x: datesFcst,
+          y: dataFcst.map(row => parseFloat(row['SWE'])),
           mode: 'lines',
           name: `Fcct SWE (mm)`, //`Forecast Snow Water Equiv (mm)`,
           //showlegend: false,
@@ -171,11 +181,11 @@ async function plotBasinTs(nwsId, freq, title) {
             dash: 'dash'
           }
         };
-        traces.push(trace_swe_gfs);
+        traces.push(trace_swe_fcst);
         // total soil moisture
-        var trace_sm_gfs = {
-          x: datesGfs,
-          y: dataGfs.map(row => parseFloat(row['SMTOT'])*2000),
+        var trace_sm_fcst = {
+          x: datesFcst,
+          y: dataFcst.map(row => parseFloat(row['SMTOT'])*2000),
           mode: 'lines',
           name: `Fcst SM (mm)`, //`Forecast Total Soil Moisture (mm)`,
           //showlegend: false,
@@ -186,12 +196,12 @@ async function plotBasinTs(nwsId, freq, title) {
             dash: 'dash'
           }
         };
-        traces.push(trace_sm_gfs);
+        traces.push(trace_sm_fcst);
       }
       
-      var trace_runoff_gfs = {
-        x: datesGfs,
-        y: dataGfs.map(row => parseFloat(row['RUNOFF'])),
+      var trace_runoff_fcst = {
+        x: datesFcst,
+        y: dataFcst.map(row => parseFloat(row['RUNOFF'])),
         mode: 'lines',
         name: `Fcst Q (m<sup>3</sup>/s)`,
         yaxis: 'y5',
@@ -201,11 +211,11 @@ async function plotBasinTs(nwsId, freq, title) {
           dash: 'dash'
         }
       };
-      traces.push(trace_runoff_gfs);
+      traces.push(trace_runoff_fcst);
     }
 
     var layout = {
-        title: {text: title, font: {size: 15}},
+        title: {text: `WRF-Hydro (NWM v3.0) + ${wfcst}, ${title}`, font: {size: 15}},
         yaxis: {title: {text: `Precipitation (mm)`, font: {color: 'darkgray'}, standoff: 0}, tickfont: {color:'darkgray'}, zeroline: false, range: [0, null], automargin: true},
         yaxis2: {title: {text: `Temperature (&deg;C)`, font: {color: 'orange'}, standoff: 0}, tickfont: {color:'orange'}, zeroline: false, overlaying: 'y', side: 'left', position: 0.04, automargin: true},
         yaxis3: {title: {text: `Snow Water Equiv (mm)`, font: {color: 'magenta'}, standoff: 0}, tickfont: {color:'magenta'}, zeroline: false, range: [0, null], overlaying: 'y', side: 'right', automargin: true},
@@ -285,7 +295,7 @@ export async function setupBasinTs(map, layer) {
         .setHTML(popupContent)
         .addTo(map);
 
-    var title = `WRF-Hydro (NWM v3.0), ${e.features[0].properties.ID}, `;
+    var title = `${e.features[0].properties.ID}, `;
     title += `River: ${e.features[0].properties.River}, `;
     title += `Location: ${e.features[0].properties.Location.split(" - ")[1]}`;
     const nwsId = e.features[0].properties.ID;
