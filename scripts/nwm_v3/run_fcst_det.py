@@ -113,6 +113,7 @@ def main(argv):
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'WRF-Hydro/{wfcst.upper()} will run with job ID: {jid}')
 
+    # merge output files and aggregate to daily
     os.chdir(f'{config["base_dir"]}/scripts/{modelid}')
     nc_shared   = 1 if t1.month==t2.month else 2
     mem_shared  = 8*nc_shared if domain!='conus' else 25*nc_shared
@@ -124,6 +125,7 @@ def main(argv):
     jid = ret.decode().split(' ')[-1].rstrip(); jid1 = jid
     print(f'Merging/percentile calculation job ID is: {jid}')
 
+    # extract time series over basins
     cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/extract_basin.py'
     flog = f'{workdir}/log/extract_basin_{t1:%Y%m}_{t2:%Y%m}.txt'
     cmd = f'sbatch -d afterok:{jid1} --nodes=1 --ntasks-per-node=1 -t 00:20:00 -p {part_shared} --mem=13G -J "exbas{wfcst}" --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} fcst/{wfcst}" -o {flog}'
@@ -132,6 +134,13 @@ def main(argv):
     jid = ret.decode().split(' ')[-1].rstrip()
     print(f'Basin time series extraction will run with job ID: {jid}')
 
+    cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_forcing_output.py'
+    flog = f'{workdir}/log/plot_{wfcst}_{t1:%Y%m}_{t2:%Y%m}.txt'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plot{wfcst} --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} fcst/{wfcst}" -o {flog}'
+    ret = subprocess.check_output([cmd], shell=True)
+    jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
+    print(f'Daily plotting job ID is: {jid}')
+    
     if True:
         return
 

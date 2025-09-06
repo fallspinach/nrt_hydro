@@ -146,7 +146,9 @@ def main(argv):
             #os.system('gcloud storage rsync imgs gs://cw3e-water-panel.appspot.com/imgs --recursive')
             #os.system('gcloud storage rsync data gs://cw3e-water-panel.appspot.com/data --recursive')
             os.system('rsync -av imgs/cnrfc/* m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/imgs/')
-            os.system(f'rsync -av {config["base_dir"]}/{modelid}/cnrfc/nrt/output/basins {fnjson} m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/csv/')
+            os.system(f'rsync -av {fnjson} m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/csv/')
+            for ptype in ['nrt', 'fcst/wwrf', 'fcst/gfs']:
+                os.system(f'rsync -av {config["base_dir"]}/{modelid}/cnrfc/{ptype}/output/basins/* m3pan@skyriver.ucsd.edu:/data/projects/website/mirror/htdocs/wrf_hydro/cnrfc/csv/basins/{ptype}/')
     
     return 0
 

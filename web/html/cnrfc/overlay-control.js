@@ -162,7 +162,9 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
   const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
   const latestNrt = statusJson['WRF-Hydro NRT'];
   const latestNrtDate = new Date(latestNrt);
-
+  const lastFcstDate = new Date(latestNrt);
+  lastFcstDate.setDate(lastFcstDate.getDate() + 16);
+  
   // initialize datepicker
   $(document).ready(function () {
     $('#datepicker-wrapper input').datepicker({
@@ -170,7 +172,7 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
       autoclose: true,
       todayHighlight: true,
       startDate: '2023-10-01',
-      endDate: latestNrt
+      endDate: lastFcstDate.toISOString().split('T')[0] //latestNrt
     }).datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
     updateNavButtons();
   });
@@ -196,7 +198,8 @@ export async function updateOverlay(map, layerOverlay='dataoverlay') {
 
   const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
   const latestNrt = statusJson['WRF-Hydro NRT'];
-  if (isNaN(dataDate)) dataDate = new Date(latestNrt);
+  const latestNrtDate = new Date(latestNrt);
+  if (isNaN(dataDate)) dataDate = latestNrtDate;
   // Read selected variable
   const variable = varibleSelector.value;
 
@@ -205,10 +208,14 @@ export async function updateOverlay(map, layerOverlay='dataoverlay') {
   const y = ymd.slice(0, 4);
   var tString = ymd;
   if (timestamp=='month') tString = ymd.slice(0, 6);
-  const imgUrl = `https://cw3e.ucsd.edu/hydro/cnrfc/imgs/${folder}/${y}/${variable}_${tString}.png`;
+  var ptype = 'nrt';
+  if (dataDate>latestNrtDate) {
+    ptype = 'fcst/gfs';
+  }
+  const imgUrl = `https://cw3e.ucsd.edu/hydro/cnrfc/imgs/${ptype}/${folder}/${y}/${variable}_${tString}.png`;
 
   if (map.getSource(layerOverlay+'_source')) {
-    // console.log(`Setting url to ${imgUrl}`);
+    //console.log(`Setting url to ${imgUrl}`);
     map.getSource(layerOverlay+'_source').updateImage({url: imgUrl, coordinates: cnrfcCoords});
   }
   // update color map
@@ -244,7 +251,7 @@ function updateNavButtons() {
   const currentDate = input.datepicker('getDate');
   const minDate = input.datepicker('getStartDate');
   const maxDate = input.datepicker('getEndDate');
-  // console.log(`Current: ${currentDate}\nmaxDate: ${maxDate}`);
+  //console.log(`Current: ${currentDate}\nmaxDate: ${maxDate}`);
 
   const prevDayBtn = document.getElementById('prev-day');
   const nextDayBtn = document.getElementById('next-day');

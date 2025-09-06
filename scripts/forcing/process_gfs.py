@@ -1,7 +1,7 @@
 ''' Download and process GFS forecast fields
 
 Usage:
-    python process_gfs_fcst.py [yyyymmddhh]
+    python process_gfs.py [yyyymmddhh]
 Default values:
     [yyyymmddhh]: GFS forecast initialization time, default to latest on server
 '''

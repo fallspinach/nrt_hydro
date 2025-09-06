@@ -199,13 +199,13 @@ def main(argv):
         jid = ret.decode().split(' ')[-1].rstrip()
         print(f'Basin time series extraction will run with job ID: {jid}')
     
-    cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_nrt.py'
+    cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_forcing_output.py'
     flog = f'{workdir}/log/plot_{t1:%Y%m}_{t2:%Y%m}.txt'
-    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+    cmd = f'sbatch -d afterok:{jid1} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotday --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt" -o {flog}'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid2 = jid
     print(f'Daily plotting job ID is: {jid}')
-    cmd = f'sbatch -d afterok:{jid2} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotmon --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+    cmd = f'sbatch -d afterok:{jid2} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=10G -J plotmon --wrap="{cmd1} {domain} {t1:%Y%m} {t2:%Y%m} nrt monthly" -o {flog}.monthly'
     ret = subprocess.check_output([cmd], shell=True)
     jid = ret.decode().split(' ')[-1].rstrip(); jid3 = jid
     print(f'Monthly plotting job ID is: {jid}')
@@ -279,13 +279,13 @@ def main(argv):
             print(f'Subsetting {subdomain} job ID is: {jid5}')
 
             # plot subdomain
-            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_nrt.py'
+            cmd1 = f'unset SLURM_MEM_PER_NODE; python {config["base_dir"]}/scripts/{modelid}/plot_forcing_output.py'
             flog = f'{workdir}/log/plot_{subdomain}_{t1:%Y%m}_{t2:%Y%m}.txt'
-            cmd = f'sbatch -d afterok:{jid5} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotday --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m}" -o {flog}'
+            cmd = f'sbatch -d afterok:{jid5} -t 00:40:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotday --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} nrt " -o {flog}'
             ret = subprocess.check_output([cmd], shell=True)
             jid6 = ret.decode().split(' ')[-1].rstrip()
             print(f'Daily plotting for subdomain {subdomain} job ID is: {jid6}')
-            cmd = f'sbatch -d afterok:{jid5} -t 00:10:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotmon --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} monthly" -o {flog}.monthly'
+            cmd = f'sbatch -d afterok:{jid5} -t 00:10:00 --nodes=1 -p {part_shared} --ntasks-per-node=1 --mem=6G -J plotmon --wrap="{cmd1} {subdomain} {t1:%Y%m} {t2:%Y%m} nrt monthly" -o {flog}.monthly'
             ret = subprocess.check_output([cmd], shell=True)
             jid7 = ret.decode().split(' ')[-1].rstrip()
             print(f'Monthly plotting for subdomain {subdomain} job ID is: {jid7}')

@@ -28,7 +28,8 @@ export async function loadLayerOverlay(map, id, initialVisibility=false, legendC
   const y = ymd.slice(0, 4);
   var tString = ymd;
   if (timestamp=='month') tString = ymd.slice(0, 6);
-  const imgUrl = `https://cw3e.ucsd.edu/hydro/cnrfc/imgs/${folder}/${y}/${variable}_${tString}.png`;
+  var ptype = 'nrt';
+  const imgUrl = `https://cw3e.ucsd.edu/hydro/cnrfc/imgs/${ptype}/${folder}/${y}/${variable}_${tString}.png`;
 
   map.on('styledata', () => {
 
