@@ -7,6 +7,8 @@
 import { loadJson } from './utils.js';
 import { setupColormap } from './colormap.js';
 
+var latestNrtDate;
+
 export const variableImages = {
   precip: {
     folder: 'forcing',
@@ -165,7 +167,7 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
 
   const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
   const latestNrt = statusJson['WRF-Hydro NRT'];
-  const latestNrtDate = new Date(latestNrt);
+  latestNrtDate = new Date(latestNrt);
   const lastFcstDate = new Date(latestNrt);
   lastFcstDate.setDate(lastFcstDate.getDate() + 16);
   
@@ -177,13 +179,27 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
       todayHighlight: true,
       startDate: '2023-10-01',
       endDate: lastFcstDate.toISOString().split('T')[0] //latestNrt
-    }).datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
+    }); //.datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
+
+    // IMPORTANT: set date to the default start (latest NRT) only if not loading state from hash
+    // it needs to work both on initial load (empty hash) and state-in-hash load
+    const hash = window.location.hash.replace(/^#/, '');
+    const [viewPart, layerPart, overlayPart] = hash.split('!');
+    //console.log(`Hash status: ${overlayPart}`);
+    if (overlayPart==null) {
+      $('#datepicker-wrapper input').datepicker('setDate', latestNrtDate.toISOString().split('T')[0]);
+    } else {
+      const [tmpdate, tmpvariable, tmpsource] = overlayPart?.split(',') || [];
+      const [tmpyear, tmpmonth, tmpday] = tmpdate.split('-').map(Number);
+      const dateObj = new Date(tmpyear, tmpmonth - 1, tmpday);
+      $('#datepicker-wrapper input').datepicker('setDate', dateObj);
+    }
     updateNavButtons();
   });
-  // console.log(`${latestNrt}, ${latestNrtDate}, ${latestNrtDate.toISOString().split('T')[0]}`);
+  // console.log(`In setupOverlayControl(): ${latestNrt}, ${latestNrtDate}, ${latestNrtDate.toISOString().split('T')[0]}`);
 
   // Initial load
-  updateOverlay(map, layerOverlay, 'smtot_r', latestNrtDate);
+  //updateOverlay(map, layerOverlay, 'smtot_r', latestNrtDate);
 
   document.getElementById('prev-day').addEventListener('click', () => shiftDate({ days: -1 }));
   document.getElementById('next-day').addEventListener('click', () => shiftDate({ days: 1 }));
@@ -192,21 +208,21 @@ export async function setupOverlayControl(map, layerOverlay='dataoverlay') {
 
 }
 
-export async function updateOverlay(map, layerOverlay='dataoverlay') {
+export function updateOverlay(map, layerOverlay='dataoverlay') {
 
   const dateInput = document.getElementById('datepicker');
   const varibleSelector = document.getElementById('variable-selector');
   const sourceSelector = document.getElementById('source-selector');
 
   const input = dateInput.value;
+  //const input = $('#datepicker').datepicker('getDate');
   var   dataDate = new Date(input);
+  //console.log(`In updateOverlay() 1: ${input}, ${dataDate}`);
 
-  const statusJson = await loadJson('https://cw3e.ucsd.edu/hydro/cnrfc/csv/status.json');
-  const latestNrt = statusJson['WRF-Hydro NRT'];
-  const latestNrtDate = new Date(latestNrt);
   if (isNaN(dataDate)) dataDate = latestNrtDate;
   // Read selected variable
   const variable = varibleSelector.value;
+  //console.log(`In updateOverlay() 2: ${dataDate}`);
 
   const { folder, timestamp, colorStops, legendTitle } = variableImages[variable];
   const ymd = dataDate.toISOString().split('T')[0].replaceAll('-', '');

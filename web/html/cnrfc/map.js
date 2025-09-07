@@ -12,6 +12,7 @@ import { loadLayerNwmRivers } from './load-layer-nwm-rivers.js';
 import { loadLayerDwrPoints } from './load-layer-dwr-points.js';
 import { loadLayerSnowNetwork } from './load-layer-snow-network.js';
 import { loadLayerOverlay } from './load-layer-overlay.js';
+import { setupOverlayControl } from './overlay-control.js';
 
 let flagDebug = false;
 
@@ -52,8 +53,13 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
       .join(',');
     const date = $('#datepicker').datepicker('getDate').toISOString().slice(0, 10);
     const variable = document.getElementById('variable-selector').value;
+    const sourceSelector = document.getElementById('source-selector');
+    var source = 'nrt';
+    if (sourceSelector.disabled==false) {
+      source = sourceSelector.value;
+    }
 
-    const hash = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${zoom},${bearing},${pitch},${currentStyle},${currentProjection},${terrain}!${layers}!${date},${variable}`;
+    const hash = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${zoom},${bearing},${pitch},${currentStyle},${currentProjection},${terrain}!${layers}!${date},${variable},${source}`;
     
     // Replaces current history entry instead of adding a new one
     history.replaceState(null, '', `#${hash}`);
@@ -65,7 +71,8 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
     const [viewPart, layerPart, overlayPart] = hash.split('!');
     const viewParams = viewPart?.split(',') || [];
     const layers = layerPart?.split(',') || [];
-    const [date, variable] = overlayPart?.split(',') || [];
+    const [date, variable, source] = overlayPart?.split(',') || [];
+    console.log(`Loading date: ${date}`);
 
     const lat = parseFloat(viewParams[0]);
     const lng = parseFloat(viewParams[1]);
@@ -135,10 +142,18 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
           //}
         });
         // console.log(`date = ${date}; variable =  ${variable}`);
-        const [year, month, day] = date.split('-').map(Number);
+        var [year, month, day] = date.split('-').map(Number);
         const dateObj = new Date(year, month - 1, day);
+        //console.log(`Loading date: ${date}, year = ${year}, month = ${month}, day = ${day}, ${dateObj}`);
         $('#datepicker').datepicker('setDate', dateObj);
         document.getElementById('variable-selector').value = variable;
+        if (source=='nrt') {
+          document.getElementById('source-selector').disabled = true;
+        } else {
+          document.getElementById('source-selector').disabled = false;
+          document.getElementById('source-selector').value = source;
+        }
+        document.getElementById('datepicker').dispatchEvent(new Event('change'));
       });
       setupLayerControl(map, visibleLayers);
     }
@@ -314,9 +329,13 @@ export async function setupMap(containerID='map', coordsID='mouse-coords') {
   // set up layer control
   setupLayerControl(map, visibleLayers);
 
+  // IMPORTANT: do this before loading state from hash - this function shouldn't override hash either
+  // set up data image overlay
+  await setupOverlayControl(map);
+
   // load view if provided
   loadMapStateFromHash();
-
+  
   return map;
 
 }

@@ -6,7 +6,6 @@
 
 import { setupMap } from './map.js';
 import { setupNwmRivers } from './plot-nwm-rivers.js';
-import { setupOverlayControl } from './overlay-control.js';
 import { setupMenu } from './menu.js';
 import { setupBasinTs } from './plot-basin-ts.js';
 
@@ -15,9 +14,6 @@ const map = await setupMap();
 
 // set up NWM
 // await setupNwmRivers(map);
-
-// set up data image overlay
-setupOverlayControl(map);
 
 // set up tool menu
 setupMenu(map);

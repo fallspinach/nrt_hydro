@@ -151,6 +151,11 @@ function createLayerOption(map, layerId, label, initialVisibility, legendSymbol,
         .join(',');
     const date = $('#datepicker').datepicker('getDate').toISOString().slice(0, 10);
     const variable = document.getElementById('variable-selector').value;
+    const sourceSelector = document.getElementById('source-selector');
+    var source = 'nrt';
+    if (sourceSelector.disabled==false) {
+      source = sourceSelector.value;
+    }
 
     var style = 'carto';
     document.querySelectorAll('.style-btn').forEach(button => {
@@ -158,7 +163,7 @@ function createLayerOption(map, layerId, label, initialVisibility, legendSymbol,
         style = button.getAttribute('data-style');
       }
     });
-    const hash = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${zoom},${bearing},${pitch},${style},${projection},${terrain}!${layers1}!${date},${variable}`;
+    const hash = `${center.lat.toFixed(5)},${center.lng.toFixed(5)},${zoom},${bearing},${pitch},${style},${projection},${terrain}!${layers1}!${date},${variable},${source}`;
     // Replaces current history entry instead of adding a new one
     history.replaceState(null, '', `#${hash}`);
   });
